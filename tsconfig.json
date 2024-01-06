@@ -1,0 +1,21 @@
+{
+  "extends": "./node.json",
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "types": ["vitest/globals"],
+    "paths": {
+      "#config/*": ["./src/config/*"],
+      "#controller/*": ["./src/controller/*"],
+      "#dao/*": ["./src/dao/*"],
+      "#mocks/*": ["./src/mocks/*"],
+      "#modules/*": ["./src/modules/*"],
+      "#routes/*": ["./src/routes/*"],
+      "#types/*": ["./src/types/*"],
+      "#utils/*": ["./src/utils/*"]
+    }
+  }
+}
