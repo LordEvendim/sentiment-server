@@ -6,6 +6,7 @@ import { handleControllerError } from "#utils/errorHandling";
 import { TypedRequest } from "#types/express";
 import { AuthProvider } from "#modules/auth/types";
 import { usernameAuth } from "#modules/auth";
+import { metaAuth } from "#modules/meta/metaAuth";
 
 const createAuthController = (auth: AuthProvider) => {
   return {
@@ -69,6 +70,24 @@ const createAuthController = (auth: AuthProvider) => {
         req.session.user = undefined;
 
         return res.status(200).clearCookie("sessionId").send();
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    getLongLivedAccessToken: async (
+      req: TypedRequest<{}, { accessToken: string; userId: string }>,
+      res: Response
+    ) => {
+      try {
+        const token = req.params.accessToken;
+        const userId = req.params.userId;
+
+        if (!token || !userId) throw new Error("Invalid request");
+
+        const longLivedToken = await metaAuth.getLongLivedToken(token);
+        await metaAuth.getLongLivedPageTokens(userId, longLivedToken);
+
+        return res.status(200).send(longLivedToken);
       } catch (error) {
         return handleControllerError(res, error);
       }

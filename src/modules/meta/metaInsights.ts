@@ -42,9 +42,3 @@ class MetaInsights {
 }
 
 export const metaInsights = new MetaInsights();
-
-// curl -G \
-//   -d "breakdowns=age,gender" \
-//   -d "fields=impressions" \
-//   -d "access_token=<ACCESS_TOKEN>" \
-//   "https://graph.facebook.com/<API_VERSION>/<AD_CAMPAIGN_ID>/insights"
