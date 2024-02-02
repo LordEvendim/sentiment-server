@@ -1,12 +1,12 @@
 import "#config/dotenv";
 
 import { PORT } from "#config/network";
-import { server } from "./server";
+import { createServer } from "./server";
 
-const app = server();
+const server = createServer();
 
 try {
-  app.listen(PORT, (): void => {
+  server.listen(PORT, (): void => {
     console.log(`Server started on port: ${PORT}`);
   });
 } catch (error) {

@@ -6,7 +6,7 @@ const router: Router = express.Router();
 
 router.get("/", (_req: Request, res: Response) => {
   try {
-    // put code here
+    res.send("Hello world!!!");
   } catch (error: unknown) {
     handleControllerError(res, error);
   }

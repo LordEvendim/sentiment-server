@@ -21,3 +21,6 @@ dist-ssr
 *.sw?
 
 .docker
+
+key.pem
+cert.pem
