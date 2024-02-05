@@ -1,9 +1,10 @@
 import axios from "axios";
 import { BreakdownOptions, SupportedBreakdownFields } from "./types";
+import { pages, userPages, userTokens } from "./tempStorage";
 
-class MetaInsights {
+export class MetaInsights {
   apiVersion = "v18.0";
-  baseUrl = "https://graph.facebook.com/";
+  baseUrl = "https://graph.facebook.com";
   accessToken = "";
 
   constructor() {
@@ -11,11 +12,11 @@ class MetaInsights {
   }
 
   getUserAccesToken = async (userId: string): Promise<string | undefined> => {
-    return "";
+    return userTokens[userId];
   };
 
-  getPageAccessToken = async (userId: string): Promise<string | undefined> => {
-    return "";
+  getPageAccessToken = async (pageId: string): Promise<string | undefined> => {
+    return pages[pageId].accessToken;
   };
 
   getBusinessAdAccounts = async (userId: string, businessId: string) => {
@@ -25,7 +26,7 @@ class MetaInsights {
       `${this.baseUrl}/${this.apiVersion}/${businessId}/owned_ad_accounts`,
       {
         params: {
-          accessToken: userAccessToken,
+          access_token: userAccessToken,
         },
       }
     );
@@ -40,7 +41,7 @@ class MetaInsights {
       `${this.baseUrl}/${this.apiVersion}/${businessId}/client_ad_accounts`,
       {
         params: {
-          accessToken: userAccessToken,
+          access_token: userAccessToken,
         },
       }
     );
@@ -55,7 +56,7 @@ class MetaInsights {
       `${this.baseUrl}/${this.apiVersion}/${userId}/businesses`,
       {
         params: {
-          accessToken: userAccessToken,
+          access_token: userAccessToken,
         },
       }
     );
@@ -80,13 +81,34 @@ class MetaInsights {
   };
 
   getAccounts = async (userId: string) => {
-    const accessToken = await this.getUserAccesToken(userId);
+    const accounts = [];
+
+    console.log(userId);
+    console.log(userPages[userId]);
+
+    for (let i = 0; i < userPages[userId].length; i++) {
+      const pageId = userPages[userId][i];
+      const pageData = pages[pageId];
+
+      if (!pageData) return undefined;
+
+      accounts.push({
+        name: pageData.name,
+        id: pageId,
+      });
+    }
+
+    return accounts;
+  };
+
+  getAdAccounts = async (userId: string) => {
+    const userAccessToken = this.getUserAccesToken(userId);
 
     const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${userId}/accounts`,
+      `${this.baseUrl}/${this.apiVersion}/${userId}/businesses`,
       {
         params: {
-          accessToken,
+          access_token: userAccessToken,
         },
       }
     );
@@ -94,29 +116,21 @@ class MetaInsights {
     return result;
   };
 
-  getAdAccount = async (adCampaignId: string) => {
-    const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${adCampaignId}/insights`,
-      {
-        params: {},
-      }
-    );
-
-    return result;
-  };
-
   getCampaignStatistics = async (
+    userId: string,
     adCampaignId: string,
     breakdowns: BreakdownOptions[],
     fields: SupportedBreakdownFields[]
   ) => {
+    const accessToken = this.getUserAccesToken(userId);
+
     const result = await axios.get(
       `${this.baseUrl}/${this.apiVersion}/${adCampaignId}/insights`,
       {
         data: {
           breakdowns: breakdowns.join(","),
           fields: fields.join(","),
-          access_token: this.accessToken,
+          access_token: accessToken,
         },
       }
     );

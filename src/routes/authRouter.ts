@@ -14,7 +14,7 @@ router.post("/register", isAdmin, authController.register);
 
 router.get(
   "/meta/llat",
-  isAuthenticated,
+  // isAuthenticated,
   authController.getLongLivedAccessToken
 );
 

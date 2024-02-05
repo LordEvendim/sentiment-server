@@ -1,8 +1,11 @@
 import axios from "axios";
+import { pages, userPages, userTokens } from "./tempStorage";
+import { GetLongLivedToken, GetUserAccounts } from "./types";
+import { logger } from "#modules/logger";
 
 class MetaAuth {
   apiVersion = "v18.0";
-  baseUrl = "https://graph.facebook.com/";
+  baseUrl = "https://graph.facebook.com";
   appSecret = "";
   appId = "";
 
@@ -11,52 +14,47 @@ class MetaAuth {
     this.appId = process.env.META_APP_ID ?? "";
   }
 
-  getLongLivedToken = async (userAccessToken: string) => {
-    const result = await axios.get<{
-      access_token: string;
-      token_type: "bearer";
-      expires_in: number;
-    }>(`${this.baseUrl}/${this.apiVersion}/oauth/access_token`, {
-      params: {
-        grant_type: "fb_exchange_token",
-        client_id: this.appId,
-        client_secret: this.appSecret,
-        fb_exchange_token: userAccessToken,
-      },
-    });
+  getLongLivedToken = async (userId: string, userAccessToken: string) => {
+    if (userTokens[userId]) return userTokens[userId];
+
+    const result = await axios.get<GetLongLivedToken>(
+      `${this.baseUrl}/${this.apiVersion}/oauth/access_token`,
+      {
+        params: {
+          grant_type: "fb_exchange_token",
+          client_id: this.appId,
+          client_secret: this.appSecret,
+          fb_exchange_token: userAccessToken,
+        },
+      }
+    );
+
+    userTokens[userId] = result.data.access_token;
 
     return result.data.access_token;
   };
 
-  getLongLivedPageTokens = async (
-    userId: string,
-    userLongLivedToken: string
-  ) => {
-    const result = await axios.get<{
-      data: Array<{
-        access_token: string;
-        category: string;
-        category_list: [
-          {
-            id: string;
-            name: string;
-          },
-        ];
-        name: string;
-        id: string;
-        tasks: string[];
-      }>;
-      paging: {
-        cursors: {
-          before: string;
-          after: string;
-        };
+  getLongLivedPageTokens = async (userId: string) => {
+    const userAccessToken = userTokens[userId];
+
+    const result = await axios.get<GetUserAccounts>(
+      `${this.baseUrl}/${this.apiVersion}/${userId}/accounts`,
+      {
+        params: {
+          access_token: userAccessToken,
+        },
+      }
+    );
+
+    for (let i = 0; i < result.data.data.length; i++) {
+      const { id, access_token, name } = result.data.data[i];
+
+      pages[id] = {
+        accessToken: access_token,
+        name,
       };
-    }>(`${this.baseUrl}/${this.apiVersion}/${userId}/accounts`, {
-      params: {
-        access_token: userLongLivedToken,
-      },
-    });
+    }
+    userPages[userId] = result.data.data.map((page) => page.id);
 
     return result.data.data;
   };

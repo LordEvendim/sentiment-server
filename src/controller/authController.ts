@@ -7,6 +7,7 @@ import { TypedRequest } from "#types/express";
 import { AuthProvider } from "#modules/auth/types";
 import { usernameAuth } from "#modules/auth";
 import { metaAuth } from "#modules/meta/metaAuth";
+import { logger } from "#modules/logger";
 
 const createAuthController = (auth: AuthProvider) => {
   return {
@@ -75,17 +76,19 @@ const createAuthController = (auth: AuthProvider) => {
       }
     },
     getLongLivedAccessToken: async (
-      req: TypedRequest<{}, { accessToken: string; userId: string }>,
+      req: TypedRequest<{}, {}, { accessToken: string; userId: string }>,
       res: Response
     ) => {
       try {
-        const token = req.params.accessToken;
-        const userId = req.params.userId;
+        const token = req.query.accessToken;
+        const userId = req.query.userId;
 
         if (!token || !userId) throw new Error("Invalid request");
 
-        const longLivedToken = await metaAuth.getLongLivedToken(token);
-        await metaAuth.getLongLivedPageTokens(userId, longLivedToken);
+        const longLivedToken = await metaAuth.getLongLivedToken(userId, token);
+
+        console.log("getting long lived token");
+        await metaAuth.getLongLivedPageTokens(userId);
 
         return res.status(200).send(longLivedToken);
       } catch (error) {

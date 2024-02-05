@@ -9,6 +9,7 @@ import { userRouter } from "#routes/userRouter";
 
 import { readFileSync } from "fs";
 import https from "https";
+import { metaRouter } from "#routes/metaRouter";
 
 const key = readFileSync("./key.pem");
 const cert = readFileSync("./cert.pem");
@@ -27,6 +28,7 @@ export const createServer = () => {
   app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
+  app.use("/meta", metaRouter);
 
   return https.createServer({ key: key, cert: cert }, app);
 };

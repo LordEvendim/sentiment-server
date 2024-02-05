@@ -44,3 +44,31 @@ export type SupportedBreakdownFields =
   | "reach"
   | "actions"
   | "action_values";
+
+export type GetUserAccounts = {
+  data: Array<{
+    access_token: string;
+    category: string;
+    category_list: [
+      {
+        id: string;
+        name: string;
+      },
+    ];
+    name: string;
+    id: string;
+    tasks: string[];
+  }>;
+  paging: {
+    cursors: {
+      before: string;
+      after: string;
+    };
+  };
+};
+
+export type GetLongLivedToken = {
+  access_token: string;
+  token_type: "bearer";
+  expires_in: number;
+};
