@@ -6,4 +6,6 @@ const router: Router = express.Router();
 
 router.get("/accounts", metaController.getUserPages);
 
+router.post("/selected-page", metaController.selectPage);
+
 export { router as metaRouter };

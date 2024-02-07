@@ -87,7 +87,6 @@ const createAuthController = (auth: AuthProvider) => {
 
         const longLivedToken = await metaAuth.getLongLivedToken(userId, token);
 
-        console.log("getting long lived token");
         await metaAuth.getLongLivedPageTokens(userId);
 
         return res.status(200).send(longLivedToken);

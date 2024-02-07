@@ -1,6 +1,6 @@
 import axios from "axios";
 import { BreakdownOptions, SupportedBreakdownFields } from "./types";
-import { pages, userPages, userTokens } from "./tempStorage";
+import { pages, selectedUserPage, userPages, userTokens } from "./tempStorage";
 
 export class MetaInsights {
   apiVersion = "v18.0";
@@ -83,9 +83,6 @@ export class MetaInsights {
   getAccounts = async (userId: string) => {
     const accounts = [];
 
-    console.log(userId);
-    console.log(userPages[userId]);
-
     for (let i = 0; i < userPages[userId].length; i++) {
       const pageId = userPages[userId][i];
       const pageData = pages[pageId];
@@ -136,6 +133,18 @@ export class MetaInsights {
     );
 
     return result;
+  };
+
+  selectPage = async (userId: string, pageId: string) => {
+    if (!userPages[userId]) throw new Error("User doesn't have pages");
+
+    if (userPages[userId].findIndex((page) => page === pageId) === -1) {
+      throw new Error("User is not a page owner");
+    }
+
+    selectedUserPage[userId] = pageId;
+
+    return pageId;
   };
 }
 

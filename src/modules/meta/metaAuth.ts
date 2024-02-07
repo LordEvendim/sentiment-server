@@ -1,13 +1,18 @@
 import axios from "axios";
-import { pages, userPages, userTokens } from "./tempStorage";
+import {
+  businesses,
+  pages,
+  userBusinesses,
+  userPages,
+  userTokens,
+} from "./tempStorage";
 import { GetLongLivedToken, GetUserAccounts } from "./types";
-import { logger } from "#modules/logger";
 
 class MetaAuth {
   apiVersion = "v18.0";
   baseUrl = "https://graph.facebook.com";
-  appSecret = "";
-  appId = "";
+  appSecret: string;
+  appId: string;
 
   constructor() {
     this.appSecret = process.env.META_APP_SECRET ?? "";
@@ -55,6 +60,32 @@ class MetaAuth {
       };
     }
     userPages[userId] = result.data.data.map((page) => page.id);
+
+    await this.getUserBusinesses(userId);
+
+    return result.data.data;
+  };
+
+  getUserBusinesses = async (userId: string) => {
+    const userAccessToken = userTokens[userId];
+
+    const result = await axios.get<GetUserAccounts>(
+      `${this.baseUrl}/${this.apiVersion}/${userId}/businesses`,
+      {
+        params: {
+          access_token: userAccessToken,
+        },
+      }
+    );
+
+    for (let i = 0; i < result.data.data.length; i++) {
+      const { id, name } = result.data.data[i];
+
+      businesses[id] = {
+        name,
+      };
+    }
+    userBusinesses[userId] = result.data.data.map((business) => business.id);
 
     return result.data.data;
   };
