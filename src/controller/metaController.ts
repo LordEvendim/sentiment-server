@@ -4,6 +4,7 @@ import { handleControllerError } from "#utils/errorHandling";
 import { MetaInsights, metaInsights } from "#modules/meta";
 import { TypedRequest } from "#types/express";
 import { selectedUserPage } from "#modules/meta/tempStorage";
+import { PageInsights } from "#modules/meta/types";
 
 const createMetaController = (metaInsights: MetaInsights) => {
   return {
@@ -44,6 +45,22 @@ const createMetaController = (metaInsights: MetaInsights) => {
         if (!userId || !pageId) throw new Error("Invlid request");
 
         const result = await metaInsights.selectPage(userId, pageId);
+
+        return res.status(200).send(result);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    getPageInsights: async (
+      req: TypedRequest<{}, {}, { userId: string; pageId: string }>,
+      res: Response<PageInsights>
+    ) => {
+      try {
+        const { pageId, userId } = req.query;
+
+        if (!userId || !pageId) throw new Error("Invlid request");
+
+        const result = await metaInsights.getPageInsights(userId, pageId);
 
         return res.status(200).send(result);
       } catch (error) {

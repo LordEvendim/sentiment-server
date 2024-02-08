@@ -1,5 +1,9 @@
 import axios from "axios";
-import { BreakdownOptions, SupportedBreakdownFields } from "./types";
+import {
+  BreakdownOptions,
+  PageInsights,
+  SupportedBreakdownFields,
+} from "./types";
 import { pages, selectedUserPage, userPages, userTokens } from "./tempStorage";
 
 export class MetaInsights {
@@ -64,20 +68,20 @@ export class MetaInsights {
     return result;
   };
 
-  getPageInsights = async (pageId: string) => {
+  getPageInsights = async (userId: string, pageId: string) => {
     const pageAccessToken = await this.getPageAccessToken(pageId);
 
-    const result = await axios.get(
+    const result = await axios.get<PageInsights>(
       `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
       {
         params: {
-          metric: "page_impressions",
+          metric: "page_impressions,page_posts_impressions,post_engaged_users",
           access_token: pageAccessToken,
         },
       }
     );
 
-    return result;
+    return result.data;
   };
 
   getAccounts = async (userId: string) => {
