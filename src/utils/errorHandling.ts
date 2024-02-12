@@ -1,6 +1,7 @@
-import { logger } from "#modules/logger/logger";
 import { Response } from "express";
 import { ZodError } from "zod";
+
+import { logger } from "#modules/logger/logger";
 
 export const handleControllerError = (
   res: Response,

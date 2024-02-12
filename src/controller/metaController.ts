@@ -1,15 +1,15 @@
 import { Response } from "express";
 
-import { handleControllerError } from "#utils/errorHandling";
 import { MetaInsights, metaInsights } from "#modules/meta";
-import { TypedRequest } from "#types/express";
 import { selectedUserPage } from "#modules/meta/tempStorage";
 import { PageInsights } from "#modules/meta/types";
+import { TypedRequest } from "#types/express";
+import { handleControllerError } from "#utils/errorHandling";
 
 const createMetaController = (metaInsights: MetaInsights) => {
   return {
     getUserPages: async (
-      req: TypedRequest<{}, {}, { userId: string }>,
+      req: TypedRequest<object, object, { userId: string }>,
       res: Response<{
         pages:
           | {
@@ -52,7 +52,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
       }
     },
     getPageInsights: async (
-      req: TypedRequest<{}, {}, { userId: string; pageId: string }>,
+      req: TypedRequest<object, object, { userId: string; pageId: string }>,
       res: Response<PageInsights>
     ) => {
       try {

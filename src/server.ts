@@ -1,15 +1,14 @@
 import express, { Application } from "express";
 import session from "express-session";
+import { readFileSync } from "fs";
+import https from "https";
 
 import cors from "#config/cors";
 import { sessionConfig } from "#config/session";
-import { experimentingRouter } from "#routes/experimentingRouter";
 import { authRouter } from "#routes/authRouter";
-import { userRouter } from "#routes/userRouter";
-
-import { readFileSync } from "fs";
-import https from "https";
+import { experimentingRouter } from "#routes/experimentingRouter";
 import { metaRouter } from "#routes/metaRouter";
+import { userRouter } from "#routes/userRouter";
 
 const key = readFileSync("./key.pem");
 const cert = readFileSync("./cert.pem");

@@ -1,25 +1,24 @@
-import { Request, Response } from "express";
-import { z } from "zod";
+import { Response } from "express";
 
+import { userDao } from "#dao/userDao";
+import { TypedRequest } from "#types/express";
+import { UserInfo } from "#types/user";
 import { handleControllerError } from "#utils/errorHandling";
-import { Roles, UserInfo } from "#types/user";
-
-const userIdSchema = z.string();
 
 const createUserController = () => {
   return {
-    getUserInfo: async (req: Request, res: Response<{ user: UserInfo }>) => {
+    getUserInfo: async (
+      req: TypedRequest<object, { id: number }>,
+      res: Response<UserInfo>
+    ) => {
       try {
-        throw new Error("Contoller logic not implemented");
+        const { id } = req.params;
 
-        return res.status(200).send({
-          user: {
-            id: "123",
-            username: "Name",
-            name: "John",
-            role: Roles.User,
-          },
-        });
+        if (!id) throw new Error("Username is required");
+
+        const user = await userDao.getById(id);
+
+        return res.status(200).send(user);
       } catch (error) {
         return handleControllerError(res, error);
       }

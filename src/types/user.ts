@@ -1,15 +1,4 @@
-export enum Roles {
-  Admin = "admin",
-  User = "user",
-}
-
-export interface User {
-  id: string;
-  name: string;
-  username: string;
-  password: string;
-  role: Roles;
-}
+import { User } from "src/db/schema/users";
 
 export type UserInfo = Omit<User, "password">;
 

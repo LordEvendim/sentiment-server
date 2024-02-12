@@ -1,8 +1,8 @@
 import express, { Router } from "express";
-
-import { authController } from "#controller/authController";
 import { isAdmin } from "src/middleware/isAdmin";
-import { isAuthenticated } from "src/middleware/isAuthenticated";
+
+// import { isAuthenticated } from "src/middleware/isAuthenticated";
+import { authController } from "#controller/authController";
 
 const router: Router = express.Router();
 

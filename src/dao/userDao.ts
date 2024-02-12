@@ -1,83 +1,31 @@
-import { Filter } from "mongodb";
-
-import { User } from "api";
-
-import { MongoCollections } from "src/db/collections";
-import { mongoConnection } from "src/db/mongo";
+import { eq } from "drizzle-orm";
+import { planetScaleDB } from "src/db/planetscale";
+import { NewUser, User, users } from "src/db/schema/users";
 
 const createUserDao = () => {
   return {
-    findOne: async (query: Filter<User>) => {
-      if (!mongoConnection.connection)
-        throw new Error("Mongo database is not connected");
+    getById: async (id: number): Promise<User | undefined> => {
+      const result: User[] = await planetScaleDB
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1);
 
-      const collection = mongoConnection.connection.collection<User>(
-        MongoCollections.USER
-      );
-
-      const user = await collection.findOne(query);
-
-      return user;
+      return result.length > 0 ? result[0] : undefined;
     },
-    findMany: async (query: Filter<User>) => {
-      if (!mongoConnection.connection)
-        throw new Error("Mongo database is not connected");
+    getByUsername: async (username: string): Promise<User | undefined> => {
+      const result: User[] = await planetScaleDB
+        .select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
 
-      const collection = mongoConnection.connection.collection<User>(
-        MongoCollections.USER
-      );
-
-      const user = await collection.find(query).toArray();
-
-      return user;
+      return result.length > 0 ? result[0] : undefined;
     },
-    create: async (newData: User) => {
-      if (!mongoConnection.connection)
-        throw new Error("Mongo database is not connected");
+    create: async (newUser: NewUser) => {
+      const result = await planetScaleDB.insert(users).values(newUser);
 
-      const collection = mongoConnection.connection.collection<User>(
-        MongoCollections.USER
-      );
-
-      const result = await collection.insertOne(newData);
-
-      return result.insertedId;
-    },
-    update: async (query: Filter<User>, newData: Partial<User>) => {
-      if (!mongoConnection.connection)
-        throw new Error("Mongo database is not connected");
-
-      const collection = mongoConnection.connection.collection<User>(
-        MongoCollections.USER
-      );
-
-      const result = await collection.updateOne(query, newData);
-
-      return result.upsertedId;
-    },
-    deleteOne: async (query: Filter<User>) => {
-      if (!mongoConnection.connection)
-        throw new Error("Mongo database is not connected");
-
-      const collection = mongoConnection.connection.collection<User>(
-        MongoCollections.USER
-      );
-
-      await collection.deleteOne(query);
-
-      return true;
-    },
-    deleteMany: async (query: Filter<User>) => {
-      if (!mongoConnection.connection)
-        throw new Error("Mongo database is not connected");
-
-      const collection = mongoConnection.connection.collection<User>(
-        MongoCollections.USER
-      );
-
-      await collection.deleteMany(query);
-
-      return true;
+      return result;
     },
   };
 };

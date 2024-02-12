@@ -1,9 +1,8 @@
-import { caching, Cache } from "cache-manager";
+import { Cache, caching } from "cache-manager";
 import { redisInsStore } from "cache-manager-ioredis-yet";
+import { redisConnection } from "src/db/redis";
 
 import { cacheKeyFromArray } from "#utils/cache";
-
-import { redisConnection } from "src/db/redis";
 
 export interface CacheManager {
   get: <T>(keysArray: string[]) => Promise<T | undefined>;

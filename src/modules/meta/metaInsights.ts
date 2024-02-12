@@ -1,10 +1,11 @@
 import axios from "axios";
+
+import { pages, selectedUserPage, userPages, userTokens } from "./tempStorage";
 import {
   BreakdownOptions,
   PageInsights,
   SupportedBreakdownFields,
 } from "./types";
-import { pages, selectedUserPage, userPages, userTokens } from "./tempStorage";
 
 export class MetaInsights {
   apiVersion = "v18.0";

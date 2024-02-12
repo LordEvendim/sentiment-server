@@ -1,10 +1,10 @@
 import express, { Router } from "express";
+import { isAdmin } from "src/middleware/isAdmin";
 
 import { userController } from "#controller/userController";
-import { isAuthenticated } from "src/middleware/isAuthenticated";
 
 const router: Router = express.Router();
 
-// router.get("/dashboards", isAuthenticated, userController.getUserDashboards);
+router.get("/:userId", isAdmin, userController.getUserInfo);
 
 export { router as userRouter };

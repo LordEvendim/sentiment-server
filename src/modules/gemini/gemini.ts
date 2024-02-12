@@ -7,7 +7,7 @@ class Gemini {
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
   }
 
-  testResponse = async (input: string) => {
+  testResponse = async () => {
     const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = "Write a story about a magic backpack.";

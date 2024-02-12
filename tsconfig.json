@@ -11,9 +11,12 @@
       "#config/*": ["./src/config/*"],
       "#controller/*": ["./src/controller/*"],
       "#dao/*": ["./src/dao/*"],
+      "#db/*": ["./src/db/*"],
+      "#middleware/*": ["./src/middleware/*"],
       "#mocks/*": ["./src/mocks/*"],
       "#modules/*": ["./src/modules/*"],
       "#routes/*": ["./src/routes/*"],
+      "#test/*": ["./src/test/*"],
       "#types/*": ["./src/types/*"],
       "#utils/*": ["./src/utils/*"]
     }

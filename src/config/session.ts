@@ -10,14 +10,14 @@ const redisStore = new RedisStore({
 
 export const sessionConfig = {
   store: redisStore,
-  secret: "secret",
+  secret: process.env.SESSION_SECRET ?? "secret",
   resave: false,
   saveUninitialized: false,
   name: "sessionId",
-  proxy: process.env.SERVER_ENV === "prod",
+  proxy: true,
   cookie: {
     httpOnly: true,
-    secure: process.env.SERVER_ENV === "prod",
+    secure: true,
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 365 * 7,
     domain:

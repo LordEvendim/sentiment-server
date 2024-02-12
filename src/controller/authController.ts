@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
 
-import { LoginResponse, PostLoginDetails, PostRegister } from "#types/auth";
-
-import { handleControllerError } from "#utils/errorHandling";
-import { TypedRequest } from "#types/express";
-import { AuthProvider } from "#modules/auth/types";
 import { usernameAuth } from "#modules/auth";
+import { AuthProvider } from "#modules/auth/types";
 import { metaAuth } from "#modules/meta/metaAuth";
-import { logger } from "#modules/logger";
+import { LoginResponse, PostLoginDetails } from "#types/auth";
+import { TypedRequest } from "#types/express";
+import { handleControllerError } from "#utils/errorHandling";
 
 const createAuthController = (auth: AuthProvider) => {
   return {
@@ -15,7 +13,7 @@ const createAuthController = (auth: AuthProvider) => {
       try {
         const userSession = req.session.user;
 
-        if (!userSession) return res.status(404).send({});
+        if (!userSession) return res.status(404).send();
 
         return res.status(200).send(userSession);
       } catch (error) {
@@ -33,9 +31,7 @@ const createAuthController = (auth: AuthProvider) => {
 
         const userInfo = await auth.login(username, password);
 
-        if (!userInfo) {
-          return res.status(401).send({});
-        }
+        if (!userInfo) return res.status(401).send();
 
         // save user details to session
         req.session.user = userInfo;
@@ -50,16 +46,26 @@ const createAuthController = (auth: AuthProvider) => {
       }
     },
     register: async (
-      req: TypedRequest<PostRegister>,
+      req: TypedRequest<{
+        username: string;
+        name: string;
+        password: string;
+        email: string;
+      }>,
       res: Response<string>
     ) => {
       try {
-        const { password, username, name } = req.body;
+        const { password, username, name, email } = req.body;
 
-        if (!password || !username || !name)
+        if (!password || !username || !name || !email)
           throw new Error("Invalid register details");
 
-        const userDetails = await auth.register(username, name, password);
+        const userDetails = await auth.register(
+          username,
+          name,
+          password,
+          email
+        );
 
         return res.status(200).send(userDetails);
       } catch (error) {
@@ -76,7 +82,11 @@ const createAuthController = (auth: AuthProvider) => {
       }
     },
     getLongLivedAccessToken: async (
-      req: TypedRequest<{}, {}, { accessToken: string; userId: string }>,
+      req: TypedRequest<
+        object,
+        object,
+        { accessToken: string; userId: string }
+      >,
       res: Response
     ) => {
       try {

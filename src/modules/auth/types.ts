@@ -5,6 +5,7 @@ export interface AuthProvider {
   register: (
     username: string,
     name: string,
-    password: string
+    password: string,
+    email: string
   ) => Promise<string>;
 }

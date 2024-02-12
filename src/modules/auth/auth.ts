@@ -1,11 +1,10 @@
 import { compare, hash } from "bcrypt";
 import { nanoid } from "nanoid";
 
-import { Roles, User, UserInfo } from "#types/user";
-
+import { SALTING_ROUNDS } from "#config/crypto";
 import { userDao } from "#dao/userDao";
 import { logger } from "#modules/logger";
-import { SALTING_ROUNDS } from "#config/crypto";
+import { UserInfo } from "#types/user";
 
 import { AuthProvider } from "./types";
 
@@ -18,38 +17,39 @@ export class Auth implements AuthProvider {
     username: string,
     password: string
   ): Promise<UserInfo | undefined> => {
-    const user: User | null = await userDao.findOne({ username });
+    const user = await userDao.getByUsername(username);
 
-    if (!user?.password) {
-      logger.debug("Failed login attempt, user doesn't exist");
-      return undefined;
-    }
+    if (!user) throw new Error("User doesn't exist");
 
     const isMatchingPassword = await compare(password, user.password);
 
-    if (!isMatchingPassword) return undefined;
+    if (!isMatchingPassword) throw new Error("Invalid password");
 
     return {
       id: user.id,
+      email: user.email,
+      fullName: user.fullName,
       username: user.username,
-      name: user.name,
-      role: user.role,
     };
   };
 
-  register = async (username: string, name: string, password: string) => {
-    const user = await userDao.findOne({ username });
-    if (user) throw new Error("User already exists");
+  register = async (
+    username: string,
+    fullName: string,
+    password: string,
+    email: string
+  ) => {
+    const user = await userDao.getByUsername(username);
+    if (user) throw new Error("Username is taken");
 
     const hashedPassword = await hash(password, SALTING_ROUNDS);
     const newUserId = nanoid();
 
     await userDao.create({
-      id: newUserId,
       username,
-      name,
+      fullName,
+      email,
       password: hashedPassword,
-      role: Roles.User,
     });
 
     return newUserId;
