@@ -6,7 +6,7 @@ module.exports = {
     sourceType: "module",
     ecmaVersion: "latest",
   },
-  ignorePatterns: ["dist", ".eslintrc.cjs"],
+  ignorePatterns: ["dist", ".eslintrc.cjs", "drizzle.config.ts"],
   parser: "@typescript-eslint/parser",
   plugins: ["simple-import-sort", "import"],
   rules: {
