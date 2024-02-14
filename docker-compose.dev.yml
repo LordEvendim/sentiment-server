@@ -8,11 +8,3 @@ services:
       - 6379:6379
     volumes:
       - ./.docker/redis/data/:/data
-
-  mongo:
-    image: mongo
-    restart: unless-stopped
-    ports:
-      - 27017:27017
-    volumes:
-      - ./.docker/mongo/data:/etc/mongo

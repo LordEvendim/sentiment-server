@@ -11,16 +11,6 @@ services:
     networks:
       - app_network
 
-  mongo:
-    image: mongo
-    restart: always
-    ports:
-      - 27017:27017
-    volumes:
-      - ./.docker/mongo/data:/etc/mongo
-    networks:
-      - app_network
-
 networks:
   app_network:
     external: true

@@ -7,7 +7,7 @@ import { authController } from "#controller/authController";
 const router: Router = express.Router();
 
 router.get("/", authController.getSession);
-router.post("/logout", authController.logout);
+router.delete("/logout", authController.logout);
 
 router.post("/login", authController.login);
 router.post("/register", isAdmin, authController.register);

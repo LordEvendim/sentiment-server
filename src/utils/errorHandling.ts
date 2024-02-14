@@ -3,20 +3,13 @@ import { ZodError } from "zod";
 
 import { logger } from "#modules/logger/logger";
 
-export const handleControllerError = (
-  res: Response,
-  error: Error | unknown
-) => {
-  logger.error(error);
-
-  if (error instanceof Error) {
+export const handleControllerError = (res: Response, error: unknown) => {
+  if (error instanceof Error || error instanceof ZodError) {
     logger.error(error.message);
-    return res.status(500).send({ message: error.message });
-  } else if (error instanceof ZodError) {
-    logger.error(error.message);
-    return res.status(500).send({ message: "Validation error" });
+    return res.status(500).send(error.message);
   }
 
+  logger.error("Server error");
   return res.status(500).send({ message: "Server error" });
 };
 
