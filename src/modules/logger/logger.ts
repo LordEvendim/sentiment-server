@@ -13,5 +13,10 @@ export const logger = createLogger({
       level: "error",
       format: format.simple(),
     }),
+    new transports.File({
+      filename: "debug.log",
+      level: "debug",
+      format: format.simple(),
+    }),
   ],
 });

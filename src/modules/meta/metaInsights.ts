@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { logger } from "#modules/logger";
+
 import { pages, selectedUserPage, userPages, userTokens } from "./tempStorage";
 import {
   BreakdownOptions,
@@ -76,11 +78,14 @@ export class MetaInsights {
       `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
       {
         params: {
-          metric: "page_impressions,page_posts_impressions,post_engaged_users",
+          metric:
+            "page_impressions,page_posts_impressions,post_engaged_users,page_views_total",
           access_token: pageAccessToken,
         },
       }
     );
+
+    logger.debug(JSON.stringify(result.data));
 
     return result.data;
   };
