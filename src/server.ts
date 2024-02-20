@@ -29,5 +29,8 @@ export const createServer = () => {
   app.use("/user", userRouter);
   app.use("/meta", metaRouter);
 
-  return https.createServer({ key: key, cert: cert }, app);
+  return https.createServer(
+    process.env.NODE_ENV === "dev" ? { key: key, cert: cert } : {},
+    app
+  );
 };

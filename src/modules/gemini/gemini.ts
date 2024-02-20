@@ -1,32 +1,52 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { VertexAI } from "@google-cloud/vertexai";
 
 class Gemini {
-  genAI: GoogleGenerativeAI;
+  vertexAI: VertexAI;
+  generativeModel: ReturnType<VertexAI["getGenerativeModel"]>;
 
   constructor() {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+    this.vertexAI = new VertexAI({
+      project: process.env.VERTEX_PROCESS_ID ?? "",
+      location: process.env.VERTEX_LOCATION ?? "us-central1",
+    });
+    this.generativeModel = this.vertexAI.getGenerativeModel({
+      model: process.env.VERTEX_GENERATIVE_MODEL ?? "gemini-1.0-pro",
+    });
   }
 
-  testResponse = async () => {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+  getTestResponse = async () => {
+    const input = "How can I learn more about generative AI?";
 
-    const prompt = "Write a story about a magic backpack.";
+    let result = "";
+    const chat = this.generativeModel.startChat({});
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    console.log(text);
+    const response = await chat.sendMessageStream(input);
+
+    for await (const item of response.stream) {
+      if (!item.candidates) continue;
+
+      result += item.candidates[0].content.parts[0].text;
+    }
+
+    console.log("Test Response from VertexAI");
+    console.log(result);
+
+    return result;
   };
 
   getTextResponse = async (input: string) => {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    const response = await this.generativeModel.generateContent(input);
 
-    const result = await model.generateContent(input);
+    let result = "";
 
-    const response = result.response;
-    const text = response.text();
+    for (const part of response.response.candidates[0].content.parts) {
+      result += part;
+    }
 
-    return text;
+    console.log("Response from VertexAI");
+    console.log(result);
+
+    return result;
   };
 }
 
