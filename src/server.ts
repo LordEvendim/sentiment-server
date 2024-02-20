@@ -10,9 +10,6 @@ import { experimentingRouter } from "#routes/experimentingRouter";
 import { metaRouter } from "#routes/metaRouter";
 import { userRouter } from "#routes/userRouter";
 
-const key = readFileSync("./key.pem");
-const cert = readFileSync("./cert.pem");
-
 const app: Application = express();
 
 export const createServer = () => {
@@ -30,7 +27,9 @@ export const createServer = () => {
   app.use("/meta", metaRouter);
 
   return https.createServer(
-    process.env.NODE_ENV === "dev" ? { key: key, cert: cert } : {},
+    process.env.NODE_ENV === "dev"
+      ? { key: readFileSync("./key.pem"), cert: readFileSync("./cert.pem") }
+      : {},
     app
   );
 };
