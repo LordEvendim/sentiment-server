@@ -8,6 +8,7 @@ import { sessionConfig } from "#config/session";
 import { authRouter } from "#routes/authRouter";
 import { experimentingRouter } from "#routes/experimentingRouter";
 import { metaRouter } from "#routes/metaRouter";
+import { reporterRouter } from "#routes/reporterRouter";
 import { userRouter } from "#routes/userRouter";
 
 const app: Application = express();
@@ -25,6 +26,7 @@ export const createServer = () => {
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
   app.use("/meta", metaRouter);
+  app.use("/reporter", reporterRouter);
 
   return https.createServer(
     process.env.NODE_ENV === "dev"

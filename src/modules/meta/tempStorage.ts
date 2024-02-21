@@ -16,3 +16,5 @@ export const businesses: Record<
 > = {};
 
 export const pages: Record<string, { name: string; accessToken: string }> = {};
+
+export const userMetaId: Record<string, string> = {}

@@ -85,17 +85,22 @@ const createAuthController = (auth: AuthProvider) => {
       req: TypedRequest<
         object,
         object,
-        { accessToken: string; userId: string }
+        { accessToken: string; metaId: string }
       >,
       res: Response
     ) => {
       try {
         const token = req.query.accessToken;
-        const userId = req.query.userId;
+        const metaId = req.query.metaId;
+        const userId = req.session.user?.id;
 
         if (!token || !userId) throw new Error("Invalid request");
 
-        const longLivedToken = await metaAuth.getLongLivedToken(userId, token);
+        const longLivedToken = await metaAuth.getLongLivedToken(
+          userId,
+          metaId,
+          token
+        );
 
         await metaAuth.getLongLivedPageTokens(userId);
 

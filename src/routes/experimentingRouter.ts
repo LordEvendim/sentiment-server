@@ -8,7 +8,7 @@ const router: Router = express.Router();
 
 router.get("/", isAdmin, async (_req: Request, res: Response) => {
   try {
-    const result = await gemini.getTestResponse();
+    const result = await gemini.getSampleResponse();
 
     res.send(result);
   } catch (error: unknown) {

@@ -6,7 +6,7 @@ class Gemini {
 
   constructor() {
     this.vertexAI = new VertexAI({
-      project: process.env.VERTEX_PROCESS_ID ?? "",
+      project: process.env.VERTEX_PROJECT_ID ?? "",
       location: process.env.VERTEX_LOCATION ?? "us-central1",
     });
     this.generativeModel = this.vertexAI.getGenerativeModel({
@@ -14,22 +14,18 @@ class Gemini {
     });
   }
 
-  getTestResponse = async () => {
+  getSampleResponse = async () => {
     const input = "How can I learn more about generative AI?";
+    const response = await this.generativeModel.generateContent(input);
 
     let result = "";
-    const chat = this.generativeModel.startChat({});
 
-    const response = await chat.sendMessageStream(input);
-
-    for await (const item of response.stream) {
-      if (!item.candidates) continue;
-
-      result += item.candidates[0].content.parts[0].text;
+    for (const part of response.response.candidates[0].content.parts) {
+      result += part.text;
     }
 
-    console.log("Test Response from VertexAI");
-    console.log(result);
+    console.log("Response from VertexAI");
+    console.log(JSON.stringify(response));
 
     return result;
   };
@@ -40,7 +36,7 @@ class Gemini {
     let result = "";
 
     for (const part of response.response.candidates[0].content.parts) {
-      result += part;
+      result += part.text;
     }
 
     console.log("Response from VertexAI");

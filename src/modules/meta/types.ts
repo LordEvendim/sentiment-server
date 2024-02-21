@@ -75,7 +75,7 @@ export type GetLongLivedToken = {
 
 export type PageInsights = {
   data: {
-    name: "page_impressions";
+    name: string;
     period: "day" | "week" | "days_28";
     values: {
       value: number;

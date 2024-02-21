@@ -4,6 +4,7 @@ import {
   businesses,
   pages,
   userBusinesses,
+  userMetaId,
   userPages,
   userTokens,
 } from "./tempStorage";
@@ -20,8 +21,13 @@ class MetaAuth {
     this.appId = process.env.META_APP_ID ?? "";
   }
 
-  getLongLivedToken = async (userId: string, userAccessToken: string) => {
+  getLongLivedToken = async (
+    userId: number,
+    metaId: string,
+    userAccessToken: string
+  ) => {
     if (userTokens[userId]) return userTokens[userId];
+    userMetaId[userId] = metaId;
 
     const result = await axios.get<GetLongLivedToken>(
       `${this.baseUrl}/${this.apiVersion}/oauth/access_token`,
@@ -40,11 +46,14 @@ class MetaAuth {
     return result.data.access_token;
   };
 
-  getLongLivedPageTokens = async (userId: string) => {
+  getLongLivedPageTokens = async (userId: number) => {
     const userAccessToken = userTokens[userId];
+    const metaId = userMetaId[userId];
+
+    if (!metaId) throw new Error("User is not connected to meta");
 
     const result = await axios.get<GetUserAccounts>(
-      `${this.baseUrl}/${this.apiVersion}/${userId}/accounts`,
+      `${this.baseUrl}/${this.apiVersion}/${metaId}/accounts`,
       {
         params: {
           access_token: userAccessToken,
@@ -62,16 +71,18 @@ class MetaAuth {
     }
     userPages[userId] = result.data.data.map((page) => page.id);
 
-    await this.getUserBusinesses(userId);
-
     return result.data.data;
   };
 
   getUserBusinesses = async (userId: string) => {
     const userAccessToken = userTokens[userId];
 
+    const metaUserId = userMetaId[userId];
+
+    if (!metaUserId) throw new Error("User is not connected wiht Meta");
+
     const result = await axios.get<GetUserAccounts>(
-      `${this.baseUrl}/${this.apiVersion}/${userId}/businesses`,
+      `${this.baseUrl}/${this.apiVersion}/${metaUserId}/businesses`,
       {
         params: {
           access_token: userAccessToken,

@@ -2,7 +2,13 @@ import axios from "axios";
 
 import { logger } from "#modules/logger";
 
-import { pages, selectedUserPage, userPages, userTokens } from "./tempStorage";
+import {
+  pages,
+  selectedUserPage,
+  userMetaId,
+  userPages,
+  userTokens,
+} from "./tempStorage";
 import {
   BreakdownOptions,
   PageInsights,
@@ -59,8 +65,12 @@ export class MetaInsights {
   getUserBusinesses = async (userId: string) => {
     const userAccessToken = await this.getUserAccesToken(userId);
 
+    const metaUserId = userMetaId[userId];
+
+    if (!metaUserId) throw new Error("User is not connected wiht Meta");
+
     const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${userId}/businesses`,
+      `${this.baseUrl}/${this.apiVersion}/${metaUserId}/businesses`,
       {
         params: {
           access_token: userAccessToken,
@@ -111,8 +121,12 @@ export class MetaInsights {
   getAdAccounts = async (userId: string) => {
     const userAccessToken = this.getUserAccesToken(userId);
 
+    const metaUserId = userMetaId[userId];
+
+    if (!metaUserId) throw new Error("User is not connected wiht Meta");
+
     const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${userId}/businesses`,
+      `${this.baseUrl}/${this.apiVersion}/${metaUserId}/businesses`,
       {
         params: {
           access_token: userAccessToken,
@@ -152,6 +166,8 @@ export class MetaInsights {
       throw new Error("User is not a page owner");
     }
 
+    console.log("selecting user page");
+    console.log(`${userId} -> ${pageId}`);
     selectedUserPage[userId] = pageId;
 
     return pageId;
