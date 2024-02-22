@@ -29,7 +29,6 @@ class Reporter {
     );
 
     weeklyPageReports[pageId] = report;
-    console.log(JSON.stringify(report));
 
     return report;
   };

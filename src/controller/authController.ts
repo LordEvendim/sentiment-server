@@ -102,8 +102,6 @@ const createAuthController = (auth: AuthProvider) => {
           token
         );
 
-        await metaAuth.getLongLivedPageTokens(userId);
-
         return res.status(200).send(longLivedToken);
       } catch (error) {
         return handleControllerError(res, error);

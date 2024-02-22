@@ -166,8 +166,6 @@ export class MetaInsights {
       throw new Error("User is not a page owner");
     }
 
-    console.log("selecting user page");
-    console.log(`${userId} -> ${pageId}`);
     selectedUserPage[userId] = pageId;
 
     return pageId;

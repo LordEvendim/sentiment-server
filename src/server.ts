@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import session from "express-session";
 import { readFileSync } from "fs";
+import helmet from "helmet";
 import https from "https";
 
 import cors from "#config/cors";
@@ -21,6 +22,7 @@ export const createServer = () => {
   app.use(cors);
 
   app.use(session(sessionConfig));
+  app.use(helmet());
 
   app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);

@@ -43,6 +43,8 @@ class MetaAuth {
 
     userTokens[userId] = result.data.access_token;
 
+    await this.getLongLivedPageTokens(userId);
+
     return result.data.access_token;
   };
 
