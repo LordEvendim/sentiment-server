@@ -1,4 +1,4 @@
-import { User } from "src/db/schema/users";
+import { User } from "#db/schema/users";
 
 export type UserInfo = Omit<User, "password">;
 

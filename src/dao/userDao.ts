@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
-import { NewUser, User, users } from "src/db/schema/users";
+
+import { NewUser, User, users } from "#db/schema/users";
 
 const createUserDao = () => {
   return {

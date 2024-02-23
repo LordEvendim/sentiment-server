@@ -97,6 +97,8 @@ export class MetaInsights {
 
     logger.debug(JSON.stringify(result.data));
 
+    console.log(JSON.stringify(result.data));
+
     return result.data;
   };
 
