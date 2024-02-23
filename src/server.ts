@@ -6,6 +6,7 @@ import https from "https";
 
 import cors from "#config/cors";
 import { sessionConfig } from "#config/session";
+import { queueConsumer, queueProducer } from "#modules/message-broker";
 import { authRouter } from "#routes/authRouter";
 import { experimentingRouter } from "#routes/experimentingRouter";
 import { metaRouter } from "#routes/metaRouter";
@@ -23,6 +24,9 @@ export const createServer = () => {
 
   app.use(session(sessionConfig));
   app.use(helmet());
+
+  queueProducer.start();
+  queueConsumer.start();
 
   app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);
