@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
-import { integrations } from "#db/schema/integrations";
 import {
   metaIntegrations,
   NewMetaIntegration,
@@ -9,26 +8,27 @@ import {
 
 const metaIntegrationDao = {
   getAccessTokenByUserId: async (userId: number) => {
-    const result = await planetScaleDB.query.integrations.findFirst({
-      columns: {},
-      with: {
-        metaIntegration: true,
+    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+      columns: {
+        accessToken: true,
       },
-      where: eq(integrations.ownerId, userId),
+      where: eq(metaIntegrations.ownerId, userId),
     });
 
-    return result?.metaIntegration?.accessToken;
+    return result?.accessToken;
   },
   getMetaIntegrationByUserId: async (userId: number) => {
-    const result = await planetScaleDB.query.integrations.findFirst({
-      columns: {},
-      with: {
-        metaIntegration: true,
-      },
-      where: eq(integrations.ownerId, userId),
+    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+      where: eq(metaIntegrations.ownerId, userId),
     });
 
-    return result?.metaIntegration;
+    return result;
+  },
+  saveAccessToken: async (userId: number, accessToken: string) => {
+    await planetScaleDB
+      .update(metaIntegrations)
+      .set({ accessToken })
+      .where(eq(metaIntegrations.ownerId, userId));
   },
   create: async (newMetaIntegration: NewMetaIntegration) => {
     const result = await planetScaleDB

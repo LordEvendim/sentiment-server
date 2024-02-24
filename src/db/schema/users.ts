@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 
-import { integrations } from "./integrations";
+import { metaIntegrations } from "./metaIntegrations";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -12,7 +12,7 @@ export const users = mysqlTable("users", {
 });
 
 export const usersRelations = relations(users, ({ one }) => ({
-  integrations: one(integrations),
+  integrations: one(metaIntegrations),
 }));
 
 export type User = typeof users.$inferSelect;
