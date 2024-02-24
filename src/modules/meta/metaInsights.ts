@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { NewMetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
 import { logger } from "#modules/logger";
 
 import {
@@ -95,11 +96,21 @@ export class MetaInsights {
       }
     );
 
-    logger.debug(JSON.stringify(result.data));
+    const response: NewMetaPageInsightMetric[] = result.data.data.map(
+      (metric) => ({
+        description: metric.description,
+        endTime: metric.values[1].end_time,
+        value: metric.values[1].value,
+        name: metric.name,
+        period: metric.period,
+        title: metric.title,
+      })
+    );
 
+    logger.debug(JSON.stringify(result.data));
     console.log(JSON.stringify(result.data));
 
-    return result.data;
+    return response;
   };
 
   getAccounts = async (userId: string) => {

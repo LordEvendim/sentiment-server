@@ -11,11 +11,11 @@ export const integrations = mysqlTable("integrations", {
 });
 
 export const integrationsRelations = relations(integrations, ({ one }) => ({
-  ownerId: one(users, {
+  owner: one(users, {
     fields: [integrations.ownerId],
     references: [users.id],
   }),
-  metaIntegrtionId: one(metaIntegrations, {
+  metaIntegration: one(metaIntegrations, {
     fields: [integrations.ownerId],
     references: [metaIntegrations.id],
   }),

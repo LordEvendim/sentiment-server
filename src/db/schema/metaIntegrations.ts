@@ -8,6 +8,7 @@ export const metaIntegrations = mysqlTable("meta_integrations", {
   metaId: varchar("metaId", { length: 60 }).unique().notNull(),
   fullName: varchar("full_name", { length: 256 }).notNull(),
   email: varchar("email", { length: 256 }).notNull(),
+  accessToken: varchar("access_token", { length: 512 }),
 });
 
 export const metaIntegrationsRelations = relations(

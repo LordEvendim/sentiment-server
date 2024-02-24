@@ -4,17 +4,17 @@ import { int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 import { metaPageInsights } from "./metaPageInsights";
 
 export const metaPageInsightMetrics = mysqlTable("meta_page_insight_metrics", {
-  metricId: int("metric_id").primaryKey(),
+  metricId: int("metric_id").autoincrement().primaryKey(),
   insightId: int("insight_id"),
-  name: varchar("name", { length: 255 }),
-  period: varchar("name", { length: 30 }),
-  value: int("value"),
-  endTime: varchar("end_time", { length: 100 }),
-  title: varchar("title", { length: 150 }),
-  description: varchar("description", { length: 300 }),
+  name: varchar("name", { length: 255 }).notNull(),
+  period: varchar("name", { length: 30 }).notNull(),
+  value: int("value").notNull(),
+  endTime: varchar("end_time", { length: 100 }).notNull(),
+  title: varchar("title", { length: 150 }).notNull(),
+  description: varchar("description", { length: 300 }).notNull(),
 });
 
-export const metaPageInsightsRelations = relations(
+export const metaPageInsightsMetricsRelations = relations(
   metaPageInsightMetrics,
   ({ one }) => ({
     insightId: one(metaPageInsights, {
