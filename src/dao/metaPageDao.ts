@@ -4,6 +4,13 @@ import { planetScaleDB } from "src/db/planetscale";
 import { metaIntegrations, metaPages, NewMetaPage } from "#db/schema";
 
 export const metaPageDao = {
+  getPageByPageId: async (pageId: number) => {
+    const result = await planetScaleDB.query.metaPages.findFirst({
+      where: eq(metaPages.pageId, pageId),
+    });
+
+    return result;
+  },
   getUserPages: async (userId: number) => {
     const result = await planetScaleDB.query.metaIntegrations.findFirst({
       columns: {},
