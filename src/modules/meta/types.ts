@@ -45,7 +45,7 @@ export type SupportedBreakdownFields =
   | "actions"
   | "action_values";
 
-export type GetUserAccounts = {
+export type GetUserPages = {
   data: Array<{
     access_token: string;
     category: string;
@@ -56,7 +56,7 @@ export type GetUserAccounts = {
       },
     ];
     name: string;
-    id: string;
+    id: number;
     tasks: string[];
   }>;
   paging: {

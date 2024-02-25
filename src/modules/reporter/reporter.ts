@@ -15,7 +15,25 @@ class Reporter {
     this.generativeAi = generativeAi;
   }
 
-  generateWeeklyPageReport = async (userId: string, pageId: string) => {
+  generateWeeklyPageReport = async (userId: number, pageId: number) => {
+    const metaPageInsights = await this.metaDataProvider.getPageInsights(
+      userId,
+      pageId
+    );
+
+    const pageName = pages[pageId].name;
+
+    const report = await this.generativeAi.getTextResponse(
+      prompts.getPageInsightsPrompt(pageName, "week") +
+        JSON.stringify(metaPageInsights)
+    );
+
+    weeklyPageReports[pageId] = report;
+
+    return report;
+  };
+
+  getWeeklyPageReport = async (userId: number, pageId: number) => {
     const metaPageInsights = await this.metaDataProvider.getPageInsights(
       userId,
       pageId

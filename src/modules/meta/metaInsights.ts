@@ -1,15 +1,11 @@
 import axios from "axios";
 
-import { NewMetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
-import { logger } from "#modules/logger";
+import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+import { metaPageDao } from "#dao/metaPageDao";
+import { metaPageInsightDao } from "#dao/metaPageInsightDao";
+import { metaPageInsightMetricDao } from "#dao/metaPageInsightMetricDao";
+import { MetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
 
-import {
-  pages,
-  selectedUserPage,
-  userMetaId,
-  userPages,
-  userTokens,
-} from "./tempStorage";
 import {
   BreakdownOptions,
   PageInsights,
@@ -25,16 +21,19 @@ export class MetaInsights {
     this.accessToken = process.env.META_ACCESS_TOKEN ?? "";
   }
 
-  getUserAccesToken = async (userId: string): Promise<string | undefined> => {
-    return userTokens[userId];
+  getUserAccesToken = async (userId: number) => {
+    return await metaIntegrationDao.getAccessTokenByUserId(userId);
   };
 
-  getPageAccessToken = async (pageId: string): Promise<string | undefined> => {
-    return pages[pageId].accessToken;
+  getPageAccessToken = async (pageId: number) => {
+    return await metaPageDao.getPageAccessToken(pageId);
   };
 
-  getBusinessAdAccounts = async (userId: string, businessId: string) => {
-    const userAccessToken = await this.getUserAccesToken(userId);
+  getBusinessAdAccounts = async (userId: number, businessId: string) => {
+    const userAccessToken =
+      await metaIntegrationDao.getAccessTokenByUserId(userId);
+
+    if (!userAccessToken) throw new Error("User is not connected with Meta");
 
     const result = await axios.get(
       `${this.baseUrl}/${this.apiVersion}/${businessId}/owned_ad_accounts`,
@@ -48,8 +47,11 @@ export class MetaInsights {
     return result;
   };
 
-  getBusinessClientAdAccounts = async (userId: string, businessId: string) => {
-    const userAccessToken = await this.getUserAccesToken(userId);
+  getBusinessClientAdAccounts = async (userId: number, businessId: string) => {
+    const userAccessToken =
+      await metaIntegrationDao.getAccessTokenByUserId(userId);
+
+    if (!userAccessToken) throw new Error("User is not connected with Meta");
 
     const result = await axios.get(
       `${this.baseUrl}/${this.apiVersion}/${businessId}/client_ad_accounts`,
@@ -63,18 +65,17 @@ export class MetaInsights {
     return result;
   };
 
-  getUserBusinesses = async (userId: string) => {
-    const userAccessToken = await this.getUserAccesToken(userId);
+  getUserBusinesses = async (userId: number) => {
+    const metaIntegration =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
-    const metaUserId = userMetaId[userId];
-
-    if (!metaUserId) throw new Error("User is not connected wiht Meta");
+    if (!metaIntegration) throw new Error("User is not connected wiht Meta");
 
     const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${metaUserId}/businesses`,
+      `${this.baseUrl}/${this.apiVersion}/${metaIntegration.metaId}/businesses`,
       {
         params: {
-          access_token: userAccessToken,
+          access_token: metaIntegration.accessToken,
         },
       }
     );
@@ -82,8 +83,9 @@ export class MetaInsights {
     return result;
   };
 
-  getPageInsights = async (userId: string, pageId: string) => {
-    const pageAccessToken = await this.getPageAccessToken(pageId);
+  getPageInsights = async (userId: number, pageId: number) => {
+    const pageAccessToken =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
     const result = await axios.get<PageInsights>(
       `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
@@ -96,53 +98,47 @@ export class MetaInsights {
       }
     );
 
-    const response: NewMetaPageInsightMetric[] = result.data.data.map(
-      (metric) => ({
+    const insert = await metaPageInsightDao.create({
+      createdAt: Date.now(),
+      pageId: pageId,
+    });
+
+    const metrics: Omit<MetaPageInsightMetric, "metricId">[] =
+      result.data.data.map((metric) => ({
+        insightId: parseInt(insert.insertId),
         description: metric.description,
         endTime: metric.values[1].end_time,
         value: metric.values[1].value,
         name: metric.name,
         period: metric.period,
         title: metric.title,
-      })
-    );
+      }));
 
-    logger.debug(JSON.stringify(result.data));
-    console.log(JSON.stringify(result.data));
+    await metaPageInsightMetricDao.createMany(metrics);
 
-    return response;
+    return metrics;
   };
 
-  getAccounts = async (userId: string) => {
-    const accounts = [];
+  getUserPages = async (userId: number) => {
+    const userPages = await metaPageDao.getUserPages(userId);
 
-    for (let i = 0; i < userPages[userId].length; i++) {
-      const pageId = userPages[userId][i];
-      const pageData = pages[pageId];
-
-      if (!pageData) return undefined;
-
-      accounts.push({
-        name: pageData.name,
-        id: pageId,
-      });
-    }
-
-    return accounts;
+    return userPages?.map((page) => ({
+      name: page.name,
+      id: page.pageId,
+    }));
   };
 
-  getAdAccounts = async (userId: string) => {
-    const userAccessToken = this.getUserAccesToken(userId);
+  getAdAccounts = async (userId: number) => {
+    const metaIntegration =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
-    const metaUserId = userMetaId[userId];
-
-    if (!metaUserId) throw new Error("User is not connected wiht Meta");
+    if (!metaIntegration) throw new Error("User is not connected wiht Meta");
 
     const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${metaUserId}/businesses`,
+      `${this.baseUrl}/${this.apiVersion}/${metaIntegration.metaId}/businesses`,
       {
         params: {
-          access_token: userAccessToken,
+          access_token: metaIntegration.accessToken,
         },
       }
     );
@@ -151,12 +147,12 @@ export class MetaInsights {
   };
 
   getCampaignStatistics = async (
-    userId: string,
+    userId: number,
     adCampaignId: string,
     breakdowns: BreakdownOptions[],
     fields: SupportedBreakdownFields[]
   ) => {
-    const accessToken = this.getUserAccesToken(userId);
+    const accessToken = await metaIntegrationDao.getAccessTokenByUserId(userId);
 
     const result = await axios.get(
       `${this.baseUrl}/${this.apiVersion}/${adCampaignId}/insights`,
@@ -172,14 +168,10 @@ export class MetaInsights {
     return result;
   };
 
-  selectPage = async (userId: string, pageId: string) => {
-    if (!userPages[userId]) throw new Error("User doesn't have pages");
-
-    if (userPages[userId].findIndex((page) => page === pageId) === -1) {
-      throw new Error("User is not a page owner");
-    }
-
-    selectedUserPage[userId] = pageId;
+  selectPage = async (userId: number, pageId: number) => {
+    await metaIntegrationDao.update(userId, {
+      selectedPage: pageId,
+    });
 
     return pageId;
   };

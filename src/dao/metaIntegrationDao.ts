@@ -6,7 +6,7 @@ import {
   NewMetaIntegration,
 } from "#db/schema/metaIntegrations";
 
-const metaIntegrationDao = {
+export const metaIntegrationDao = {
   getAccessTokenByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.metaIntegrations.findFirst({
       columns: {
@@ -28,6 +28,12 @@ const metaIntegrationDao = {
     await planetScaleDB
       .update(metaIntegrations)
       .set({ accessToken })
+      .where(eq(metaIntegrations.ownerId, userId));
+  },
+  update: async (userId: number, update: Partial<NewMetaIntegration>) => {
+    await planetScaleDB
+      .update(metaIntegrations)
+      .set(update)
       .where(eq(metaIntegrations.ownerId, userId));
   },
   create: async (newMetaIntegration: NewMetaIntegration) => {

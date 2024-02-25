@@ -1,23 +1,23 @@
 import { Response } from "express";
 
+import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+import { MetaPageInsightMetric } from "#db/schema";
 import { MetaInsights, metaInsights } from "#modules/meta";
-import { selectedUserPage } from "#modules/meta/tempStorage";
-import { PageInsights } from "#modules/meta/types";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
 const createMetaController = (metaInsights: MetaInsights) => {
   return {
     getUserPages: async (
-      req: TypedRequest<object, object, { userId: string }>,
+      req: TypedRequest<object, object, { userId: number }>,
       res: Response<{
         pages:
           | {
               name: string;
-              id: string;
+              id: number;
             }[]
           | undefined;
-        selectedPage: string;
+        selectedPage: number | undefined;
       }>
     ) => {
       try {
@@ -25,19 +25,21 @@ const createMetaController = (metaInsights: MetaInsights) => {
 
         if (!userId) throw new Error("Invlid request");
 
-        const result = await metaInsights.getAccounts(userId);
+        const result = await metaInsights.getUserPages(userId);
+        const selectedMetaPage =
+          await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
         return res.status(200).send({
           pages: result,
-          selectedPage: selectedUserPage[userId],
+          selectedPage: selectedMetaPage?.selectedPage ?? undefined,
         });
       } catch (error) {
         return handleControllerError(res, error);
       }
     },
     selectPage: async (
-      req: TypedRequest<{ userId: string; pageId: string }>,
-      res: Response<string>
+      req: TypedRequest<{ userId: number; pageId: number }>,
+      res: Response<number>
     ) => {
       try {
         const { pageId, userId } = req.body;
@@ -52,8 +54,8 @@ const createMetaController = (metaInsights: MetaInsights) => {
       }
     },
     getPageInsights: async (
-      req: TypedRequest<object, object, { userId: string; pageId: string }>,
-      res: Response<PageInsights>
+      req: TypedRequest<object, object, { userId: number; pageId: number }>,
+      res: Response<Omit<MetaPageInsightMetric, "metricId">[]>
     ) => {
       try {
         const { pageId, userId } = req.query;

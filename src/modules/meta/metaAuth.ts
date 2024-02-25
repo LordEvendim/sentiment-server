@@ -1,14 +1,9 @@
 import axios from "axios";
 
-import {
-  businesses,
-  pages,
-  userBusinesses,
-  userMetaId,
-  userPages,
-  userTokens,
-} from "./tempStorage";
-import { GetLongLivedToken, GetUserAccounts } from "./types";
+import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+import { metaPageDao } from "#dao/metaPageDao";
+
+import { GetLongLivedToken, GetUserPages } from "./types";
 
 class MetaAuth {
   apiVersion = "v18.0";
@@ -26,8 +21,9 @@ class MetaAuth {
     metaId: string,
     userAccessToken: string
   ) => {
-    if (userTokens[userId]) return userTokens[userId];
-    userMetaId[userId] = metaId;
+    const userIntegration =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+    if (userIntegration?.accessToken) return userIntegration?.accessToken;
 
     const result = await axios.get<GetLongLivedToken>(
       `${this.baseUrl}/${this.apiVersion}/oauth/access_token`,
@@ -41,20 +37,34 @@ class MetaAuth {
       }
     );
 
-    userTokens[userId] = result.data.access_token;
+    // update MetaIntegration or create it doesn't exist
+    userIntegration
+      ? await metaIntegrationDao.update(userId, {
+          metaId: metaId,
+          accessToken: result.data.access_token,
+        })
+      : await metaIntegrationDao.create({
+          ownerId: userId,
+          metaId: metaId,
+          accessToken: result.data.access_token,
+        });
 
+    // TODO: consider adding to task queue
     await this.getLongLivedPageTokens(userId);
 
     return result.data.access_token;
   };
 
   getLongLivedPageTokens = async (userId: number) => {
-    const userAccessToken = userTokens[userId];
-    const metaId = userMetaId[userId];
+    const metaIntegration =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
-    if (!metaId) throw new Error("User is not connected to meta");
+    if (!metaIntegration) throw new Error("User has not integrated Meta");
 
-    const result = await axios.get<GetUserAccounts>(
+    const userAccessToken = metaIntegration.accessToken;
+    const metaId = metaIntegration.metaId;
+
+    const result = await axios.get<GetUserPages>(
       `${this.baseUrl}/${this.apiVersion}/${metaId}/accounts`,
       {
         params: {
@@ -63,43 +73,26 @@ class MetaAuth {
       }
     );
 
+    // get user pages => update or create
+    const userPages = await metaPageDao.getUserPages(userId);
+    if (!userPages || userPages.length === 0) return;
+
+    const userPagesIds = userPages?.map((page) => page.pageId);
+
     for (let i = 0; i < result.data.data.length; i++) {
       const { id, access_token, name } = result.data.data[i];
 
-      pages[id] = {
-        accessToken: access_token,
-        name,
-      };
+      userPagesIds.includes(id)
+        ? metaPageDao.update(id, {
+            accessToken: access_token,
+            name: name,
+          })
+        : metaPageDao.create({
+            pageId: id,
+            accessToken: access_token,
+            name: name,
+          });
     }
-    userPages[userId] = result.data.data.map((page) => page.id);
-
-    return result.data.data;
-  };
-
-  getUserBusinesses = async (userId: string) => {
-    const userAccessToken = userTokens[userId];
-
-    const metaUserId = userMetaId[userId];
-
-    if (!metaUserId) throw new Error("User is not connected wiht Meta");
-
-    const result = await axios.get<GetUserAccounts>(
-      `${this.baseUrl}/${this.apiVersion}/${metaUserId}/businesses`,
-      {
-        params: {
-          access_token: userAccessToken,
-        },
-      }
-    );
-
-    for (let i = 0; i < result.data.data.length; i++) {
-      const { id, name } = result.data.data[i];
-
-      businesses[id] = {
-        name,
-      };
-    }
-    userBusinesses[userId] = result.data.data.map((business) => business.id);
 
     return result.data.data;
   };

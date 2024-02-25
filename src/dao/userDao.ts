@@ -3,7 +3,7 @@ import { planetScaleDB } from "src/db/planetscale";
 
 import { NewUser, User, users } from "#db/schema/users";
 
-const userDao = {
+export const userDao = {
   getById: async (id: number): Promise<User | undefined> => {
     const result = await planetScaleDB.query.users.findFirst({
       where: eq(users.id, id),

@@ -5,7 +5,7 @@ import { metaPageInsightMetrics } from "./metaPageInsightMetrics";
 import { metaPages } from "./metaPages";
 
 export const metaPageInsights = mysqlTable("meta_page_insights", {
-  insightId: int("insight_id").primaryKey(),
+  insightId: int("insight_id").primaryKey().autoincrement(),
   pageId: int("page_id"),
   createdAt: int("created_at"),
 });
