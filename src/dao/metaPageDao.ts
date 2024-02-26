@@ -4,6 +4,22 @@ import { planetScaleDB } from "src/db/planetscale";
 import { metaIntegrations, metaPages, NewMetaPage } from "#db/schema";
 
 export const metaPageDao = {
+  isPageOwner: async (userId: number, pageId: number) => {
+    console.log("checking is page owner");
+    const result = await planetScaleDB.query.metaPages.findMany({
+      where: eq(metaPages.pageId, pageId),
+      with: {
+        metaIntegration: {
+          // TODO: replace with sql query
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          where: eq(metaIntegrations.ownerId, userId),
+        },
+      },
+    });
+
+    return Boolean(result.length > 0);
+  },
   getPageByPageId: async (pageId: number) => {
     const result = await planetScaleDB.query.metaPages.findFirst({
       where: eq(metaPages.pageId, pageId),
@@ -27,7 +43,7 @@ export const metaPageDao = {
       columns: {
         accessToken: true,
       },
-      where: eq(metaIntegrations.ownerId, pageId),
+      where: eq(metaPages.pageId, pageId),
     });
 
     return result?.accessToken;

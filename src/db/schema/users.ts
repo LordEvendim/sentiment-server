@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 
 import { metaIntegrations } from "./metaIntegrations";
+import { reports } from "./reports";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -11,8 +12,9 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 256 }).notNull(),
 });
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   integrations: one(metaIntegrations),
+  reports: many(reports),
 }));
 
 export type User = typeof users.$inferSelect;

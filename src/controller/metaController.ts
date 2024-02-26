@@ -39,7 +39,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
     },
     selectPage: async (
       req: TypedRequest<{ userId: number; pageId: number }>,
-      res: Response<number>
+      res: Response<{ selectedPage: number }>
     ) => {
       try {
         const { pageId, userId } = req.body;
@@ -48,7 +48,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
 
         const result = await metaInsights.selectPage(userId, pageId);
 
-        return res.status(200).send(result);
+        return res.status(200).send({ selectedPage: result });
       } catch (error) {
         return handleControllerError(res, error);
       }

@@ -3,8 +3,11 @@
 https://orm.drizzle.team/kit-docs/overview
 
 - Push schema changes
-  `drizzle-kit push:mysql`
+  `yarn drizzle-kit push:mysql`
 
 - Open Drizzle Studio
-  `drizzle-kit studio`
+  `yarn drizzle-kit studio`
   `https://local.drizzle.studio`
+
+- Run Drizzle Studio
+- `yarn drizzle-kit studio --port 3002`

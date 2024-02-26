@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
+import { bigint, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 
 import { metaPages } from "./metaPages";
 import { users } from "./users";
@@ -12,7 +12,7 @@ export const metaIntegrations = mysqlTable("meta_integrations", {
   email: varchar("email", { length: 256 }),
   accessToken: varchar("access_token", { length: 512 }),
   tokenCreatedAt: varchar("token_created_at", { length: 30 }),
-  selectedPage: int("selected_page"),
+  selectedPage: bigint("selected_page", { mode: "number" }),
 });
 
 export const metaIntegrationsRelations = relations(

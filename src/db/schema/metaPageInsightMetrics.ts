@@ -7,7 +7,7 @@ export const metaPageInsightMetrics = mysqlTable("meta_page_insight_metrics", {
   metricId: int("metric_id").autoincrement().primaryKey(),
   insightId: int("insight_id"),
   name: varchar("name", { length: 255 }).notNull(),
-  period: varchar("name", { length: 30 }).notNull(),
+  period: varchar("period", { length: 30 }).notNull(),
   value: int("value").notNull(),
   endTime: varchar("end_time", { length: 100 }).notNull(),
   title: varchar("title", { length: 150 }).notNull(),

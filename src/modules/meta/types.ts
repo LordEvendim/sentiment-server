@@ -56,7 +56,7 @@ export type GetUserPages = {
       },
     ];
     name: string;
-    id: number;
+    id: string;
     tasks: string[];
   }>;
   paging: {

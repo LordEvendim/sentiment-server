@@ -84,8 +84,11 @@ export class MetaInsights {
   };
 
   getPageInsights = async (userId: number, pageId: number) => {
-    const pageAccessToken =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+    const pageAccessToken = await metaPageDao.getPageAccessToken(pageId);
+    const isPageOwner = await metaPageDao.isPageOwner(userId, pageId);
+
+    if (!isPageOwner) throw new Error("User is not a page owner");
+    if (!pageAccessToken) throw new Error("This page is not integrated");
 
     const result = await axios.get<PageInsights>(
       `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,

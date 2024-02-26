@@ -21,9 +21,9 @@ class MetaAuth {
     metaId: string,
     userAccessToken: string
   ) => {
+    console.log("getting llat");
     const userIntegration =
       await metaIntegrationDao.getMetaIntegrationByUserId(userId);
-    if (userIntegration?.accessToken) return userIntegration?.accessToken;
 
     const result = await axios.get<GetLongLivedToken>(
       `${this.baseUrl}/${this.apiVersion}/oauth/access_token`,
@@ -37,7 +37,7 @@ class MetaAuth {
       }
     );
 
-    // update MetaIntegration or create it doesn't exist
+    // TODO: replace with upsert
     userIntegration
       ? await metaIntegrationDao.update(userId, {
           metaId: metaId,
@@ -56,10 +56,13 @@ class MetaAuth {
   };
 
   getLongLivedPageTokens = async (userId: number) => {
+    console.log("getLongLivedPageTokens");
     const metaIntegration =
       await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
+    console.log("1");
     if (!metaIntegration) throw new Error("User has not integrated Meta");
+    console.log("2");
 
     const userAccessToken = metaIntegration.accessToken;
     const metaId = metaIntegration.metaId;
@@ -72,27 +75,36 @@ class MetaAuth {
         },
       }
     );
+    console.log("3");
 
     // get user pages => update or create
     const userPages = await metaPageDao.getUserPages(userId);
-    if (!userPages || userPages.length === 0) return;
+    console.log("4");
 
-    const userPagesIds = userPages?.map((page) => page.pageId);
+    const userPagesIds = userPages?.map((page) => page.pageId) ?? [];
+
+    console.log(userPagesIds);
 
     for (let i = 0; i < result.data.data.length; i++) {
       const { id, access_token, name } = result.data.data[i];
+      const parsedId = parseInt(id);
 
-      userPagesIds.includes(id)
-        ? metaPageDao.update(id, {
+      console.log(parsedId);
+      console.log(typeof parsedId);
+
+      userPagesIds.includes(parsedId)
+        ? metaPageDao.update(parsedId, {
             accessToken: access_token,
             name: name,
           })
         : metaPageDao.create({
-            pageId: id,
+            pageId: parsedId,
             accessToken: access_token,
+            integrationId: metaIntegration.id,
             name: name,
           });
     }
+    console.log("5");
 
     return result.data.data;
   };
