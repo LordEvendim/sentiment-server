@@ -2,22 +2,21 @@ import { eq } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
 import { googleIntegrations, NewGoogleIntegration } from "#db/schema";
-import { metaIntegrations } from "#db/schema/metaIntegrations";
 
-export const metaIntegrationDao = {
+export const googleIntegrationDao = {
   getAccessTokenByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.googleIntegrations.findFirst({
       columns: {
         accessToken: true,
       },
-      where: eq(metaIntegrations.ownerId, userId),
+      where: eq(googleIntegrations.ownerId, userId),
     });
 
     return result?.accessToken;
   },
-  getMetaIntegrationByUserId: async (userId: number) => {
+  getIntegrationByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.googleIntegrations.findFirst({
-      where: eq(metaIntegrations.ownerId, userId),
+      where: eq(googleIntegrations.ownerId, userId),
     });
 
     return result;
@@ -43,4 +42,4 @@ export const metaIntegrationDao = {
   },
 };
 
-export type MetaIntegrationDao = typeof metaIntegrationDao;
+export type GoogleIntegrationDao = typeof googleIntegrationDao;
