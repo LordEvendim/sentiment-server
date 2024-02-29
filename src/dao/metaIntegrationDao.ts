@@ -17,6 +17,16 @@ export const metaIntegrationDao = {
 
     return result?.accessToken;
   },
+  getIntegrationWithSelectedPageByUserId: async (userId: number) => {
+    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+      with: {
+        selectedPage: true,
+      },
+      where: eq(metaIntegrations.ownerId, userId),
+    });
+
+    return result;
+  },
   getMetaIntegrationByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.metaIntegrations.findFirst({
       where: eq(metaIntegrations.ownerId, userId),

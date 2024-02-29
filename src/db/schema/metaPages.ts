@@ -21,4 +21,5 @@ export const metaPagesRelations = relations(metaPages, ({ one, many }) => ({
 }));
 
 export type MetaPage = typeof metaPages.$inferSelect;
+export type MetaPageDetails = Omit<MetaPage, "accessToken" | "integrationId">;
 export type NewMetaPage = typeof metaPages.$inferInsert;

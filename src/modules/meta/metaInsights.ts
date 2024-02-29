@@ -4,6 +4,7 @@ import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
 import { metaPageInsightDao } from "#dao/metaPageInsightDao";
 import { metaPageInsightMetricDao } from "#dao/metaPageInsightMetricDao";
+import { MetaIntegration, MetaPageDetails } from "#db/schema";
 import { MetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
 
 import {
@@ -177,6 +178,36 @@ export class MetaInsights {
     });
 
     return pageId;
+  };
+
+  getUserIntegration = async (
+    userId: number
+  ): Promise<
+    | (Omit<MetaIntegration, "selectedPage"> & {
+        selectedPage?: MetaPageDetails;
+      })
+    | undefined
+  > => {
+    const integration =
+      await metaIntegrationDao.getIntegrationWithSelectedPageByUserId(userId);
+
+    if (!integration) return undefined;
+    if (!integration.selectedPage)
+      return {
+        ...integration,
+        selectedPage: undefined,
+      };
+
+    const transformedIntegration = {
+      ...integration,
+      selectedPage: {
+        name: integration.selectedPage.name,
+        pageId: integration.selectedPage.pageId,
+        profilePictureURL: integration.selectedPage.name,
+      },
+    };
+
+    return transformedIntegration;
   };
 }
 

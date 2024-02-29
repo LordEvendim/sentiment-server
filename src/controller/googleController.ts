@@ -1,11 +1,27 @@
 import { Response } from "express";
 
-import { googleAuth } from "#modules/google";
+import { googleAnalytics, googleAuth } from "#modules/google";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
 const createGoogleController = () => {
   return {
+    getUserIntegration: async (
+      req: TypedRequest<object, object, object>,
+      res: Response
+    ) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invalid request");
+
+        const integration = await googleAnalytics.getUserIntegraiton(userId);
+
+        return res.status(200).send(integration);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
     getAuthorizationUrl: async (
       req: TypedRequest<object, object, object>,
       res: Response

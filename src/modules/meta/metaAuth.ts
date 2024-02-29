@@ -16,7 +16,7 @@ class MetaAuth {
     this.appId = process.env.META_APP_ID ?? "";
   }
 
-  getLongLivedToken = async (
+  createAccessToken = async (
     userId: number,
     metaId: string,
     userAccessToken: string

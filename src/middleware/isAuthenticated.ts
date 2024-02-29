@@ -1,7 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
+
+import { TypedRequest } from "#types/express";
 
 export const isAuthenticated = (
-  req: Request,
+  req: TypedRequest<unknown, unknown, unknown>,
   res: Response,
   next: NextFunction
 ) => {

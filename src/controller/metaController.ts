@@ -1,15 +1,20 @@
 import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
-import { MetaPageInsightMetric } from "#db/schema";
+import {
+  MetaIntegration,
+  MetaPageDetails,
+  MetaPageInsightMetric,
+} from "#db/schema";
 import { MetaInsights, metaInsights } from "#modules/meta";
+import { metaAuth } from "#modules/meta/metaAuth";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
 const createMetaController = (metaInsights: MetaInsights) => {
   return {
     getUserPages: async (
-      req: TypedRequest<object, object, { userId: number }>,
+      req: TypedRequest<object, object, object>,
       res: Response<{
         pages:
           | {
@@ -21,7 +26,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
       }>
     ) => {
       try {
-        const userId = req.query.userId;
+        const userId = req.session.user?.id;
 
         if (!userId) throw new Error("Invlid request");
 
@@ -38,11 +43,12 @@ const createMetaController = (metaInsights: MetaInsights) => {
       }
     },
     selectPage: async (
-      req: TypedRequest<{ userId: number; pageId: number }>,
+      req: TypedRequest<{ pageId: number }>,
       res: Response<{ selectedPage: number }>
     ) => {
       try {
-        const { pageId, userId } = req.body;
+        const { pageId } = req.body;
+        const userId = req.session.user?.id;
 
         if (!userId || !pageId) throw new Error("Invlid request");
 
@@ -54,17 +60,65 @@ const createMetaController = (metaInsights: MetaInsights) => {
       }
     },
     getPageInsights: async (
-      req: TypedRequest<object, object, { userId: number; pageId: number }>,
+      req: TypedRequest<object, object, { pageId: number }>,
       res: Response<Omit<MetaPageInsightMetric, "metricId">[]>
     ) => {
       try {
-        const { pageId, userId } = req.query;
+        const { pageId } = req.query;
+        const userId = req.session.user?.id;
 
         if (!userId || !pageId) throw new Error("Invlid request");
 
         const result = await metaInsights.getPageInsights(userId, pageId);
 
         return res.status(200).send(result);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    getUserIntegration: async (
+      req: TypedRequest<object, object, object>,
+      res: Response<
+        | (Omit<MetaIntegration, "selectedPage"> & {
+            selectedPage?: MetaPageDetails;
+          })
+        | undefined
+      >
+    ) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+
+        const result = await metaInsights.getUserIntegration(userId);
+
+        return res.status(200).send(result);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    createAccessToken: async (
+      req: TypedRequest<
+        object,
+        object,
+        { accessToken: string; metaId: string }
+      >,
+      res: Response
+    ) => {
+      try {
+        const token = req.query.accessToken;
+        const metaId = req.query.metaId;
+        const userId = req.session.user?.id;
+
+        if (!token || !userId) throw new Error("Invalid request");
+
+        const longLivedToken = await metaAuth.createAccessToken(
+          userId,
+          metaId,
+          token
+        );
+
+        return res.status(200).send(longLivedToken);
       } catch (error) {
         return handleControllerError(res, error);
       }
