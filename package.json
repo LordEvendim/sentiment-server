@@ -20,6 +20,7 @@
     "drizzle:push": "drizzle-kit push:mysql"
   },
   "dependencies": {
+    "@google-analytics/admin": "^7.2.0",
     "@google-cloud/aiplatform": "^3.12.0",
     "@google-cloud/vertexai": "^0.4.0",
     "@google/generative-ai": "^0.2.0",

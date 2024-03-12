@@ -434,6 +434,15 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
+"@google-analytics/admin@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@google-analytics/admin/-/admin-7.2.0.tgz#b93a9f715f7b268cfc120d0a2eb981da544feaad"
+  integrity sha512-cEamjmOufj1s3I3MnExsMlUZTo0iIU0Km8tQEHDGd6g+7hsGASok5T5q2K4cRGTE3z7Y3zwEp783GEApBUEDNQ==
+  dependencies:
+    google-auth-library "^9.0.0"
+    google-gax "^4.0.3"
+    server-destroy "^1.0.1"
+
 "@google-cloud/aiplatform@^3.12.0":
   version "3.12.0"
   resolved "https://registry.yarnpkg.com/@google-cloud/aiplatform/-/aiplatform-3.12.0.tgz#527d12d1fdc65987dcc9a774a9899788e386185b"
@@ -4768,6 +4777,11 @@ serve-static@1.15.0:
     escape-html "~1.0.3"
     parseurl "~1.3.3"
     send "0.18.0"
+
+server-destroy@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/server-destroy/-/server-destroy-1.0.1.tgz#f13bf928e42b9c3e79383e61cc3998b5d14e6cdd"
+  integrity sha512-rb+9B5YBIEzYcD6x2VKidaa+cqYBJQKnU4oe4E3ANwRRN56yk/ua1YCJT1n21NTS8w6CcOclAKNP3PhdCXKYtQ==
 
 set-blocking@^2.0.0:
   version "2.0.0"
