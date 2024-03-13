@@ -10,6 +10,7 @@ export const googleIntegrations = mysqlTable("google_integrations", {
   accessToken: varchar("access_token", { length: 512 }),
   refreshToken: varchar("refresh_token", { length: 512 }),
   tokenCreatedAt: bigint("token_created_at", { mode: "number" }),
+  selectedPage: bigint("selected_page", { mode: "number" }),
 });
 
 export const googleIntegrationsRelations = relations(

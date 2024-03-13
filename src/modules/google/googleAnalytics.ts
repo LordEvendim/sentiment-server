@@ -25,10 +25,15 @@ export class GoogleAnalytics {
     return {
       id: integration.id,
       accessToken: integration.accessToken,
+      selectedPage: integration.selectedPage,
     };
   };
 
   getUserAccounts = async (userId: number) => {
+    return await googleAnalyticsPageDao.getUserPages(userId);
+  };
+
+  connectUserAccounts = async (userId: number) => {
     const integration =
       await googleIntegrationDao.getIntegrationByUserId(userId);
 
@@ -61,7 +66,7 @@ export class GoogleAnalytics {
     for (const account of result.data.accounts) {
       properties.push(
         ...(
-          await this.getAccountProperties(
+          await this.connectAccountProperties(
             userId,
             account.name,
             account.displayName
@@ -78,7 +83,7 @@ export class GoogleAnalytics {
     return properties;
   };
 
-  getAccountProperties = async (
+  connectAccountProperties = async (
     userId: number,
     accountName: string,
     accountDisplayName: string
@@ -105,6 +110,13 @@ export class GoogleAnalytics {
     }));
 
     return transformedProperties;
+  };
+  selectPage = async (userId: number, pageId: number) => {
+    await googleIntegrationDao.update(userId, {
+      selectedPage: pageId,
+    });
+
+    return pageId;
   };
 }
 

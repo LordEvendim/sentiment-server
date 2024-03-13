@@ -1,11 +1,41 @@
 import { Response } from "express";
 
-import { googleAnalytics, googleAuth } from "#modules/google";
+import { googleIntegrationDao } from "#dao/googleIntegrationDao";
+import { GoogleAnalytics, googleAnalytics, googleAuth } from "#modules/google";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
-const createGoogleController = () => {
+const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
   return {
+    getUserPages: async (
+      req: TypedRequest<object, object, object>,
+      res: Response<{
+        pages:
+          | {
+              name: string;
+              id: number;
+            }[]
+          | undefined;
+        selectedPage: number | undefined;
+      }>
+    ) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+
+        const result = await googleAnalytics.getUserAccounts(userId);
+        const selectedMetaPage =
+          await googleIntegrationDao.getIntegrationByUserId(userId);
+
+        return res.status(200).send({
+          pages: result,
+          selectedPage: selectedMetaPage?.selectedPage ?? undefined,
+        });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
     getUserIntegration: async (
       req: TypedRequest<object, object, object>,
       res: Response
@@ -57,7 +87,24 @@ const createGoogleController = () => {
         return handleControllerError(res, error);
       }
     },
+    selectPage: async (
+      req: TypedRequest<{ pageId: number }>,
+      res: Response<{ selectedPage: number }>
+    ) => {
+      try {
+        const { pageId } = req.body;
+        const userId = req.session.user?.id;
+
+        if (!userId || !pageId) throw new Error("Invlid request");
+
+        const result = await googleAnalytics.selectPage(userId, pageId);
+
+        return res.status(200).send({ selectedPage: result });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
   };
 };
 
-export const googleController = createGoogleController();
+export const googleController = createGoogleController(googleAnalytics);
