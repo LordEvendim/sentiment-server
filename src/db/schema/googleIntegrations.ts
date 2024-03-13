@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { bigint, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 
+import { googleAnalyticsPages } from "./googleAnalyticsPages";
 import { users } from "./users";
 
 export const googleIntegrations = mysqlTable("google_integrations", {
@@ -13,11 +14,12 @@ export const googleIntegrations = mysqlTable("google_integrations", {
 
 export const googleIntegrationsRelations = relations(
   googleIntegrations,
-  ({ one }) => ({
+  ({ one, many }) => ({
     owner: one(users, {
       fields: [googleIntegrations.ownerId],
       references: [users.id],
     }),
+    analyticsPages: many(googleAnalyticsPages),
   })
 );
 

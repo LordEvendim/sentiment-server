@@ -1,9 +1,10 @@
 import axios from "axios";
 
+import { googleAnalyticsPageDao } from "#dao/googleAnalyticsPageDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
-import { GoogleIntegration } from "#db/schema";
+import { GoogleAnalyticsPage, GoogleIntegration } from "#db/schema";
 
-import { GoogleAccount } from "./types";
+import { GoogleAccount, GoogleProperty } from "./types";
 
 export class GoogleAnalytics {
   adminApiUrl = "https://analyticsadmin.googleapis.com/v1beta";
@@ -28,8 +29,8 @@ export class GoogleAnalytics {
   };
 
   getUserAccounts = async (userId: number) => {
-    const accessToken =
-      await googleIntegrationDao.getAccessTokenByUserId(userId);
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
 
     // const oauthClient: Auth.OAuth2Client = new google.auth.OAuth2({
     //   credentials: {
@@ -44,40 +45,66 @@ export class GoogleAnalytics {
 
     // console.log(result.data);
 
+    if (!integration?.accessToken) throw new Error("Google is not connected");
+
     const result = await axios.get<{ accounts: GoogleAccount[] }>(
       `${this.adminApiUrl}/accounts`,
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${integration.accessToken}`,
         },
       }
     );
 
-    const properties = [];
+    const properties: GoogleAnalyticsPage[] = [];
 
     for (const account of result.data.accounts) {
       properties.push(
-        ...(await this.getAccountProperties(userId, account.name))
+        ...(
+          await this.getAccountProperties(
+            userId,
+            account.name,
+            account.displayName
+          )
+        ).map((element) => ({
+          ...element,
+          integrationId: integration.id,
+        }))
       );
     }
+
+    await googleAnalyticsPageDao.createMany(properties);
 
     return properties;
   };
 
-  getAccountProperties = async (userId: number, accountName: string) => {
+  getAccountProperties = async (
+    userId: number,
+    accountName: string,
+    accountDisplayName: string
+  ) => {
     const accessToken =
       await googleIntegrationDao.getAccessTokenByUserId(userId);
 
-    const result = await axios.get(`${this.adminApiUrl}/properties`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      params: {
-        filter: `ancestor:${accountName}`,
-      },
-    });
+    const result = await axios.get<{ properties: GoogleProperty[] }>(
+      `${this.adminApiUrl}/properties`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          filter: `ancestor:${accountName}`,
+        },
+      }
+    );
 
-    return result.data.properties;
+    const transformedProperties = result.data.properties.map((property) => ({
+      id: parseInt(property.name.split("/")[1]),
+      parentAccountName: accountDisplayName,
+      name: property.displayName,
+    }));
+
+    return transformedProperties;
   };
 }
 

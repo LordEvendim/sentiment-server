@@ -1,3 +1,4 @@
+export * from "./googleAnalyticsPages";
 export * from "./googleIntegrations";
 export * from "./metaIntegrations";
 export * from "./metaPageInsightMetrics";
