@@ -23,7 +23,10 @@ export const metaIntegrationsRelations = relations(
       references: [users.id],
     }),
     pages: many(metaPages),
-    selectedPage: one(metaPages),
+    selectedPage: one(metaPages, {
+      fields: [metaIntegrations.selectedPage],
+      references: [metaPages.pageId],
+    }),
   })
 );
 

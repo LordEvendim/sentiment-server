@@ -10,13 +10,13 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
     getUserPages: async (
       req: TypedRequest<object, object, object>,
       res: Response<{
-        pages:
+        analyticsAccounts:
           | {
               name: string;
               id: number;
             }[]
           | undefined;
-        selectedPage: number | undefined;
+        selectedAnalyticsAccount: number | undefined;
       }>
     ) => {
       try {
@@ -25,12 +25,12 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         if (!userId) throw new Error("Invlid request");
 
         const result = await googleAnalytics.getUserAccounts(userId);
-        const selectedMetaPage =
+        const selectedPage =
           await googleIntegrationDao.getIntegrationByUserId(userId);
 
         return res.status(200).send({
-          pages: result,
-          selectedPage: selectedMetaPage?.selectedPage ?? undefined,
+          analyticsAccounts: result,
+          selectedAnalyticsAccount: selectedPage?.selectedPage ?? undefined,
         });
       } catch (error) {
         return handleControllerError(res, error);
@@ -45,7 +45,10 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
 
         if (!userId) throw new Error("Invalid request");
 
-        const integration = await googleAnalytics.getUserIntegraiton(userId);
+        const integration =
+          await googleIntegrationDao.getIntegrationWithSelectedPageByUserId(
+            userId
+          );
 
         return res.status(200).send(integration);
       } catch (error) {

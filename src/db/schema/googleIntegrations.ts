@@ -20,6 +20,10 @@ export const googleIntegrationsRelations = relations(
       fields: [googleIntegrations.ownerId],
       references: [users.id],
     }),
+    selectedPage: one(googleAnalyticsPages, {
+      fields: [googleIntegrations.selectedPage],
+      references: [googleAnalyticsPages.id],
+    }),
     analyticsPages: many(googleAnalyticsPages),
   })
 );

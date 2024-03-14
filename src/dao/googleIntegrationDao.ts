@@ -21,6 +21,16 @@ export const googleIntegrationDao = {
 
     return result;
   },
+  getIntegrationWithSelectedPageByUserId: async (userId: number) => {
+    const result = await planetScaleDB.query.googleIntegrations.findFirst({
+      with: {
+        selectedPage: true,
+      },
+      where: eq(googleIntegrations.ownerId, userId),
+    });
+
+    return result;
+  },
   saveAccessToken: async (userId: number, accessToken: string) => {
     await planetScaleDB
       .update(googleIntegrations)
