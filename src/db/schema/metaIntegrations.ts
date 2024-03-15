@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { bigint, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 
+import { metaAdAccounts } from "./metaAdAccounts";
 import { metaPages } from "./metaPages";
 import { users } from "./users";
 
@@ -13,6 +14,7 @@ export const metaIntegrations = mysqlTable("meta_integrations", {
   accessToken: varchar("access_token", { length: 512 }),
   tokenCreatedAt: varchar("token_created_at", { length: 30 }),
   selectedPage: bigint("selected_page", { mode: "number" }),
+  selectedAdAccount: bigint("selected_ad_account", { mode: "number" }),
 });
 
 export const metaIntegrationsRelations = relations(
@@ -23,9 +25,14 @@ export const metaIntegrationsRelations = relations(
       references: [users.id],
     }),
     pages: many(metaPages),
+    adAccounts: many(metaAdAccounts),
     selectedPage: one(metaPages, {
       fields: [metaIntegrations.selectedPage],
       references: [metaPages.pageId],
+    }),
+    selectedAdAccount: one(metaAdAccounts, {
+      fields: [metaIntegrations.selectedAdAccount],
+      references: [metaAdAccounts.id],
     }),
   })
 );

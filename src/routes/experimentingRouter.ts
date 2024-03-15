@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 
 import { isAdmin } from "#middleware/isAdmin";
-import { googleAds } from "#modules/google/googleAds";
+import { metaInsights } from "#modules/meta";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -11,7 +11,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const userId = req.query.userId;
     if (!userId) return res.send("Error");
 
-    const accounts = await googleAds.getUserAccounts(
+    const accounts = await metaInsights.connectUserAdAccounts(
       parseInt(userId.toString())
     );
 

@@ -1,5 +1,6 @@
 export * from "./googleAnalyticsPages";
 export * from "./googleIntegrations";
+export * from "./metaAdAccounts";
 export * from "./metaIntegrations";
 export * from "./metaPageInsightMetrics";
 export * from "./metaPageInsights";

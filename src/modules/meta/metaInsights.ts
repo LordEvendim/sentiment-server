@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { metaAdAccountDao } from "#dao/metaAdAccountDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
 import { metaPageInsightDao } from "#dao/metaPageInsightDao";
@@ -36,16 +37,18 @@ export class MetaInsights {
 
     if (!userAccessToken) throw new Error("User is not connected with Meta");
 
-    const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${businessId}/owned_ad_accounts`,
-      {
-        params: {
-          access_token: userAccessToken,
-        },
-      }
-    );
+    const result = await axios.get<{
+      data: {
+        account_id: string;
+        id: string;
+      }[];
+    }>(`${this.baseUrl}/${this.apiVersion}/${businessId}/owned_ad_accounts`, {
+      params: {
+        access_token: userAccessToken,
+      },
+    });
 
-    return result;
+    return result.data.data;
   };
 
   getBusinessClientAdAccounts = async (userId: number, businessId: string) => {
@@ -54,16 +57,18 @@ export class MetaInsights {
 
     if (!userAccessToken) throw new Error("User is not connected with Meta");
 
-    const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${businessId}/client_ad_accounts`,
-      {
-        params: {
-          access_token: userAccessToken,
-        },
-      }
-    );
+    const result = await axios.get<{
+      data: {
+        account_id: string;
+        id: string;
+      }[];
+    }>(`${this.baseUrl}/${this.apiVersion}/${businessId}/client_ad_accounts`, {
+      params: {
+        access_token: userAccessToken,
+      },
+    });
 
-    return result;
+    return result.data.data;
   };
 
   getUserBusinesses = async (userId: number) => {
@@ -72,11 +77,75 @@ export class MetaInsights {
 
     if (!metaIntegration) throw new Error("User is not connected wiht Meta");
 
-    const result = await axios.get(
+    const result = await axios.get<{
+      data: {
+        id: string;
+        name: string;
+      }[];
+    }>(
       `${this.baseUrl}/${this.apiVersion}/${metaIntegration.metaId}/businesses`,
       {
         params: {
           access_token: metaIntegration.accessToken,
+        },
+      }
+    );
+
+    return result.data.data;
+  };
+
+  connectUserAdAccounts = async (userId: number) => {
+    const businesses = await this.getUserBusinesses(userId);
+
+    const adAccounts = [];
+
+    for (let i = 0; i < businesses.length; i++) {
+      const businessAdAccounts = await this.getBusinessAdAccounts(
+        userId,
+        businesses[i].id
+      );
+      const businessClientAdAccounts = await this.getBusinessClientAdAccounts(
+        userId,
+        businesses[i].id
+      );
+
+      adAccounts.push(
+        ...businessAdAccounts.map((account) => ({
+          parentAccountName: businesses[i].name,
+          ...account,
+        })),
+        ...businessClientAdAccounts.map((account) => ({
+          parentAccountName: businesses[i].name,
+          ...account,
+        }))
+      );
+    }
+
+    await metaAdAccountDao.createMany(
+      adAccounts.map((account) => ({
+        ...account,
+        id: parseInt(account.id),
+      }))
+    );
+
+    return adAccounts;
+  };
+
+  getCampaignStatistics = async (
+    userId: number,
+    adCampaignId: string,
+    breakdowns: BreakdownOptions[],
+    fields: SupportedBreakdownFields[]
+  ) => {
+    const accessToken = await metaIntegrationDao.getAccessTokenByUserId(userId);
+
+    const result = await axios.get(
+      `${this.baseUrl}/${this.apiVersion}/${adCampaignId}/insights`,
+      {
+        data: {
+          breakdowns: breakdowns.join(","),
+          fields: fields.join(","),
+          access_token: accessToken,
         },
       }
     );
@@ -132,44 +201,13 @@ export class MetaInsights {
     }));
   };
 
-  getAdAccounts = async (userId: number) => {
-    const metaIntegration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+  getUserAdAccounts = async (userId: number) => {
+    const accounts = await metaAdAccountDao.getUserAdAccounts(userId);
 
-    if (!metaIntegration) throw new Error("User is not connected wiht Meta");
-
-    const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${metaIntegration.metaId}/businesses`,
-      {
-        params: {
-          access_token: metaIntegration.accessToken,
-        },
-      }
-    );
-
-    return result;
-  };
-
-  getCampaignStatistics = async (
-    userId: number,
-    adCampaignId: string,
-    breakdowns: BreakdownOptions[],
-    fields: SupportedBreakdownFields[]
-  ) => {
-    const accessToken = await metaIntegrationDao.getAccessTokenByUserId(userId);
-
-    const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${adCampaignId}/insights`,
-      {
-        data: {
-          breakdowns: breakdowns.join(","),
-          fields: fields.join(","),
-          access_token: accessToken,
-        },
-      }
-    );
-
-    return result;
+    return accounts?.map((account) => ({
+      id: account.id,
+      parentAccountName: account.parentAccountName,
+    }));
   };
 
   selectPage = async (userId: number, pageId: number) => {
@@ -178,6 +216,14 @@ export class MetaInsights {
     });
 
     return pageId;
+  };
+
+  selectAdAccount = async (userId: number, accountId: number) => {
+    await metaIntegrationDao.update(userId, {
+      selectedAdAccount: accountId,
+    });
+
+    return accountId;
   };
 
   getUserIntegration = async (
