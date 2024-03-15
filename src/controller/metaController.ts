@@ -2,6 +2,7 @@ import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import {
+  MetaAdAccountDetails,
   MetaIntegration,
   MetaPageDetails,
   MetaPageInsightMetric,
@@ -59,6 +60,23 @@ const createMetaController = (metaInsights: MetaInsights) => {
         return handleControllerError(res, error);
       }
     },
+    selectAdAccount: async (
+      req: TypedRequest<{ adAccountId: number }>,
+      res: Response<{ selectedAdAccount: number }>
+    ) => {
+      try {
+        const { adAccountId } = req.body;
+        const userId = req.session.user?.id;
+
+        if (!userId || !adAccountId) throw new Error("Invlid request");
+
+        const result = await metaInsights.selectAdAccount(userId, adAccountId);
+
+        return res.status(200).send({ selectedAdAccount: result });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
     getPageInsights: async (
       req: TypedRequest<object, object, { pageId: number }>,
       res: Response<Omit<MetaPageInsightMetric, "metricId">[]>
@@ -79,8 +97,9 @@ const createMetaController = (metaInsights: MetaInsights) => {
     getUserIntegration: async (
       req: TypedRequest<object, object, object>,
       res: Response<
-        | (Omit<MetaIntegration, "selectedPage"> & {
+        | (Omit<MetaIntegration, "selectedPage" | "selectedAdAccount"> & {
             selectedPage?: MetaPageDetails;
+            selectedAdAccount?: MetaAdAccountDetails;
           })
         | undefined
       >

@@ -10,6 +10,11 @@ router.get("/integration", isAuthenticated, metaController.getUserIntegration);
 router.get("/page/insights", isAuthenticated, metaController.getPageInsights);
 
 router.post("/selected-page", isAuthenticated, metaController.selectPage);
+router.post(
+  "/selected-ad-account",
+  isAuthenticated,
+  metaController.selectAdAccount
+);
 router.post("/access-token", isAuthenticated, metaController.createAccessToken);
 
 export { router as metaRouter };

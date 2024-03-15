@@ -6,7 +6,7 @@ import { metaIntegrations } from "./metaIntegrations";
 export const metaAdAccounts = mysqlTable("meta_ad_accounts", {
   id: bigint("id", { mode: "number" }).primaryKey(),
   integrationId: int("integration_id"),
-  parentAccountName: varchar("parent_account_name", { length: 256 }),
+  parentAccountName: varchar("parent_account_name", { length: 256 }).notNull(),
 });
 
 export const metaAdAccountsRelations = relations(metaAdAccounts, ({ one }) => ({

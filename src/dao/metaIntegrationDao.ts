@@ -17,10 +17,11 @@ export const metaIntegrationDao = {
 
     return result?.accessToken;
   },
-  getIntegrationWithSelectedPageByUserId: async (userId: number) => {
+  getIntegrationWithSelectedByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.metaIntegrations.findFirst({
       with: {
         selectedPage: true,
+        selectedAdAccount: true,
       },
       where: eq(metaIntegrations.ownerId, userId),
     });

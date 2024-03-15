@@ -5,7 +5,11 @@ import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
 import { metaPageInsightDao } from "#dao/metaPageInsightDao";
 import { metaPageInsightMetricDao } from "#dao/metaPageInsightMetricDao";
-import { MetaIntegration, MetaPageDetails } from "#db/schema";
+import {
+  MetaAdAccountDetails,
+  MetaIntegration,
+  MetaPageDetails,
+} from "#db/schema";
 import { MetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
 
 import {
@@ -229,28 +233,32 @@ export class MetaInsights {
   getUserIntegration = async (
     userId: number
   ): Promise<
-    | (Omit<MetaIntegration, "selectedPage"> & {
+    | (Omit<MetaIntegration, "selectedPage" | "selectedAdAccount"> & {
         selectedPage?: MetaPageDetails;
+        selectedAdAccount?: MetaAdAccountDetails;
       })
     | undefined
   > => {
     const integration =
-      await metaIntegrationDao.getIntegrationWithSelectedPageByUserId(userId);
+      await metaIntegrationDao.getIntegrationWithSelectedByUserId(userId);
 
     if (!integration) return undefined;
-    if (!integration.selectedPage)
-      return {
-        ...integration,
-        selectedPage: undefined,
-      };
 
     const transformedIntegration = {
       ...integration,
-      selectedPage: {
-        name: integration.selectedPage.name,
-        pageId: integration.selectedPage.pageId,
-        profilePictureURL: integration.selectedPage.name,
-      },
+      selectedPage: integration.selectedPage
+        ? {
+            name: integration.selectedPage.name,
+            pageId: integration.selectedPage.pageId,
+            profilePictureURL: integration.selectedPage.name,
+          }
+        : undefined,
+      selectedAdAccount: integration.selectedAdAccount
+        ? {
+            id: integration.selectedAdAccount.id,
+            parentAccountName: integration.selectedAdAccount.parentAccountName,
+          }
+        : undefined,
     };
 
     return transformedIntegration;
