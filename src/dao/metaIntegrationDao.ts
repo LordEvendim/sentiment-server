@@ -49,7 +49,10 @@ export const metaIntegrationDao = {
   create: async (newMetaIntegration: NewMetaIntegration) => {
     const result = await planetScaleDB
       .insert(metaIntegrations)
-      .values(newMetaIntegration);
+      .values(newMetaIntegration)
+      .onDuplicateKeyUpdate({
+        set: newMetaIntegration,
+      });
 
     return result;
   },

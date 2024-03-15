@@ -6,8 +6,8 @@ import { users } from "./users";
 
 export const metaIntegrations = mysqlTable("meta_integrations", {
   id: int("id").autoincrement().primaryKey(),
-  ownerId: int("owner_id").notNull(),
-  metaId: varchar("metaId", { length: 60 }).unique().notNull(),
+  ownerId: int("owner_id").unique().notNull(),
+  metaId: varchar("metaId", { length: 60 }).notNull(),
   fullName: varchar("full_name", { length: 256 }),
   email: varchar("email", { length: 256 }),
   accessToken: varchar("access_token", { length: 512 }),

@@ -2,8 +2,14 @@ import { google } from "googleapis";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 
+import { googleAnalytics } from "./googleAnalytics";
+
 // https://developers.google.com/identity/protocols/oauth2/scopes#analytics
-const scopes = ["https://www.googleapis.com/auth/analytics.readonly"];
+// https://developers.google.com/google-ads/api/docs/oauth/internals
+const scopes = [
+  "https://www.googleapis.com/auth/analytics.readonly",
+  "https://www.googleapis.com/auth/adwords",
+];
 
 export class GoogleAuth {
   oauthClient;
@@ -24,7 +30,6 @@ export class GoogleAuth {
   }
 
   getAuthorizationUrl = () => {
-    console.log("getting url");
     return this.authorizationUrl;
   };
 
@@ -46,6 +51,8 @@ export class GoogleAuth {
           refreshToken: tokens.refresh_token,
           tokenCreatedAt: Date.now(),
         });
+
+    await googleAnalytics.connectUserAccounts(userId);
 
     return tokens.access_token;
   };

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
 import { metaIntegrations, metaPages, NewMetaPage } from "#db/schema";
@@ -56,6 +56,21 @@ export const metaPageDao = {
   },
   create: async (newMetaPage: NewMetaPage) => {
     const result = await planetScaleDB.insert(metaPages).values(newMetaPage);
+
+    return result;
+  },
+  createMany: async (newMetaPage: NewMetaPage[]) => {
+    const result = await planetScaleDB
+      .insert(metaPages)
+      .values(newMetaPage)
+      .onDuplicateKeyUpdate({
+        set: {
+          accessToken: sql`values(access_token)`,
+          integrationId: sql`values(integration_id)`,
+          name: sql`values(name)`,
+          profilePictureURL: sql`values(profile_picture_url)`,
+        },
+      });
 
     return result;
   },

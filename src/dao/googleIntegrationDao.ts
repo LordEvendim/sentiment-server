@@ -46,7 +46,10 @@ export const googleIntegrationDao = {
   create: async (newGoogleIntegration: NewGoogleIntegration) => {
     const result = await planetScaleDB
       .insert(googleIntegrations)
-      .values(newGoogleIntegration);
+      .values(newGoogleIntegration)
+      .onDuplicateKeyUpdate({
+        set: newGoogleIntegration,
+      });
 
     return result;
   },

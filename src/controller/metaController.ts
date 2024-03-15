@@ -99,18 +99,18 @@ const createMetaController = (metaInsights: MetaInsights) => {
     },
     createAccessToken: async (
       req: TypedRequest<
+        { accessToken: string; metaId: string },
         object,
-        object,
-        { accessToken: string; metaId: string }
+        object
       >,
       res: Response
     ) => {
       try {
-        const token = req.query.accessToken;
-        const metaId = req.query.metaId;
+        const token = req.body.accessToken;
+        const metaId = req.body.metaId;
         const userId = req.session.user?.id;
 
-        if (!token || !userId) throw new Error("Invalid request");
+        if (!token || !metaId || !userId) throw new Error("Invalid request");
 
         const longLivedToken = await metaAuth.createAccessToken(
           userId,

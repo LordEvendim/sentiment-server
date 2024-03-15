@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
 import {
@@ -57,7 +57,14 @@ export const googleAnalyticsPageDao = {
   createMany: async (newGoogleAnalyticsPages: NewGoogleAnalyticsPage[]) => {
     const result = await planetScaleDB
       .insert(googleAnalyticsPages)
-      .values(newGoogleAnalyticsPages);
+      .values(newGoogleAnalyticsPages)
+      .onDuplicateKeyUpdate({
+        set: {
+          integrationId: sql`values(integration_id)`,
+          name: sql`values(name)`,
+          parentAccountName: sql`values(parent_account_name)`,
+        },
+      });
 
     return result;
   },
