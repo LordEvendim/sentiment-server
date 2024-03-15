@@ -23,7 +23,9 @@ const createMetaController = (metaInsights: MetaInsights) => {
               id: number;
             }[]
           | undefined;
+        adAccounts: MetaAdAccountDetails[] | undefined;
         selectedPage: number | undefined;
+        selectedAdAccount: number | undefined;
       }>
     ) => {
       try {
@@ -31,13 +33,17 @@ const createMetaController = (metaInsights: MetaInsights) => {
 
         if (!userId) throw new Error("Invlid request");
 
-        const result = await metaInsights.getUserPages(userId);
-        const selectedMetaPage =
+        const userPages = await metaInsights.getUserPages(userId);
+        const userAdAccounts = await metaInsights.getUserAdAccounts(userId);
+
+        const metaIntegration =
           await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
         return res.status(200).send({
-          pages: result,
-          selectedPage: selectedMetaPage?.selectedPage ?? undefined,
+          pages: userPages,
+          adAccounts: userAdAccounts,
+          selectedPage: metaIntegration?.selectedPage ?? undefined,
+          selectedAdAccount: metaIntegration?.selectedAdAccount ?? undefined,
         });
       } catch (error) {
         return handleControllerError(res, error);

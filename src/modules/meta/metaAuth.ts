@@ -4,6 +4,7 @@ import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
 import { NewMetaPage } from "#db/schema";
 
+import { metaInsights } from "./metaInsights";
 import { GetLongLivedToken, GetUserPages } from "./types";
 
 class MetaAuth {
@@ -22,8 +23,6 @@ class MetaAuth {
     metaId: string,
     userAccessToken: string
   ) => {
-    console.log("creating access token");
-
     const result = await axios.get<GetLongLivedToken>(
       `${this.baseUrl}/${this.apiVersion}/oauth/access_token`,
       {
@@ -42,7 +41,9 @@ class MetaAuth {
       accessToken: result.data.access_token,
     });
 
+    // TODO: move to connect function like in ad accounts
     await this.getLongLivedPageTokens(userId);
+    await metaInsights.connectUserAdAccounts(userId);
 
     return result.data.access_token;
   };

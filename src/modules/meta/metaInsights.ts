@@ -101,6 +101,11 @@ export class MetaInsights {
   connectUserAdAccounts = async (userId: number) => {
     const businesses = await this.getUserBusinesses(userId);
 
+    const metaIntegration =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+
+    if (!metaIntegration) throw new Error("Meta is not integrated");
+
     const adAccounts = [];
 
     for (let i = 0; i < businesses.length; i++) {
@@ -128,7 +133,8 @@ export class MetaInsights {
     await metaAdAccountDao.createMany(
       adAccounts.map((account) => ({
         ...account,
-        id: parseInt(account.id),
+        integrationId: metaIntegration.id,
+        id: parseInt(account.account_id),
       }))
     );
 
