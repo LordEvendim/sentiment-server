@@ -1,11 +1,11 @@
 import amqp from "amqplib";
 
-class QueueConsumer {
-  queueName: string;
+import { Queues, queuesConfig } from "./queues";
+import { TaskData, tasks } from "./tasks";
 
-  constructor(queueName: string) {
-    this.queueName = queueName;
-  }
+class QueueConsumer {
+  shouldReject = true;
+  retriesLimit = 5;
 
   async start() {
     try {
@@ -17,19 +17,29 @@ class QueueConsumer {
         await connection.close();
       });
 
-      await channel.assertQueue(this.queueName, { durable: false });
-      await channel.consume(
-        this.queueName,
-        (message) => {
-          if (message) {
-            console.log(
-              " [x] Received '%s'",
-              JSON.parse(message.content.toString())
-            );
-          }
-        },
-        { noAck: true }
-      );
+      let queueName: Queues;
+
+      for (queueName in queuesConfig) {
+        await channel.assertQueue(queueName, queuesConfig[queueName].queue);
+        await channel.consume(
+          queueName,
+          async (message) => {
+            if (!message) return;
+            const data = JSON.parse(message.content.toString()) as TaskData;
+
+            await tasks[queueName](message);
+
+            try {
+              channel.ack(message);
+            } catch (error: unknown) {
+              data.retry < this.retriesLimit
+                ? channel.nack(message, undefined, true)
+                : channel.ack(message);
+            }
+          },
+          queuesConfig[queueName].consume
+        );
+      }
 
       console.log(" [*] Waiting for messages. To exit press CTRL+C");
     } catch (err) {
@@ -38,4 +48,4 @@ class QueueConsumer {
   }
 }
 
-export const queueConsumer = new QueueConsumer("queue");
+export const queueConsumer = new QueueConsumer();

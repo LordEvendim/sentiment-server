@@ -54,6 +54,10 @@ class Reporter {
 
     return report;
   };
+
+  generateWeeklyReport = async (userId: number) => {
+    console.log("Generating report: " + userId);
+  };
 }
 
 export const reporter = new Reporter(gemini, metaInsights);

@@ -1,50 +1,49 @@
 import amqp from "amqplib";
 
-const text = {
-  item_id: "macbook",
-  text: "This is a sample message to send receiver to check the ordered Item Availablility",
-};
+import { Queues, queuesConfig } from "./queues";
 
 class QueueProducer {
-  queueName: string;
   isStarting: boolean = false;
   channel: amqp.Channel | undefined;
   connection: amqp.Connection | undefined;
 
-  constructor(queueName: string) {
-    this.queueName = queueName;
-  }
-
   async start() {
     if (this.isStarting) return;
+
+    process.once("SIGINT", async () => {
+      await this.channel?.close();
+      await this.connection?.close();
+    });
 
     try {
       this.isStarting = true;
       this.connection = await amqp.connect("amqp://localhost:5672");
       this.channel = await this.connection.createChannel();
+      this.channel.prefetch(1);
     } finally {
       this.isStarting = false;
     }
   }
 
-  async sendMessage() {
+  async sendMessage(queue: Queues, message: object) {
     try {
       if (!this.channel || !this.connection) {
         this.start();
         throw new Error("Connection with message broker is not established");
       }
-      await this.channel.assertQueue(this.queueName, { durable: false });
+
+      await this.channel.assertQueue(queue, queuesConfig[queue].queue);
       this.channel.sendToQueue(
-        this.queueName,
-        Buffer.from(JSON.stringify(text))
+        queue,
+        Buffer.from(JSON.stringify(message)),
+        queuesConfig[queue].queueSend
       );
 
-      console.log(" [x] Sent '%s'", text);
-      // await this.channel.close();
+      console.log(" [x] Sent '%s'", message);
     } catch (err) {
       console.warn(err);
     }
   }
 }
 
-export const queueProducer = new QueueProducer("queue");
+export const queueProducer = new QueueProducer();
