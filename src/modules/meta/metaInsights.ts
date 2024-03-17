@@ -1,4 +1,5 @@
 import axios from "axios";
+import { startOfToday } from "date-fns";
 
 import { metaAdAccountDao } from "#dao/metaAdAccountDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -21,11 +22,6 @@ import {
 export class MetaInsights {
   apiVersion = "v18.0";
   baseUrl = "https://graph.facebook.com";
-  accessToken = "";
-
-  constructor() {
-    this.accessToken = process.env.META_ACCESS_TOKEN ?? "";
-  }
 
   getUserAccesToken = async (userId: number) => {
     return await metaIntegrationDao.getAccessTokenByUserId(userId);
@@ -174,8 +170,25 @@ export class MetaInsights {
       `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
       {
         params: {
-          metric:
-            "page_impressions,page_posts_impressions,post_engaged_users,page_views_total",
+          metric: [
+            "page_impressions",
+            "page_impressions_unique",
+            "page_impressions_organic_v2",
+            "page_impressions_organic_unique_v2",
+            "page_impressions_viral",
+            "page_impressions_viral_unique",
+            "page_impressions_by_age_gender_unique",
+            "page_impressions_by_country_unique",
+            "page_total_actions",
+            "page_cta_clicks_logged_in_total",
+            "page_cta_clicks_logged_in_unique",
+            "page_call_phone_clicks_logged_in_unique",
+            "page_engaged_users",
+            "page_post_engagements",
+            "page_consumptions_unique",
+            // "profile_likes",
+          ].join(","),
+
           access_token: pageAccessToken,
         },
       }
@@ -187,15 +200,25 @@ export class MetaInsights {
     });
 
     const metrics: Omit<MetaPageInsightMetric, "metricId">[] =
-      result.data.data.map((metric) => ({
-        insightId: parseInt(insert.insertId),
-        description: metric.description,
-        endTime: metric.values[1].end_time,
-        value: metric.values[1].value,
-        name: metric.name,
-        period: metric.period,
-        title: metric.title,
-      }));
+      result.data.data.map((metric) => {
+        const valueField = metric?.values[1]?.value ?? metric.values[0].value;
+        const value =
+          typeof valueField === "object"
+            ? Object.entries(metric.values[0].value as object)
+                .map((entry) => entry[1])
+                .reduce((sum, a) => sum + a, 0)
+            : metric?.values[1]?.value ?? metric.values[0].value;
+
+        return {
+          insightId: parseInt(insert.insertId),
+          description: metric.description,
+          endTime: metric?.values[1]?.end_time ?? startOfToday().toISOString(),
+          value: value,
+          name: metric.name,
+          period: metric.period,
+          title: metric.title,
+        };
+      });
 
     await metaPageInsightMetricDao.createMany(metrics);
 

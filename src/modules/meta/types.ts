@@ -78,8 +78,8 @@ export type PageInsights = {
     name: string;
     period: "day" | "week" | "days_28";
     values: {
-      value: number;
-      end_time: string;
+      value: number | Record<string, number>;
+      end_time?: string;
     }[];
     title: string;
     description: string;

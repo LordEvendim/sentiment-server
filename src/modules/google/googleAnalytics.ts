@@ -4,14 +4,20 @@ import { googleAnalyticsPageDao } from "#dao/googleAnalyticsPageDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { GoogleAnalyticsPage, GoogleIntegration } from "#db/schema";
 
-import { GoogleAccount, GoogleProperty } from "./types";
+import {
+  GoogleAccount,
+  GoogleAnalyticsReportInput,
+  GoogleAnalyticsReportOutput,
+  GoogleProperty,
+} from "./types";
 
 export class GoogleAnalytics {
   adminApiUrl = "https://analyticsadmin.googleapis.com/v1beta";
+  dataApiUrl = "https://analyticsdata.googleapis.com/v1beta";
 
   constructor() {}
 
-  getUserIntegraiton = async (
+  getUserIntegration = async (
     userId: number
   ): Promise<
     | Omit<GoogleIntegration, "refreshToken" | "tokenCreatedAt" | "ownerId">
@@ -111,12 +117,103 @@ export class GoogleAnalytics {
 
     return transformedProperties;
   };
+
   selectPage = async (userId: number, pageId: number) => {
     await googleIntegrationDao.update(userId, {
       selectedPage: pageId,
     });
 
     return pageId;
+  };
+
+  getWeeklyData = async (userId: number) => {
+    const integration =
+      await googleIntegrationDao.getIntegrationWithSelectedPageByUserId(userId);
+
+    const selectedAnalyticsPage = integration?.selectedPage;
+
+    if (!selectedAnalyticsPage)
+      throw new Error("Analytics Page is not connected");
+
+    if (!integration.accessToken)
+      throw new Error("Google analytics is not connectd");
+
+    const metrics = [
+      "activeUsers",
+      "bounceRate",
+      "newUsers",
+      "sessions",
+      "engagementRate",
+      "conversions",
+      "cartToViewRate",
+      "userConversionRate",
+      "advertiserAdCostPerConversion",
+      "sessionsPerUser",
+      "addToCarts",
+      "checkouts",
+      "ecommercePurchases",
+    ];
+
+    const result = await axios.post<GoogleAnalyticsReportOutput>(
+      `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
+      {
+        dateRanges: [{ startDate: "7daysAgo", endDate: "yesterday" }],
+        dimensions: [
+          {
+            name: "sessionCampaignName",
+          },
+        ],
+        metrics: [...metrics].splice(0, 10).map((metric) => ({
+          name: metric,
+        })),
+      } satisfies GoogleAnalyticsReportInput,
+      {
+        headers: {
+          Authorization: `Bearer ${integration.accessToken}`,
+        },
+      }
+    );
+
+    const result2 = await axios.post<GoogleAnalyticsReportOutput>(
+      `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
+      {
+        dateRanges: [{ startDate: "7daysAgo", endDate: "yesterday" }],
+        dimensions: [],
+        metrics: [...metrics].splice(10, 10).map((metric) => ({
+          name: metric,
+        })),
+      } satisfies GoogleAnalyticsReportInput,
+      {
+        headers: {
+          Authorization: `Bearer ${integration.accessToken}`,
+        },
+      }
+    );
+
+    const metricsOuput: {
+      name: string;
+      value: string;
+    }[] = [];
+
+    if (result.data.rows) {
+      for (let i = 0; i < result.data.rows[0].metricValues.length; i++) {
+        metricsOuput.push({
+          name: metrics[i],
+          value: result.data.rows[0].metricValues[i].value,
+        });
+      }
+    }
+
+    if (result2.data.rows) {
+      for (let i = 0; i < result2.data.rows[0].metricValues.length; i++) {
+        metricsOuput.push({
+          name: metrics[i + 10],
+          value: result2.data.rows[0].metricValues[i].value,
+        });
+      }
+    }
+
+    return metricsOuput;
   };
 }
 

@@ -10,8 +10,8 @@ export const metaPageInsightMetrics = mysqlTable("meta_page_insight_metrics", {
   period: varchar("period", { length: 30 }).notNull(),
   value: int("value").notNull(),
   endTime: varchar("end_time", { length: 100 }).notNull(),
-  title: varchar("title", { length: 150 }).notNull(),
-  description: varchar("description", { length: 300 }).notNull(),
+  title: varchar("title", { length: 150 }),
+  description: varchar("description", { length: 512 }).notNull(),
 });
 
 export const metaPageInsightsMetricsRelations = relations(
