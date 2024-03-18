@@ -1,7 +1,6 @@
 import { Response } from "express";
 
 import { reporter } from "#modules/reporter";
-import { weeklyPageReports } from "#modules/reporter/tempStorage";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -28,17 +27,15 @@ const createReporterController = () => {
       res: Response<string>
     ) => {
       try {
-        const { pageId } = req.params;
         const { user } = req.session;
 
-        if (!pageId) throw new Error("Invalid request");
         if (!user) throw new Error("User not authenticated");
 
-        const report = weeklyPageReports[pageId];
+        const report = await reporter.getWeeklyPageReport(user.id);
 
         if (!report) throw new Error("Report not found");
 
-        return res.status(200).send(report);
+        return res.status(200).send(report.data);
       } catch (error) {
         return handleControllerError(res, error);
       }

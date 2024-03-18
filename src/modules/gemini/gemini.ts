@@ -1,5 +1,7 @@
 import { VertexAI } from "@google-cloud/vertexai";
 
+import { logger } from "#modules/logger";
+
 class Gemini {
   vertexAI: VertexAI;
   generativeModel: ReturnType<VertexAI["getGenerativeModel"]>;
@@ -24,13 +26,11 @@ class Gemini {
       result += part.text;
     }
 
-    console.log("Response from VertexAI");
-    console.log(JSON.stringify(response));
-
     return result;
   };
 
   getTextResponse = async (input: string) => {
+    logger.debug(`Gemini: getting text response`);
     const response = await this.generativeModel.generateContent(input);
 
     let result = "";
@@ -38,9 +38,6 @@ class Gemini {
     for (const part of response.response.candidates[0].content.parts) {
       result += part.text;
     }
-
-    console.log("Response from VertexAI");
-    console.log(result);
 
     return result;
   };

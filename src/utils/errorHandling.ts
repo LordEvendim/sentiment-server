@@ -16,8 +16,8 @@ export const handleControllerError = (res: Response, error: unknown) => {
 };
 
 export const handleError = (error: unknown, message: string) => {
-  // TODO: handle with winston
-  console.log(error);
+  logger.error(error);
+  logger.error(message);
 
   if (error instanceof Error && error.message) {
     return new Error(error.message);

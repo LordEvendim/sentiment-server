@@ -12,6 +12,7 @@ import {
   MetaPageDetails,
 } from "#db/schema";
 import { MetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
+import { logger } from "#modules/logger";
 
 import {
   BreakdownOptions,
@@ -32,6 +33,10 @@ export class MetaInsights {
   };
 
   getBusinessAdAccounts = async (userId: number, businessId: string) => {
+    logger.debug(
+      `Meta: getting Meta business owned ad accounts of ${businessId} of ${userId}`
+    );
+
     const userAccessToken =
       await metaIntegrationDao.getAccessTokenByUserId(userId);
 
@@ -52,6 +57,9 @@ export class MetaInsights {
   };
 
   getBusinessClientAdAccounts = async (userId: number, businessId: string) => {
+    logger.debug(
+      `Meta: getting Meta business client ad accounts of ${businessId} of ${userId}`
+    );
     const userAccessToken =
       await metaIntegrationDao.getAccessTokenByUserId(userId);
 
@@ -72,6 +80,7 @@ export class MetaInsights {
   };
 
   getUserBusinesses = async (userId: number) => {
+    logger.debug(`Meta: getting user Meta businesses ${userId}`);
     const metaIntegration =
       await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
@@ -95,6 +104,7 @@ export class MetaInsights {
   };
 
   connectUserAdAccounts = async (userId: number) => {
+    logger.debug(`Meta: connecting Meta Ad Accounts for ${userId}`);
     const businesses = await this.getUserBusinesses(userId);
 
     const metaIntegration =
@@ -160,6 +170,7 @@ export class MetaInsights {
   };
 
   getPageInsights = async (userId: number, pageId: number) => {
+    logger.debug(`Meta: getting page insights for ${userId} of ${pageId}`);
     const pageAccessToken = await metaPageDao.getPageAccessToken(pageId);
     const isPageOwner = await metaPageDao.isPageOwner(userId, pageId);
 
@@ -204,7 +215,8 @@ export class MetaInsights {
         const valueField = metric?.values[1]?.value ?? metric.values[0].value;
         const value =
           typeof valueField === "object"
-            ? Object.entries(metric.values[0].value as object)
+            ? // Sum actions from all CTA buttons
+              Object.entries(metric.values[0].value as object)
                 .map((entry) => entry[1])
                 .reduce((sum, a) => sum + a, 0)
             : metric?.values[1]?.value ?? metric.values[0].value;
@@ -220,6 +232,7 @@ export class MetaInsights {
         };
       });
 
+    logger.debug(`Meta: Inserting facebook page insights metrics to DB`);
     await metaPageInsightMetricDao.createMany(metrics);
 
     return metrics;
@@ -244,6 +257,7 @@ export class MetaInsights {
   };
 
   selectPage = async (userId: number, pageId: number) => {
+    logger.debug(`Meta: selecting Facebook Page for ${userId} to ${pageId}`);
     await metaIntegrationDao.update(userId, {
       selectedPage: pageId,
     });
@@ -252,6 +266,9 @@ export class MetaInsights {
   };
 
   selectAdAccount = async (userId: number, accountId: number) => {
+    logger.debug(
+      `Meta: selecting Meta Ad account for ${userId} to ${accountId}`
+    );
     await metaIntegrationDao.update(userId, {
       selectedAdAccount: accountId,
     });

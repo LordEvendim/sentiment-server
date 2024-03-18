@@ -1,5 +1,7 @@
 import amqp from "amqplib";
 
+import { logger } from "#modules/logger";
+
 import { Queues, queuesConfig } from "./queues";
 
 class QueueProducer {
@@ -25,21 +27,20 @@ class QueueProducer {
     }
   }
 
-  async sendMessage(queue: Queues, message: object) {
+  async sendMessage(queueName: Queues, message: object) {
     try {
       if (!this.channel || !this.connection) {
         this.start();
         throw new Error("Connection with message broker is not established");
       }
 
-      await this.channel.assertQueue(queue, queuesConfig[queue].queue);
+      logger.debug(`Message Broker: sending message to ${queueName}`);
+      await this.channel.assertQueue(queueName, queuesConfig[queueName].queue);
       this.channel.sendToQueue(
-        queue,
+        queueName,
         Buffer.from(JSON.stringify(message)),
-        queuesConfig[queue].queueSend
+        queuesConfig[queueName].queueSend
       );
-
-      console.log(" [x] Sent '%s'", message);
     } catch (err) {
       console.warn(err);
     }

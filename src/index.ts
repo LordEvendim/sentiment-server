@@ -1,6 +1,7 @@
 import "#config/dotenv";
 
 import { PORT } from "#config/network";
+import { logger } from "#modules/logger";
 
 import { createServer } from "./server";
 
@@ -8,9 +9,9 @@ const server = createServer();
 
 try {
   server.listen(PORT, (): void => {
-    console.log(`Server started on port: ${PORT}`);
+    logger.info(`Server started on port: ${PORT}`);
   });
 } catch (error) {
-  console.log("Server crashed with error");
-  console.log(error);
+  logger.error("Server crashed");
+  logger.error(error);
 }

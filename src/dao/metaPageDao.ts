@@ -5,7 +5,6 @@ import { metaIntegrations, metaPages, NewMetaPage } from "#db/schema";
 
 export const metaPageDao = {
   isPageOwner: async (userId: number, pageId: number) => {
-    console.log("checking is page owner");
     const result = await planetScaleDB.query.metaPages.findMany({
       where: eq(metaPages.pageId, pageId),
       with: {

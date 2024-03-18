@@ -3,6 +3,7 @@ import axios from "axios";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
 import { NewMetaPage } from "#db/schema";
+import { logger } from "#modules/logger";
 
 import { metaInsights } from "./metaInsights";
 import { GetLongLivedToken, GetUserPages } from "./types";
@@ -23,6 +24,7 @@ class MetaAuth {
     metaId: string,
     userAccessToken: string
   ) => {
+    logger.debug("Meta: creating access token for " + userId);
     const result = await axios.get<GetLongLivedToken>(
       `${this.baseUrl}/${this.apiVersion}/oauth/access_token`,
       {
@@ -49,6 +51,8 @@ class MetaAuth {
   };
 
   getLongLivedPageTokens = async (userId: number) => {
+    logger.debug("Meta: creating long lived page tokens for " + userId);
+
     const metaIntegration =
       await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 

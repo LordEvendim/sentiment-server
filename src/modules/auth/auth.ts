@@ -9,10 +9,6 @@ import { UserInfo } from "#types/user";
 import { AuthProvider } from "./types";
 
 export class Auth implements AuthProvider {
-  constructor() {
-    logger.debug("Auth class initialized");
-  }
-
   login = async (
     username: string,
     password: string
@@ -24,6 +20,8 @@ export class Auth implements AuthProvider {
     const isMatchingPassword = await compare(password, user.password);
 
     if (!isMatchingPassword) throw new Error("Invalid password");
+
+    logger.debug(`User logged in ${username}`);
 
     return {
       id: user.id,
@@ -44,6 +42,8 @@ export class Auth implements AuthProvider {
 
     const hashedPassword = await hash(password, SALTING_ROUNDS);
     const newUserId = nanoid();
+
+    logger.debug(`User registered ${username}`);
 
     await userDao.create({
       username,

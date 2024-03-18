@@ -1,5 +1,7 @@
 import amqp from "amqplib";
 
+import { logger } from "#modules/logger";
+
 import { Queues, queuesConfig } from "./queues";
 import { TaskData, tasks } from "./tasks";
 
@@ -20,6 +22,9 @@ class QueueConsumer {
       let queueName: Queues;
 
       for (queueName in queuesConfig) {
+        logger.debug(
+          "Message Broker: setting up consumer for queue: " + queueName
+        );
         await channel.assertQueue(queueName, queuesConfig[queueName].queue);
         await channel.consume(
           queueName,
@@ -40,8 +45,6 @@ class QueueConsumer {
           queuesConfig[queueName].consume
         );
       }
-
-      console.log(" [*] Waiting for messages. To exit press CTRL+C");
     } catch (err) {
       console.warn(err);
     }

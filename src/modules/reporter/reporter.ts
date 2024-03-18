@@ -3,6 +3,7 @@ import { metaPageDao } from "#dao/metaPageDao";
 import { reportDao } from "#dao/reportDao";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
+import { logger } from "#modules/logger";
 import { MetaInsights, metaInsights } from "#modules/meta";
 
 import { prompts } from "./prompts";
@@ -56,7 +57,7 @@ class Reporter {
   };
 
   generateWeeklyReport = async (userId: number) => {
-    console.log("Generating report: " + userId);
+    logger.info(`Reporter: Generating weekly report for ${userId}`);
   };
 }
 

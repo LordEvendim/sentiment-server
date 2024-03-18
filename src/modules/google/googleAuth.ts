@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
+import { logger } from "#modules/logger";
 
 import { googleAnalytics } from "./googleAnalytics";
 
@@ -34,6 +35,7 @@ export class GoogleAuth {
   };
 
   createAccessToken = async (code: string, userId: number) => {
+    logger.debug(`Google: creating access token for ${userId}`);
     const { tokens } = await this.oauthClient.getToken(code);
 
     const currentIntegration =

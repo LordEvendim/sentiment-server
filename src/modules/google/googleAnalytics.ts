@@ -3,6 +3,7 @@ import axios from "axios";
 import { googleAnalyticsPageDao } from "#dao/googleAnalyticsPageDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { GoogleAnalyticsPage, GoogleIntegration } from "#db/schema";
+import { logger } from "#modules/logger";
 
 import {
   GoogleAccount,
@@ -40,6 +41,7 @@ export class GoogleAnalytics {
   };
 
   connectUserAccounts = async (userId: number) => {
+    logger.debug(`Google: connecting Google Analytics accounts of ${userId}`);
     const integration =
       await googleIntegrationDao.getIntegrationByUserId(userId);
 
@@ -94,6 +96,7 @@ export class GoogleAnalytics {
     accountName: string,
     accountDisplayName: string
   ) => {
+    logger.debug(`Google: connecting account properties of ${accountName}`);
     const accessToken =
       await googleIntegrationDao.getAccessTokenByUserId(userId);
 
@@ -119,6 +122,9 @@ export class GoogleAnalytics {
   };
 
   selectPage = async (userId: number, pageId: number) => {
+    logger.debug(
+      `Google: selecting Google Analytics Account to ${pageId} for ${userId}`
+    );
     await googleIntegrationDao.update(userId, {
       selectedPage: pageId,
     });
@@ -127,6 +133,7 @@ export class GoogleAnalytics {
   };
 
   getWeeklyData = async (userId: number) => {
+    logger.debug(`Google: getting weekly Google Analytics Data for ${userId}`);
     const integration =
       await googleIntegrationDao.getIntegrationWithSelectedPageByUserId(userId);
 
