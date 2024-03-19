@@ -6,6 +6,10 @@ import { GoogleAnalyticsPage, GoogleIntegration } from "#db/schema";
 import { logger } from "#modules/logger";
 
 import {
+  googleAnalyticsMetricsDetails,
+  googleAnalyticsMetricsNames,
+} from "./metrics";
+import {
   GoogleAccount,
   GoogleAnalyticsReportInput,
   GoogleAnalyticsReportOutput,
@@ -135,7 +139,7 @@ export class GoogleAnalytics {
   getWeeklyData = async (userId: number) => {
     logger.debug(`Google: getting weekly Google Analytics Data for ${userId}`);
     const integration =
-      await googleIntegrationDao.getIntegrationWithSelectedPageByUserId(userId);
+      await googleIntegrationDao.getIntegrationWithSelectedByUserId(userId);
 
     const selectedAnalyticsPage = integration?.selectedPage;
 
@@ -145,78 +149,45 @@ export class GoogleAnalytics {
     if (!integration.accessToken)
       throw new Error("Google analytics is not connectd");
 
-    const metrics = [
-      "activeUsers",
-      "bounceRate",
-      "newUsers",
-      "sessions",
-      "engagementRate",
-      "conversions",
-      "cartToViewRate",
-      "userConversionRate",
-      "advertiserAdCostPerConversion",
-      "sessionsPerUser",
-      "addToCarts",
-      "checkouts",
-      "ecommercePurchases",
-    ];
+    const metrics = googleAnalyticsMetricsNames;
 
-    const result = await axios.post<GoogleAnalyticsReportOutput>(
-      `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
-      {
-        dateRanges: [{ startDate: "7daysAgo", endDate: "yesterday" }],
-        dimensions: [
-          {
-            name: "sessionCampaignName",
-          },
-        ],
-        metrics: [...metrics].splice(0, 10).map((metric) => ({
-          name: metric,
-        })),
-      } satisfies GoogleAnalyticsReportInput,
-      {
-        headers: {
-          Authorization: `Bearer ${integration.accessToken}`,
-        },
-      }
-    );
-
-    const result2 = await axios.post<GoogleAnalyticsReportOutput>(
-      `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
-      {
-        dateRanges: [{ startDate: "7daysAgo", endDate: "yesterday" }],
-        dimensions: [],
-        metrics: [...metrics].splice(10, 10).map((metric) => ({
-          name: metric,
-        })),
-      } satisfies GoogleAnalyticsReportInput,
-      {
-        headers: {
-          Authorization: `Bearer ${integration.accessToken}`,
-        },
-      }
-    );
-
+    const metricsBatchSize = 10;
     const metricsOuput: {
       name: string;
       value: string;
     }[] = [];
 
-    if (result.data.rows) {
-      for (let i = 0; i < result.data.rows[0].metricValues.length; i++) {
-        metricsOuput.push({
-          name: metrics[i],
-          value: result.data.rows[0].metricValues[i].value,
-        });
-      }
-    }
+    for (let i = 0; i < metrics.length; i += metricsBatchSize) {
+      const result = await axios.post<GoogleAnalyticsReportOutput>(
+        `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
+        {
+          dateRanges: [{ startDate: "7daysAgo", endDate: "yesterday" }],
+          dimensions: [
+            {
+              name: "sessionCampaignName",
+            },
+          ],
+          metrics: [...metrics]
+            .splice(i, i + metricsBatchSize)
+            .map((metric) => ({
+              name: metric,
+            })),
+        } satisfies GoogleAnalyticsReportInput,
+        {
+          headers: {
+            Authorization: `Bearer ${integration.accessToken}`,
+          },
+        }
+      );
 
-    if (result2.data.rows) {
-      for (let i = 0; i < result2.data.rows[0].metricValues.length; i++) {
-        metricsOuput.push({
-          name: metrics[i + 10],
-          value: result2.data.rows[0].metricValues[i].value,
-        });
+      // Handle multiple rows for dimenssions
+      if (result.data.rows) {
+        for (let j = 0; j < result.data.rows[0].metricValues.length; j++) {
+          metricsOuput.push({
+            name: googleAnalyticsMetricsDetails[metrics[i + j]].displayName,
+            value: result.data.rows[0].metricValues[i].value,
+          });
+        }
       }
     }
 

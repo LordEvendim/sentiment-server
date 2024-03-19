@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { bigint, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 
+import { googleAdAccounts } from "./googleAdAccounts";
 import { googleAnalyticsPages } from "./googleAnalyticsPages";
 import { users } from "./users";
 
@@ -11,6 +12,7 @@ export const googleIntegrations = mysqlTable("google_integrations", {
   refreshToken: varchar("refresh_token", { length: 512 }),
   tokenCreatedAt: bigint("token_created_at", { mode: "number" }),
   selectedPage: bigint("selected_page", { mode: "number" }),
+  selectedAdAccount: bigint("selected_ad_account", { mode: "number" }),
 });
 
 export const googleIntegrationsRelations = relations(
@@ -24,7 +26,12 @@ export const googleIntegrationsRelations = relations(
       fields: [googleIntegrations.selectedPage],
       references: [googleAnalyticsPages.id],
     }),
+    selectedAdAccount: one(googleAdAccounts, {
+      fields: [googleIntegrations.selectedAdAccount],
+      references: [googleAdAccounts.id],
+    }),
     analyticsPages: many(googleAnalyticsPages),
+    adAccounts: many(googleAdAccounts),
   })
 );
 

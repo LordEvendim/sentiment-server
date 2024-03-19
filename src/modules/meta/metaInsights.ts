@@ -1,5 +1,5 @@
 import axios from "axios";
-import { startOfToday } from "date-fns";
+import { format, startOfToday } from "date-fns";
 
 import { metaAdAccountDao } from "#dao/metaAdAccountDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -26,10 +26,6 @@ export class MetaInsights {
 
   getUserAccesToken = async (userId: number) => {
     return await metaIntegrationDao.getAccessTokenByUserId(userId);
-  };
-
-  getPageAccessToken = async (pageId: number) => {
-    return await metaPageDao.getPageAccessToken(pageId);
   };
 
   getBusinessAdAccounts = async (userId: number, businessId: string) => {
@@ -169,10 +165,28 @@ export class MetaInsights {
     return result;
   };
 
-  getPageInsights = async (userId: number, pageId: number) => {
+  getPageInsights = async (
+    userId: number,
+    pageId: number,
+    since: Date,
+    until: Date
+  ) => {
     logger.debug(`Meta: getting page insights for ${userId} of ${pageId}`);
-    const pageAccessToken = await metaPageDao.getPageAccessToken(pageId);
-    const isPageOwner = await metaPageDao.isPageOwner(userId, pageId);
+
+    const integration =
+      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("User is not connected with Meta");
+
+    const pageAccessToken = await metaPageDao.getPageAccessToken(
+      pageId,
+      integration.id
+    );
+    const isPageOwner = await metaPageDao.isPageOwner(
+      userId,
+      pageId,
+      integration.id
+    );
 
     if (!isPageOwner) throw new Error("User is not a page owner");
     if (!pageAccessToken) throw new Error("This page is not integrated");
@@ -199,11 +213,15 @@ export class MetaInsights {
             "page_consumptions_unique",
             // "profile_likes",
           ].join(","),
-
           access_token: pageAccessToken,
+          since: format(since, "yyyy-MM-dd"),
+          until: format(until, "yyyy-MM-dd"),
+          period: "day",
         },
       }
     );
+
+    logger.debug(result.data.data);
 
     const insert = await metaPageInsightDao.create({
       createdAt: Date.now(),
@@ -232,10 +250,10 @@ export class MetaInsights {
         };
       });
 
-    logger.debug(`Meta: Inserting facebook page insights metrics to DB`);
+    logger.debug(`Meta: inserting facebook page insights metrics to DB`);
     await metaPageInsightMetricDao.createMany(metrics);
 
-    return metrics;
+    return result.data.data;
   };
 
   getUserPages = async (userId: number) => {

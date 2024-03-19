@@ -45,6 +45,8 @@ export type SupportedBreakdownFields =
   | "actions"
   | "action_values";
 
+export type MetricPeriod = "day" | "week" | "days_28";
+
 export type GetUserPages = {
   data: Array<{
     access_token: string;
@@ -76,7 +78,7 @@ export type GetLongLivedToken = {
 export type PageInsights = {
   data: {
     name: string;
-    period: "day" | "week" | "days_28";
+    period: MetricPeriod;
     values: {
       value: number | Record<string, number>;
       end_time?: string;

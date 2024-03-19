@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
 import {
@@ -23,9 +23,12 @@ export const googleAnalyticsPageDao = {
 
     return Boolean(result.length > 0);
   },
-  getPageById: async (pageId: number) => {
+  getPage: async (id: number, integrationId: number) => {
     const result = await planetScaleDB.query.googleAnalyticsPages.findFirst({
-      where: eq(googleAnalyticsPages.id, pageId),
+      where: and(
+        eq(googleAnalyticsPages.id, id),
+        eq(googleAnalyticsPages.integrationId, integrationId)
+      ),
     });
 
     return result;
@@ -41,11 +44,20 @@ export const googleAnalyticsPageDao = {
 
     return result?.analyticsPages;
   },
-  update: async (id: number, update: Partial<NewGoogleAnalyticsPage>) => {
+  update: async (
+    id: number,
+    integrationId: number,
+    update: Partial<NewGoogleAnalyticsPage>
+  ) => {
     await planetScaleDB
       .update(googleAnalyticsPages)
       .set(update)
-      .where(eq(googleAnalyticsPages.id, id));
+      .where(
+        and(
+          eq(googleAnalyticsPages.id, id),
+          eq(googleAnalyticsPages.integrationId, integrationId)
+        )
+      );
   },
   create: async (newGoogleAnalyticsPage: NewGoogleAnalyticsPage) => {
     const result = await planetScaleDB
@@ -60,7 +72,6 @@ export const googleAnalyticsPageDao = {
       .values(newGoogleAnalyticsPages)
       .onDuplicateKeyUpdate({
         set: {
-          integrationId: sql`values(integration_id)`,
           name: sql`values(name)`,
           parentAccountName: sql`values(parent_account_name)`,
         },

@@ -21,10 +21,11 @@ export const googleIntegrationDao = {
 
     return result;
   },
-  getIntegrationWithSelectedPageByUserId: async (userId: number) => {
+  getIntegrationWithSelectedByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.googleIntegrations.findFirst({
       with: {
         selectedPage: true,
+        selectedAdAccount: true,
       },
       where: eq(googleIntegrations.ownerId, userId),
     });

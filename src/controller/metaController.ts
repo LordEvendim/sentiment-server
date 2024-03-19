@@ -1,3 +1,4 @@
+import { endOfYesterday, subDays } from "date-fns";
 import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -93,7 +94,12 @@ const createMetaController = (metaInsights: MetaInsights) => {
 
         if (!userId || !pageId) throw new Error("Invlid request");
 
-        const result = await metaInsights.getPageInsights(userId, pageId);
+        const result = await metaInsights.getPageInsights(
+          userId,
+          pageId,
+          subDays(endOfYesterday(), 7),
+          endOfYesterday()
+        );
 
         return res.status(200).send(result);
       } catch (error) {

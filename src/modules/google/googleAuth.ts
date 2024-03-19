@@ -38,21 +38,12 @@ export class GoogleAuth {
     logger.debug(`Google: creating access token for ${userId}`);
     const { tokens } = await this.oauthClient.getToken(code);
 
-    const currentIntegration =
-      await googleIntegrationDao.getIntegrationByUserId(userId);
-
-    currentIntegration
-      ? await googleIntegrationDao.update(userId, {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          tokenCreatedAt: Date.now(),
-        })
-      : await googleIntegrationDao.create({
-          ownerId: userId,
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          tokenCreatedAt: Date.now(),
-        });
+    await googleIntegrationDao.create({
+      ownerId: userId,
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      tokenCreatedAt: Date.now(),
+    });
 
     await googleAnalytics.connectUserAccounts(userId);
 

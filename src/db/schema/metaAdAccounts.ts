@@ -1,13 +1,27 @@
 import { relations } from "drizzle-orm";
-import { bigint, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
+import {
+  bigint,
+  int,
+  mysqlTable,
+  primaryKey,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { metaIntegrations } from "./metaIntegrations";
 
-export const metaAdAccounts = mysqlTable("meta_ad_accounts", {
-  id: bigint("id", { mode: "number" }).primaryKey(),
-  integrationId: int("integration_id"),
-  parentAccountName: varchar("parent_account_name", { length: 256 }).notNull(),
-});
+export const metaAdAccounts = mysqlTable(
+  "meta_ad_accounts",
+  {
+    id: bigint("id", { mode: "number" }).notNull(),
+    integrationId: int("integration_id").notNull(),
+    parentAccountName: varchar("parent_account_name", {
+      length: 256,
+    }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id, table.integrationId] }),
+  })
+);
 
 export const metaAdAccountsRelations = relations(metaAdAccounts, ({ one }) => ({
   metaIntegration: one(metaIntegrations, {

@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
 import { metaAdAccounts, metaIntegrations, NewMetaAdAccount } from "#db/schema";
@@ -19,9 +19,12 @@ export const metaAdAccountDao = {
 
     return Boolean(result.length > 0);
   },
-  getAccountById: async (id: number) => {
+  getAccount: async (id: number, integrationId: number) => {
     const result = await planetScaleDB.query.metaAdAccounts.findFirst({
-      where: eq(metaAdAccounts.id, id),
+      where: and(
+        eq(metaAdAccounts.id, id),
+        eq(metaAdAccounts.integrationId, integrationId)
+      ),
     });
 
     return result;
@@ -37,11 +40,20 @@ export const metaAdAccountDao = {
 
     return result?.adAccounts;
   },
-  update: async (id: number, update: Partial<NewMetaAdAccount>) => {
+  update: async (
+    id: number,
+    integrationId: number,
+    update: Partial<NewMetaAdAccount>
+  ) => {
     await planetScaleDB
       .update(metaAdAccounts)
       .set(update)
-      .where(eq(metaAdAccounts.id, id));
+      .where(
+        and(
+          eq(metaAdAccounts.id, id),
+          eq(metaAdAccounts.integrationId, integrationId)
+        )
+      );
   },
   create: async (newMetaAdAccount: NewMetaAdAccount) => {
     const result = await planetScaleDB
@@ -56,7 +68,6 @@ export const metaAdAccountDao = {
       .values(newMetaAdAccounts)
       .onDuplicateKeyUpdate({
         set: {
-          integrationId: sql`values(integration_id)`,
           parentAccountName: sql`values(parent_account_name)`,
         },
       });

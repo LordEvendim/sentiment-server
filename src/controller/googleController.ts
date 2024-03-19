@@ -46,9 +46,7 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         if (!userId) throw new Error("Invalid request");
 
         const integration =
-          await googleIntegrationDao.getIntegrationWithSelectedPageByUserId(
-            userId
-          );
+          await googleIntegrationDao.getIntegrationWithSelectedByUserId(userId);
 
         return res.status(200).send(integration);
       } catch (error) {
@@ -68,13 +66,9 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
       }
     },
     createAccessToken: async (
-      req: TypedRequest<
-        {
-          code: string;
-        },
-        object,
-        object
-      >,
+      req: TypedRequest<{
+        code: string;
+      }>,
       res: Response
     ) => {
       try {

@@ -1,14 +1,28 @@
 import { relations } from "drizzle-orm";
-import { bigint, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
+import {
+  bigint,
+  int,
+  mysqlTable,
+  primaryKey,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { googleIntegrations } from "./googleIntegrations";
 
-export const googleAnalyticsPages = mysqlTable("google_analytics_pages", {
-  id: bigint("id", { mode: "number" }).primaryKey(),
-  integrationId: int("integration_id"),
-  name: varchar("name", { length: 256 }).notNull(),
-  parentAccountName: varchar("parent_account_name", { length: 256 }).notNull(),
-});
+export const googleAnalyticsPages = mysqlTable(
+  "google_analytics_pages",
+  {
+    id: bigint("id", { mode: "number" }).notNull(),
+    integrationId: int("integration_id").notNull(),
+    name: varchar("name", { length: 256 }).notNull(),
+    parentAccountName: varchar("parent_account_name", {
+      length: 256,
+    }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id, table.integrationId] }),
+  })
+);
 
 export const googleAnalyticsPagesRelations = relations(
   googleAnalyticsPages,

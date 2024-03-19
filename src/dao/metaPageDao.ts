@@ -1,12 +1,19 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { planetScaleDB } from "src/db/planetscale";
 
 import { metaIntegrations, metaPages, NewMetaPage } from "#db/schema";
 
 export const metaPageDao = {
-  isPageOwner: async (userId: number, pageId: number) => {
+  isPageOwner: async (
+    userId: number,
+    integrationId: number,
+    pageId: number
+  ) => {
     const result = await planetScaleDB.query.metaPages.findMany({
-      where: eq(metaPages.pageId, pageId),
+      where: and(
+        eq(metaPages.pageId, pageId),
+        eq(metaPages.integrationId, integrationId)
+      ),
       with: {
         metaIntegration: {
           // TODO: replace with sql query
@@ -19,9 +26,12 @@ export const metaPageDao = {
 
     return Boolean(result.length > 0);
   },
-  getPageByPageId: async (pageId: number) => {
+  getPage: async (pageId: number, integrationId: number) => {
     const result = await planetScaleDB.query.metaPages.findFirst({
-      where: eq(metaPages.pageId, pageId),
+      where: and(
+        eq(metaPages.pageId, pageId),
+        eq(metaPages.integrationId, integrationId)
+      ),
     });
 
     return result;
@@ -37,21 +47,33 @@ export const metaPageDao = {
 
     return result?.pages;
   },
-  getPageAccessToken: async (pageId: number) => {
+  getPageAccessToken: async (pageId: number, integrationId: number) => {
     const result = await planetScaleDB.query.metaPages.findFirst({
       columns: {
         accessToken: true,
       },
-      where: eq(metaPages.pageId, pageId),
+      where: and(
+        eq(metaPages.pageId, pageId),
+        eq(metaPages.integrationId, integrationId)
+      ),
     });
 
     return result?.accessToken;
   },
-  update: async (pageId: number, update: Partial<NewMetaPage>) => {
+  update: async (
+    pageId: number,
+    integrationId: number,
+    update: Partial<NewMetaPage>
+  ) => {
     await planetScaleDB
       .update(metaPages)
       .set(update)
-      .where(eq(metaPages.pageId, pageId));
+      .where(
+        and(
+          eq(metaPages.pageId, pageId),
+          eq(metaPages.integrationId, integrationId)
+        )
+      );
   },
   create: async (newMetaPage: NewMetaPage) => {
     const result = await planetScaleDB.insert(metaPages).values(newMetaPage);
@@ -65,7 +87,6 @@ export const metaPageDao = {
       .onDuplicateKeyUpdate({
         set: {
           accessToken: sql`values(access_token)`,
-          integrationId: sql`values(integration_id)`,
           name: sql`values(name)`,
           profilePictureURL: sql`values(profile_picture_url)`,
         },

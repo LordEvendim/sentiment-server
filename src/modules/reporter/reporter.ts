@@ -1,3 +1,5 @@
+import { endOfYesterday, subDays } from "date-fns";
+
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
 import { reportDao } from "#dao/reportDao";
@@ -27,11 +29,14 @@ class Reporter {
 
     const metaPageInsights = await this.metaDataProvider.getPageInsights(
       userId,
-      metaIntegration.selectedPage
+      metaIntegration.selectedPage,
+      subDays(endOfYesterday(), 7),
+      endOfYesterday()
     );
 
-    const page = await metaPageDao.getPageByPageId(
-      metaIntegration.selectedPage
+    const page = await metaPageDao.getPage(
+      metaIntegration.selectedPage,
+      metaIntegration.id
     );
 
     if (!page) throw new Error("Page doesn't exist");
