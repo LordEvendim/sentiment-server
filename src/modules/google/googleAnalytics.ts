@@ -37,6 +37,7 @@ export class GoogleAnalytics {
       id: integration.id,
       accessToken: integration.accessToken,
       selectedPage: integration.selectedPage,
+      selectedAdAccount: integration.selectedAdAccount,
     };
   };
 
@@ -48,19 +49,6 @@ export class GoogleAnalytics {
     logger.debug(`Google: connecting Google Analytics accounts of ${userId}`);
     const integration =
       await googleIntegrationDao.getIntegrationByUserId(userId);
-
-    // const oauthClient: Auth.OAuth2Client = new google.auth.OAuth2({
-    //   credentials: {
-    //     access_token: accessToken,
-    //   },
-    // });
-
-    // const googleAdmin = google.analyticsadmin("v1beta");
-    // const result = await googleAdmin.accounts.list({
-    //   auth: oauthClient,
-    // });
-
-    // console.log(result.data);
 
     if (!integration?.accessToken) throw new Error("Google is not connected");
 
