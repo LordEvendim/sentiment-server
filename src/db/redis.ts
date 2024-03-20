@@ -2,6 +2,13 @@ import { Redis, RedisOptions } from "ioredis";
 
 import { logger } from "#modules/logger";
 
+const devConfig = {} satisfies RedisOptions;
+
+const prodConfig = {
+  host: process.env.REDIS_INTERNAL_URL?.split(":")[0],
+  port: parseInt(process.env.REDIS_INTERNAL_URL?.split(":")[1] ?? "6379"),
+} satisfies RedisOptions;
+
 class RedisConnectionManager {
   public connection: Redis;
 
@@ -16,4 +23,6 @@ class RedisConnectionManager {
   }
 }
 
-export const redisConnection = new RedisConnectionManager({});
+export const redisConnection = new RedisConnectionManager(
+  process.env.NODE_ENV === "prod" ? prodConfig : devConfig
+);
