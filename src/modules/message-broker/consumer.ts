@@ -11,7 +11,11 @@ class QueueConsumer {
 
   async start() {
     try {
-      const connection = await amqp.connect("amqp://localhost:5672");
+      const connection = await amqp.connect(
+        process.env.NODE_ENV === "prod"
+          ? process.env.RABBITMQ_URL!
+          : "amqp://localhost:5672"
+      );
       const channel = await connection.createChannel();
 
       process.once("SIGINT", async () => {
