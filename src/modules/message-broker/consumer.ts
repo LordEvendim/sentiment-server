@@ -16,6 +16,8 @@ class QueueConsumer {
           ? process.env.RABBITMQ_URL!
           : "amqp://localhost:5672"
       );
+      logger.info("Message Broker: connected with RabbitMQ");
+
       const channel = await connection.createChannel();
 
       process.once("SIGINT", async () => {
