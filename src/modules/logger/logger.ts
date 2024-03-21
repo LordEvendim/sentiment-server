@@ -25,6 +25,7 @@ export const logger = createLogger({
       level: "debug",
     }),
     new transports.File({
+      format: combine(timestamp(), format.simple()),
       dirname: `logs`,
       filename: "error.log",
       level: "error",

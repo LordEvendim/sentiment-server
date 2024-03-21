@@ -1,17 +1,16 @@
 import axios from "axios";
-import { format, startOfToday } from "date-fns";
+import { format, startOfYesterday } from "date-fns";
 
 import { metaAdAccountDao } from "#dao/metaAdAccountDao";
+import { metaInsightsMetricDao } from "#dao/metaInsightsMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { metaPageDao } from "#dao/metaPageDao";
-import { metaPageInsightDao } from "#dao/metaPageInsightDao";
-import { metaPageInsightMetricDao } from "#dao/metaPageInsightMetricDao";
 import {
   MetaAdAccountDetails,
   MetaIntegration,
   MetaPageDetails,
+  NewMetaInsightsMetric,
 } from "#db/schema";
-import { MetaPageInsightMetric } from "#db/schema/metaPageInsightMetrics";
 import { logger } from "#modules/logger";
 
 import {
@@ -19,6 +18,7 @@ import {
   PageInsights,
   SupportedBreakdownFields,
 } from "./types";
+import { metaMetricPeriodToDays } from "./utils";
 
 export class MetaInsights {
   apiVersion = "v18.0";
@@ -184,8 +184,8 @@ export class MetaInsights {
     );
     const isPageOwner = await metaPageDao.isPageOwner(
       userId,
-      pageId,
-      integration.id
+      integration.id,
+      pageId
     );
 
     if (!isPageOwner) throw new Error("User is not a page owner");
@@ -208,9 +208,9 @@ export class MetaInsights {
             "page_cta_clicks_logged_in_total",
             "page_cta_clicks_logged_in_unique",
             "page_call_phone_clicks_logged_in_unique",
-            "page_engaged_users",
             "page_post_engagements",
             "page_consumptions_unique",
+            // "page_engaged_users",
             // "profile_likes",
           ].join(","),
           access_token: pageAccessToken,
@@ -221,39 +221,40 @@ export class MetaInsights {
       }
     );
 
-    logger.debug(result.data.data);
+    const metrics: NewMetaInsightsMetric[] = [];
 
-    const insert = await metaPageInsightDao.create({
-      createdAt: Date.now(),
-      pageId: pageId,
-    });
+    for (let i = 0; i < result.data.data.length; i++) {
+      const metric = result.data.data[i];
 
-    const metrics: Omit<MetaPageInsightMetric, "metricId">[] =
-      result.data.data.map((metric) => {
-        const valueField = metric?.values[1]?.value ?? metric.values[0].value;
+      for (let j = 0; j < metric.values.length; j++) {
+        const datapoint = metric.values[j];
+
         const value =
-          typeof valueField === "object"
-            ? // Sum actions from all CTA buttons
-              Object.entries(metric.values[0].value as object)
+          // CTA metrics return "object" in "value" field instead of the number
+          typeof datapoint.value === "object"
+            ? Object.entries(datapoint.value as object)
                 .map((entry) => entry[1])
                 .reduce((sum, a) => sum + a, 0)
-            : metric?.values[1]?.value ?? metric.values[0].value;
+            : datapoint.value;
 
-        return {
-          insightId: parseInt(insert.insertId),
-          description: metric.description,
-          endTime: metric?.values[1]?.end_time ?? startOfToday().toISOString(),
+        metrics.push({
+          sourceId: pageId,
+          metricId: metric.name,
+          integrationId: integration.id,
+          createdAt:
+            metric.period === "lifetime"
+              ? startOfYesterday()
+              : new Date(metric.values[j].end_time),
           value: value,
-          name: metric.name,
-          period: metric.period,
-          title: metric.title,
-        };
-      });
+          period: metaMetricPeriodToDays[metric.period],
+        });
+      }
+    }
 
     logger.debug(`Meta: inserting facebook page insights metrics to DB`);
-    await metaPageInsightMetricDao.createMany(metrics);
+    await metaInsightsMetricDao.createMany(metrics);
 
-    return result.data.data;
+    return metrics;
   };
 
   getUserPages = async (userId: number) => {

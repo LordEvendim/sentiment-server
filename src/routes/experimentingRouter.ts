@@ -15,7 +15,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const data = await metaInsights.getPageInsights(
       1,
       805658772858082,
-      subDays(startOfYesterday(), 7 * 4),
+      subDays(startOfYesterday(), 4 * 7),
       subDays(startOfYesterday(), 0)
     );
     // const data = format(startOfYesterday(), "yyyy-MM-dd");

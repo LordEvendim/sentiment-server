@@ -45,7 +45,7 @@ export type SupportedBreakdownFields =
   | "actions"
   | "action_values";
 
-export type MetricPeriod = "day" | "week" | "days_28";
+export type MetricPeriod = "day" | "week" | "days_28" | "lifetime";
 
 export type GetUserPages = {
   data: Array<{
@@ -76,15 +76,27 @@ export type GetLongLivedToken = {
 };
 
 export type PageInsights = {
-  data: {
-    name: string;
-    period: MetricPeriod;
-    values: {
-      value: number | Record<string, number>;
-      end_time?: string;
-    }[];
-    title: string;
-    description: string;
-    id: string;
-  }[];
+  data: (
+    | {
+        name: string;
+        period: Exclude<MetricPeriod, "lifetime">;
+        values: {
+          value: number | Record<string, number>;
+          end_time: string;
+        }[];
+        title: string;
+        description: string;
+        id: string;
+      }
+    | {
+        name: string;
+        period: "lifetime";
+        values: {
+          value: number | Record<string, number>;
+        }[];
+        title: string;
+        description: string;
+        id: string;
+      }
+  )[];
 };

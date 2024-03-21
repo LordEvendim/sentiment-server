@@ -24,7 +24,7 @@ class QueueProducer {
           ? process.env.RABBITMQ_URL!
           : "amqp://localhost:5672"
       );
-      logger.info("Message Broker: connected producer with RabbitMQ");
+      logger.info("Message Broker: producer connected with RabbitMQ");
 
       this.channel = await this.connection.createChannel();
       this.channel.prefetch(1);
