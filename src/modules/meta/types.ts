@@ -100,3 +100,11 @@ export type PageInsights = {
       }
   )[];
 };
+
+export type AdAccountInsights = {
+  data: {
+    date_start: string;
+    date_stop: string;
+    [metric: string]: string;
+  }[];
+};
