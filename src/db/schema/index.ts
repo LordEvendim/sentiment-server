@@ -2,6 +2,7 @@ export * from "./googleAdAccounts";
 export * from "./googleAnalyticsMetrics";
 export * from "./googleAnalyticsPages";
 export * from "./googleIntegrations";
+export * from "./metaAdAccountMetrics";
 export * from "./metaAdAccounts";
 export * from "./metaInsightsMetrics";
 export * from "./metaIntegrations";

@@ -7,6 +7,7 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+import { metaAdAccountMetrics } from "./metaAdAccountMetrics";
 import { metaIntegrations } from "./metaIntegrations";
 
 export const metaAdAccounts = mysqlTable(
@@ -23,12 +24,16 @@ export const metaAdAccounts = mysqlTable(
   })
 );
 
-export const metaAdAccountsRelations = relations(metaAdAccounts, ({ one }) => ({
-  metaIntegration: one(metaIntegrations, {
-    fields: [metaAdAccounts.integrationId],
-    references: [metaIntegrations.id],
-  }),
-}));
+export const metaAdAccountsRelations = relations(
+  metaAdAccounts,
+  ({ one, many }) => ({
+    metaIntegration: one(metaIntegrations, {
+      fields: [metaAdAccounts.integrationId],
+      references: [metaIntegrations.id],
+    }),
+    metrics: many(metaAdAccountMetrics),
+  })
+);
 
 export type MetaAdAccount = typeof metaAdAccounts.$inferSelect;
 export type MetaAdAccountDetails = Omit<MetaAdAccount, "integrationId">;

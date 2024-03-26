@@ -1,69 +1,64 @@
 import { endOfYesterday, subDays } from "date-fns";
 
+import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
-import { metaPageDao } from "#dao/metaPageDao";
-import { reportDao } from "#dao/reportDao";
-import { gemini } from "#modules/gemini";
-import { GenerativeAi } from "#modules/gemini/types";
-import { logger } from "#modules/logger";
-import { MetaInsights, metaInsights } from "#modules/meta";
-
-import { prompts } from "./prompts";
 
 class Reporter {
-  metaDataProvider: MetaInsights;
-  generativeAi: GenerativeAi;
-
-  constructor(generativeAi: GenerativeAi, metaDataProvider: MetaInsights) {
-    this.metaDataProvider = metaDataProvider;
-    this.generativeAi = generativeAi;
-  }
-
-  generateWeeklyPageReport = async (userId: number) => {
+  getGeneralDashboardData = async (userId: number) => {
     const metaIntegration =
       await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
-    if (!metaIntegration) throw new Error("User is not connected to Meta");
-    if (!metaIntegration.selectedPage)
-      throw new Error("User has not selected a page");
+    const report: {
+      spend: {
+        [source: string]: {
+          value: number;
+          date: Date;
+        }[];
+      };
+      users: {
+        [source: string]: {
+          value: number;
+          date: Date;
+        }[];
+      };
+    } = {
+      spend: {},
+      users: {},
+    };
 
-    const metaPageInsights = await this.metaDataProvider.getPageInsights(
-      userId,
-      metaIntegration.selectedPage,
-      subDays(endOfYesterday(), 7),
-      endOfYesterday()
-    );
+    try {
+      if (!metaIntegration) throw new Error("Meta is not integrated");
+      if (!metaIntegration.selectedAdAccount)
+        throw new Error("Meta ad account not selected");
 
-    const page = await metaPageDao.getPage(
-      metaIntegration.selectedPage,
-      metaIntegration.id
-    );
+      const metrics = await metaAdAccountMetricDao.getByPageSince(
+        metaIntegration.selectedAdAccount,
+        metaIntegration.id,
+        subDays(endOfYesterday(), 7 * 4)
+      );
 
-    if (!page) throw new Error("Page doesn't exist");
+      report.spend.meta = [];
+      report.users.meta = [];
 
-    const report = await this.generativeAi.getTextResponse(
-      prompts.getPageInsightsPrompt(page.pageId.toString(), "week") +
-        JSON.stringify(metaPageInsights)
-    );
-
-    await reportDao.create({
-      createdAd: Date.now(),
-      data: report,
-      ownerId: userId,
-    });
+      for (let i = 0; i < metrics.length; i++) {
+        if (metrics[i].metricId === "spend") {
+          report.spend.meta.push({
+            date: metrics[i].createdAt,
+            value: parseFloat(metrics[i].value),
+          });
+        } else if (metrics[i].metricId === "users") {
+          report.spend.users.push({
+            date: metrics[i].createdAt,
+            value: parseFloat(metrics[i].value),
+          });
+        }
+      }
+    } catch (err) {
+      /* empty */
+    }
 
     return report;
-  };
-
-  getWeeklyPageReport = async (userId: number) => {
-    const report = await reportDao.getByUserId(userId);
-
-    return report;
-  };
-
-  generateWeeklyReport = async (userId: number) => {
-    logger.info(`Reporter: Generating weekly report for ${userId}`);
   };
 }
 
-export const reporter = new Reporter(gemini, metaInsights);
+export const reporter = new Reporter();

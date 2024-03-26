@@ -13,7 +13,7 @@ export const metaAdAccountMetrics = mysqlTable("meta_insights_metrics", {
   integrationId: bigint("integration_id", { mode: "number" }).notNull(),
 });
 
-export const metaInsightsMetricsRelations = relations(
+export const metaAdAccountMetricsRelations = relations(
   metaAdAccountMetrics,
   ({ one }) => ({
     source: one(metaPages, {

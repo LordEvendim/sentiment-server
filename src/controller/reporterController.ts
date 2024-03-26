@@ -1,6 +1,6 @@
 import { Response } from "express";
 
-import { reporter } from "#modules/reporter";
+import { generativeReporter } from "#modules/reporter";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -15,7 +15,9 @@ const createReporterController = () => {
 
         if (!user) throw new Error("User not authenticated");
 
-        const result = await reporter.generateWeeklyPageReport(user.id);
+        const result = await generativeReporter.generateWeeklyPageReport(
+          user.id
+        );
 
         return res.status(200).send(result);
       } catch (error) {
@@ -31,7 +33,7 @@ const createReporterController = () => {
 
         if (!user) throw new Error("User not authenticated");
 
-        const report = await reporter.getWeeklyPageReport(user.id);
+        const report = await generativeReporter.getWeeklyPageReport(user.id);
 
         if (!report) throw new Error("Report not found");
 

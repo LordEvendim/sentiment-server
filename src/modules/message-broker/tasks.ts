@@ -1,6 +1,6 @@
 import { ConsumeMessage } from "amqplib";
 
-import { reporter } from "#modules/reporter";
+import { generativeReporter } from "#modules/reporter";
 
 import { Queues, ReportPeriods } from "./queues";
 
@@ -18,6 +18,6 @@ export const tasks: Record<Queues, (message: ConsumeMessage) => Promise<void>> =
     report: async (message) => {
       const data = JSON.parse(message.content.toString()) as TaskReport;
 
-      await reporter.generateWeeklyReport(data.userId);
+      await generativeReporter.generateWeeklyReport(data.userId);
     },
   };

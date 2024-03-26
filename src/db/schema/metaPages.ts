@@ -7,6 +7,7 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+import { metaInsightsMetrics } from "./metaInsightsMetrics";
 import { metaIntegrations } from "./metaIntegrations";
 
 export const metaPages = mysqlTable(
@@ -23,11 +24,12 @@ export const metaPages = mysqlTable(
   })
 );
 
-export const metaPagesRelations = relations(metaPages, ({ one }) => ({
+export const metaPagesRelations = relations(metaPages, ({ one, many }) => ({
   metaIntegration: one(metaIntegrations, {
     fields: [metaPages.integrationId],
     references: [metaIntegrations.id],
   }),
+  metrics: many(metaInsightsMetrics),
 }));
 
 export type MetaPage = typeof metaPages.$inferSelect;

@@ -7,6 +7,7 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+import { googleAnalyticsMetrics } from "./googleAnalyticsMetrics";
 import { googleIntegrations } from "./googleIntegrations";
 
 export const googleAnalyticsPages = mysqlTable(
@@ -26,11 +27,12 @@ export const googleAnalyticsPages = mysqlTable(
 
 export const googleAnalyticsPagesRelations = relations(
   googleAnalyticsPages,
-  ({ one }) => ({
+  ({ one, many }) => ({
     googleIntegration: one(googleIntegrations, {
       fields: [googleAnalyticsPages.integrationId],
       references: [googleIntegrations.id],
     }),
+    metrics: many(googleAnalyticsMetrics),
   })
 );
 
