@@ -9,27 +9,27 @@ class Reporter {
       await metaIntegrationDao.getMetaIntegrationByUserId(userId);
 
     const report: {
-      spend: {
+      [metric: string]: {
         [source: string]: {
           value: number;
           date: Date;
         }[];
       };
-      users: {
-        [source: string]: {
-          value: number;
-          date: Date;
-        }[];
-      };
-    } = {
-      spend: {},
-      users: {},
-    };
+    } = {};
 
     try {
       if (!metaIntegration) throw new Error("Meta is not integrated");
       if (!metaIntegration.selectedAdAccount)
         throw new Error("Meta ad account not selected");
+
+      const trackedMetaMetrics = new Set(["spend", "reach", "impressions"]);
+      const metaMetricToInternalMetric = {
+        spend: "spend",
+        reach: "reach",
+        impressions: "impressions",
+      } as {
+        [key: string]: string;
+      };
 
       const metrics = await metaAdAccountMetricDao.getByPageSince(
         metaIntegration.selectedAdAccount,
@@ -37,17 +37,14 @@ class Reporter {
         subDays(endOfYesterday(), 7 * 4)
       );
 
-      report.spend.meta = [];
-      report.users.meta = [];
-
       for (let i = 0; i < metrics.length; i++) {
-        if (metrics[i].metricId === "spend") {
-          report.spend.meta.push({
-            date: metrics[i].createdAt,
-            value: parseFloat(metrics[i].value),
-          });
-        } else if (metrics[i].metricId === "users") {
-          report.spend.users.push({
+        if (trackedMetaMetrics.has(metrics[i].metricId)) {
+          const internalMetric =
+            metaMetricToInternalMetric[metrics[i].metricId];
+
+          if (!report[internalMetric]) report[internalMetric] = { metaAds: [] };
+
+          report[internalMetric].metaAds.push({
             date: metrics[i].createdAt,
             value: parseFloat(metrics[i].value),
           });

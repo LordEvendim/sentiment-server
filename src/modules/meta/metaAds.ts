@@ -14,7 +14,7 @@ export class MetaAds {
 
   getAccountOverview = async () => {};
 
-  getPageInsights = async (
+  getAdAccountInsights = async (
     userId: number,
     accountId: number,
     since: Date,
