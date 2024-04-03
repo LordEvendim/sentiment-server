@@ -1,0 +1,1 @@
+export { metaAdsDataProvider } from "./metaAdsDataProvider";

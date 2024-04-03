@@ -1,57 +1,19 @@
-import { endOfYesterday, subDays } from "date-fns";
+import { logger } from "#modules/logger";
 
-import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
-import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+import * as dataProviders from "./reporter-data-providers";
+import { GeneralDashboardReportData } from "./types";
 
 class Reporter {
   getGeneralDashboardData = async (userId: number) => {
-    const metaIntegration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+    const report: GeneralDashboardReportData = {
+      impressions: {},
+      reach: {},
+    };
 
-    const report: {
-      [metric: string]: {
-        [source: string]: {
-          value: number;
-          date: Date;
-        }[];
-      };
-    } = {};
+    for (const [providerName, dataProvider] of Object.entries(dataProviders)) {
+      logger.debug(`Reporter: getting data from: ${providerName}`);
 
-    try {
-      if (!metaIntegration) throw new Error("Meta is not integrated");
-      if (!metaIntegration.selectedAdAccount)
-        throw new Error("Meta ad account not selected");
-
-      const trackedMetaMetrics = new Set(["spend", "reach", "impressions"]);
-      const metaMetricToInternalMetric = {
-        spend: "spend",
-        reach: "reach",
-        impressions: "impressions",
-      } as {
-        [key: string]: string;
-      };
-
-      const metrics = await metaAdAccountMetricDao.getByPageSince(
-        metaIntegration.selectedAdAccount,
-        metaIntegration.id,
-        subDays(endOfYesterday(), 7 * 4)
-      );
-
-      for (let i = 0; i < metrics.length; i++) {
-        if (trackedMetaMetrics.has(metrics[i].metricId)) {
-          const internalMetric =
-            metaMetricToInternalMetric[metrics[i].metricId];
-
-          if (!report[internalMetric]) report[internalMetric] = { metaAds: [] };
-
-          report[internalMetric].metaAds.push({
-            date: metrics[i].createdAt,
-            value: parseFloat(metrics[i].value),
-          });
-        }
-      }
-    } catch (err) {
-      /* empty */
+      await dataProvider.generalReport(userId, report);
     }
 
     return report;
