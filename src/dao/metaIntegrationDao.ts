@@ -28,7 +28,7 @@ export const metaIntegrationDao = {
 
     return result;
   },
-  getMetaIntegrationByUserId: async (userId: number) => {
+  getIntegrationByUserId: async (userId: number) => {
     const result = await planetScaleDB.query.metaIntegrations.findFirst({
       where: eq(metaIntegrations.ownerId, userId),
     });

@@ -54,7 +54,7 @@ class MetaAuth {
     logger.debug("Meta: creating long lived page tokens for " + userId);
 
     const metaIntegration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+      await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!metaIntegration) throw new Error("User has not integrated Meta");
 

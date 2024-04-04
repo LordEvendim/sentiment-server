@@ -1,7 +1,7 @@
 import { endOfYesterday, subDays } from "date-fns";
 
-import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
-import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+import { googleAnalyticsMetricDao } from "#dao/googleAnalyticsMetricDao";
+import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 
 import {
   GeneralDashboardReportData,
@@ -11,8 +11,8 @@ import {
 } from "../types";
 import { formatTrackedMetricsConfigs } from "../utils";
 
-class MetaAdsDataProvider implements ReporterDataProvider {
-  source: ReportMetricSource = "meta-ads";
+class GoogleAnalyticsDataProvider implements ReporterDataProvider {
+  source: ReportMetricSource = "google-analytics";
 
   report = async (
     userId: number,
@@ -20,21 +20,21 @@ class MetaAdsDataProvider implements ReporterDataProvider {
     report: GeneralDashboardReportData
   ) => {
     try {
-      const metaIntegration =
-        await metaIntegrationDao.getIntegrationByUserId(userId);
+      const integration =
+        await googleIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!metaIntegration) throw new Error("Meta is not integrated");
-      if (!metaIntegration.selectedAdAccount)
-        throw new Error("Meta ad account not selected");
+      if (!integration) throw new Error("Google is not integrated");
+      if (!integration.selectedPage)
+        throw new Error("Google analytics account not selected");
 
       const [metricsConfigSet, metricsConfigMap] = formatTrackedMetricsConfigs(
         metricsConfig,
         this.source
       );
 
-      const metrics = await metaAdAccountMetricDao.getByPageSince(
-        metaIntegration.selectedAdAccount,
-        metaIntegration.id,
+      const metrics = await googleAnalyticsMetricDao.getByAccountSince(
+        integration.selectedPage,
+        integration.id,
         subDays(endOfYesterday(), 7 * 4)
       );
 
@@ -47,7 +47,7 @@ class MetaAdsDataProvider implements ReporterDataProvider {
         if (!metricConfig) throw new Error("Metric config was not found");
 
         const datapoint = {
-          value: parseFloat(metrics[i].value),
+          value: metrics[i].value,
           createdAt: metrics[i].createdAt,
         };
 
@@ -63,4 +63,4 @@ class MetaAdsDataProvider implements ReporterDataProvider {
   };
 }
 
-export const metaAdsDataProvider = new MetaAdsDataProvider();
+export const googleAnalyticsDataProvider = new GoogleAnalyticsDataProvider();

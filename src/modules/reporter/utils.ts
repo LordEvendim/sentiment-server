@@ -1,6 +1,6 @@
-import { MetricConfig, ReportMetricSource } from "../types";
+import { MetricConfig, ReportMetricSource } from "./types";
 
-export const getTrackedMetricsConfigs = (
+export const formatTrackedMetricsConfigs = (
   metrics: MetricConfig[],
   source: ReportMetricSource
 ) => {

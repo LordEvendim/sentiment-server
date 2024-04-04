@@ -24,8 +24,7 @@ export class MetaAds {
       `Meta: getting ad account insights for ${userId} of ${accountId}`
     );
 
-    const integration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!integration) throw new Error("User is not connected with Meta");
     if (!integration.accessToken) throw new Error("Meta is not connected");

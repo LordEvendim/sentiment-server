@@ -1,6 +1,6 @@
 import { endOfYesterday, subDays } from "date-fns";
 
-import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
+import { metaInsightsMetricDao } from "#dao/metaInsightsMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 
 import {
@@ -11,8 +11,8 @@ import {
 } from "../types";
 import { formatTrackedMetricsConfigs } from "../utils";
 
-class MetaAdsDataProvider implements ReporterDataProvider {
-  source: ReportMetricSource = "meta-ads";
+class MetaInsightsDataProvider implements ReporterDataProvider {
+  source: ReportMetricSource = "meta-insights";
 
   report = async (
     userId: number,
@@ -20,21 +20,20 @@ class MetaAdsDataProvider implements ReporterDataProvider {
     report: GeneralDashboardReportData
   ) => {
     try {
-      const metaIntegration =
+      const integration =
         await metaIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!metaIntegration) throw new Error("Meta is not integrated");
-      if (!metaIntegration.selectedAdAccount)
-        throw new Error("Meta ad account not selected");
+      if (!integration) throw new Error("Meta is not integrated");
+      if (!integration.selectedPage) throw new Error("Meta page not selected");
 
       const [metricsConfigSet, metricsConfigMap] = formatTrackedMetricsConfigs(
         metricsConfig,
         this.source
       );
 
-      const metrics = await metaAdAccountMetricDao.getByPageSince(
-        metaIntegration.selectedAdAccount,
-        metaIntegration.id,
+      const metrics = await metaInsightsMetricDao.getByPageSince(
+        integration.selectedPage,
+        integration.id,
         subDays(endOfYesterday(), 7 * 4)
       );
 
@@ -47,7 +46,7 @@ class MetaAdsDataProvider implements ReporterDataProvider {
         if (!metricConfig) throw new Error("Metric config was not found");
 
         const datapoint = {
-          value: parseFloat(metrics[i].value),
+          value: metrics[i].value,
           createdAt: metrics[i].createdAt,
         };
 
@@ -63,4 +62,4 @@ class MetaAdsDataProvider implements ReporterDataProvider {
   };
 }
 
-export const metaAdsDataProvider = new MetaAdsDataProvider();
+export const metaInsightsDataProvider = new MetaInsightsDataProvider();

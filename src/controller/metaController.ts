@@ -38,7 +38,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
         const userAdAccounts = await metaInsights.getUserAdAccounts(userId);
 
         const metaIntegration =
-          await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+          await metaIntegrationDao.getIntegrationByUserId(userId);
 
         return res.status(200).send({
           pages: userPages,

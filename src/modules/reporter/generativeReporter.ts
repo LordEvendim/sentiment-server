@@ -21,7 +21,7 @@ class GenerativeReporter {
 
   generateWeeklyPageReport = async (userId: number) => {
     const metaIntegration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+      await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!metaIntegration) throw new Error("User is not connected to Meta");
     if (!metaIntegration.selectedPage)

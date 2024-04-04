@@ -78,8 +78,8 @@ export type GetLongLivedToken = {
 export type PageInsights = {
   data: (
     | {
-        name: string;
         period: Exclude<MetricPeriod, "lifetime">;
+        name: string;
         values: {
           value: number | Record<string, number>;
           end_time: string;
@@ -89,8 +89,8 @@ export type PageInsights = {
         id: string;
       }
     | {
-        name: string;
         period: "lifetime";
+        name: string;
         values: {
           value: number | Record<string, number>;
         }[];

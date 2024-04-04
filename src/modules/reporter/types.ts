@@ -30,3 +30,11 @@ export interface GeneralDashboardReportData {
     [provider in ReportMetricSource]?: MetricDataPoint;
   };
 }
+
+export interface ReporterDataProvider {
+  report(
+    userId: number,
+    metrics: MetricConfig[],
+    report: GeneralDashboardReportData
+  ): Promise<void>;
+}

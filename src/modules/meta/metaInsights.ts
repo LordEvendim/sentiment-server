@@ -78,7 +78,7 @@ export class MetaInsights {
   getUserBusinesses = async (userId: number) => {
     logger.debug(`Meta: getting user Meta businesses ${userId}`);
     const metaIntegration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+      await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!metaIntegration) throw new Error("User is not connected wiht Meta");
 
@@ -104,7 +104,7 @@ export class MetaInsights {
     const businesses = await this.getUserBusinesses(userId);
 
     const metaIntegration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+      await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!metaIntegration) throw new Error("Meta is not integrated");
 
@@ -173,8 +173,7 @@ export class MetaInsights {
   ) => {
     logger.debug(`Meta: getting page insights for ${userId} of ${pageId}`);
 
-    const integration =
-      await metaIntegrationDao.getMetaIntegrationByUserId(userId);
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!integration) throw new Error("User is not connected with Meta");
 
