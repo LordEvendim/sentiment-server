@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import { metaIntegrations, metaPages, NewMetaPage } from "#db/schema";
 
 export const metaPageDao = {
@@ -9,7 +9,7 @@ export const metaPageDao = {
     integrationId: number,
     pageId: number
   ) => {
-    const result = await planetScaleDB.query.metaPages.findMany({
+    const result = await mysqlDatabase.query.metaPages.findMany({
       where: and(
         eq(metaPages.pageId, pageId),
         eq(metaPages.integrationId, integrationId)
@@ -27,7 +27,7 @@ export const metaPageDao = {
     return Boolean(result.length > 0);
   },
   getPage: async (pageId: number, integrationId: number) => {
-    const result = await planetScaleDB.query.metaPages.findFirst({
+    const result = await mysqlDatabase.query.metaPages.findFirst({
       where: and(
         eq(metaPages.pageId, pageId),
         eq(metaPages.integrationId, integrationId)
@@ -37,7 +37,7 @@ export const metaPageDao = {
     return result;
   },
   getUserPages: async (userId: number) => {
-    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+    const result = await mysqlDatabase.query.metaIntegrations.findFirst({
       columns: {},
       with: {
         pages: true,
@@ -48,7 +48,7 @@ export const metaPageDao = {
     return result?.pages;
   },
   getPageAccessToken: async (pageId: number, integrationId: number) => {
-    const result = await planetScaleDB.query.metaPages.findFirst({
+    const result = await mysqlDatabase.query.metaPages.findFirst({
       columns: {
         accessToken: true,
       },
@@ -65,7 +65,7 @@ export const metaPageDao = {
     integrationId: number,
     update: Partial<NewMetaPage>
   ) => {
-    await planetScaleDB
+    await mysqlDatabase
       .update(metaPages)
       .set(update)
       .where(
@@ -76,12 +76,12 @@ export const metaPageDao = {
       );
   },
   create: async (newMetaPage: NewMetaPage) => {
-    const result = await planetScaleDB.insert(metaPages).values(newMetaPage);
+    const result = await mysqlDatabase.insert(metaPages).values(newMetaPage);
 
     return result;
   },
   createMany: async (newMetaPage: NewMetaPage[]) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(metaPages)
       .values(newMetaPage)
       .onDuplicateKeyUpdate({

@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import {
   googleAnalyticsPages,
   googleIntegrations,
@@ -9,7 +9,7 @@ import {
 
 export const googleAnalyticsPageDao = {
   isPageOwner: async (userId: number, pageId: number) => {
-    const result = await planetScaleDB.query.googleAnalyticsPages.findMany({
+    const result = await mysqlDatabase.query.googleAnalyticsPages.findMany({
       where: eq(googleAnalyticsPages.id, pageId),
       with: {
         googleIntegration: {
@@ -24,7 +24,7 @@ export const googleAnalyticsPageDao = {
     return Boolean(result.length > 0);
   },
   getPage: async (id: number, integrationId: number) => {
-    const result = await planetScaleDB.query.googleAnalyticsPages.findFirst({
+    const result = await mysqlDatabase.query.googleAnalyticsPages.findFirst({
       where: and(
         eq(googleAnalyticsPages.id, id),
         eq(googleAnalyticsPages.integrationId, integrationId)
@@ -34,7 +34,7 @@ export const googleAnalyticsPageDao = {
     return result;
   },
   getUserPages: async (userId: number) => {
-    const result = await planetScaleDB.query.googleIntegrations.findFirst({
+    const result = await mysqlDatabase.query.googleIntegrations.findFirst({
       columns: {},
       with: {
         analyticsPages: true,
@@ -49,7 +49,7 @@ export const googleAnalyticsPageDao = {
     integrationId: number,
     update: Partial<NewGoogleAnalyticsPage>
   ) => {
-    await planetScaleDB
+    await mysqlDatabase
       .update(googleAnalyticsPages)
       .set(update)
       .where(
@@ -60,14 +60,14 @@ export const googleAnalyticsPageDao = {
       );
   },
   create: async (newGoogleAnalyticsPage: NewGoogleAnalyticsPage) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(googleAnalyticsPages)
       .values(newGoogleAnalyticsPage);
 
     return result;
   },
   createMany: async (newGoogleAnalyticsPages: NewGoogleAnalyticsPage[]) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(googleAnalyticsPages)
       .values(newGoogleAnalyticsPages)
       .onDuplicateKeyUpdate({

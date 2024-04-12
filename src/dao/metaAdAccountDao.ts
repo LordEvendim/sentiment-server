@@ -1,11 +1,11 @@
 import { and, eq, sql } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import { metaAdAccounts, metaIntegrations, NewMetaAdAccount } from "#db/schema";
 
 export const metaAdAccountDao = {
   isAccountOwner: async (userId: number, accountId: number) => {
-    const result = await planetScaleDB.query.metaAdAccounts.findMany({
+    const result = await mysqlDatabase.query.metaAdAccounts.findMany({
       where: eq(metaAdAccounts.id, accountId),
       with: {
         metaIntegration: {
@@ -20,7 +20,7 @@ export const metaAdAccountDao = {
     return Boolean(result.length > 0);
   },
   getAccount: async (id: number, integrationId: number) => {
-    const result = await planetScaleDB.query.metaAdAccounts.findFirst({
+    const result = await mysqlDatabase.query.metaAdAccounts.findFirst({
       where: and(
         eq(metaAdAccounts.id, id),
         eq(metaAdAccounts.integrationId, integrationId)
@@ -30,7 +30,7 @@ export const metaAdAccountDao = {
     return result;
   },
   getUserAdAccounts: async (userId: number) => {
-    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+    const result = await mysqlDatabase.query.metaIntegrations.findFirst({
       columns: {},
       with: {
         adAccounts: true,
@@ -45,7 +45,7 @@ export const metaAdAccountDao = {
     integrationId: number,
     update: Partial<NewMetaAdAccount>
   ) => {
-    await planetScaleDB
+    await mysqlDatabase
       .update(metaAdAccounts)
       .set(update)
       .where(
@@ -56,14 +56,14 @@ export const metaAdAccountDao = {
       );
   },
   create: async (newMetaAdAccount: NewMetaAdAccount) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(metaAdAccounts)
       .values(newMetaAdAccount);
 
     return result;
   },
   createMany: async (newMetaAdAccounts: NewMetaAdAccount[]) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(metaAdAccounts)
       .values(newMetaAdAccounts)
       .onDuplicateKeyUpdate({

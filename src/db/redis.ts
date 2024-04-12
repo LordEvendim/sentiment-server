@@ -15,10 +15,10 @@ class RedisConnectionManager {
   constructor(connectionConfig: RedisOptions) {
     this.connection = new Redis(connectionConfig);
 
-    this.connection.on("connect", () => logger.info("Connected to Redis"));
-    this.connection.on("close", () => logger.warn("Disconnected from Redis"));
+    this.connection.on("connect", () => logger.info("Redis: connected"));
+    this.connection.on("close", () => logger.warn("Redis: disconnected"));
     this.connection.on("reconnecting", () =>
-      logger.info("Reconnecting to Redis")
+      logger.info("Redis: reconnecting")
     );
   }
 }

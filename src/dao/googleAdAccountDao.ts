@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import {
   googleAdAccounts,
   googleIntegrations,
@@ -9,7 +9,7 @@ import {
 
 export const googleAdAccountDao = {
   isAccountOwner: async (userId: number, accountId: number) => {
-    const result = await planetScaleDB.query.googleAdAccounts.findMany({
+    const result = await mysqlDatabase.query.googleAdAccounts.findMany({
       where: eq(googleAdAccounts.id, accountId),
       with: {
         googleIntegration: {
@@ -24,7 +24,7 @@ export const googleAdAccountDao = {
     return Boolean(result.length > 0);
   },
   getAccount: async (id: number, integrationId: number) => {
-    const result = await planetScaleDB.query.googleAdAccounts.findFirst({
+    const result = await mysqlDatabase.query.googleAdAccounts.findFirst({
       where: and(
         eq(googleAdAccounts.id, id),
         eq(googleAdAccounts.integrationId, integrationId)
@@ -34,7 +34,7 @@ export const googleAdAccountDao = {
     return result;
   },
   getUserAdAccounts: async (userId: number) => {
-    const result = await planetScaleDB.query.googleIntegrations.findFirst({
+    const result = await mysqlDatabase.query.googleIntegrations.findFirst({
       columns: {},
       with: {
         adAccounts: true,
@@ -49,7 +49,7 @@ export const googleAdAccountDao = {
     integrationId: number,
     update: Partial<NewGoogleAdAccount>
   ) => {
-    await planetScaleDB
+    await mysqlDatabase
       .update(googleAdAccounts)
       .set(update)
       .where(
@@ -60,14 +60,14 @@ export const googleAdAccountDao = {
       );
   },
   create: async (newGoogleAdAccount: NewGoogleAdAccount) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(googleAdAccounts)
       .values(newGoogleAdAccount);
 
     return result;
   },
   createMany: async (newGoogleAdAccounts: NewGoogleAdAccount[]) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(googleAdAccounts)
       .values(newGoogleAdAccounts)
       .onDuplicateKeyUpdate({

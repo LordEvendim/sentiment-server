@@ -1,25 +1,25 @@
 import { eq } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import { NewUser, User, users } from "#db/schema/users";
 
 export const userDao = {
   getById: async (id: number): Promise<User | undefined> => {
-    const result = await planetScaleDB.query.users.findFirst({
+    const result = await mysqlDatabase.query.users.findFirst({
       where: eq(users.id, id),
     });
 
     return result;
   },
   getByUsername: async (username: string): Promise<User | undefined> => {
-    const result = await planetScaleDB.query.users.findFirst({
+    const result = await mysqlDatabase.query.users.findFirst({
       where: eq(users.username, username),
     });
 
     return result;
   },
   create: async (newUser: NewUser) => {
-    const result = await planetScaleDB.insert(users).values(newUser);
+    const result = await mysqlDatabase.insert(users).values(newUser);
 
     return result;
   },

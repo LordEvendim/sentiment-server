@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import { metaInsightsMetrics, NewMetaInsightsMetric } from "#db/schema";
 
 export const metaInsightsMetricDao = {
@@ -9,7 +9,7 @@ export const metaInsightsMetricDao = {
     integrationId: number,
     since: Date
   ) => {
-    const result = await planetScaleDB.query.metaInsightsMetrics.findMany({
+    const result = await mysqlDatabase.query.metaInsightsMetrics.findMany({
       where: and(
         eq(metaInsightsMetrics.sourceId, pageId),
         eq(metaInsightsMetrics.integrationId, integrationId),
@@ -20,7 +20,7 @@ export const metaInsightsMetricDao = {
     return result;
   },
   createMany: async (newMetaInsightsMetrics: NewMetaInsightsMetric[]) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(metaInsightsMetrics)
       .values(newMetaInsightsMetrics)
       .onDuplicateKeyUpdate({ set: { id: sql`id` } });

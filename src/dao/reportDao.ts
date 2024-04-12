@@ -1,18 +1,18 @@
 import { eq } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import { NewReport, reports } from "#db/schema";
 
 export const reportDao = {
   getByUserId: async (userId: number) => {
-    const result = await planetScaleDB.query.reports.findFirst({
+    const result = await mysqlDatabase.query.reports.findFirst({
       where: eq(reports.ownerId, userId),
     });
 
     return result;
   },
   create: async (newReport: NewReport) => {
-    const result = await planetScaleDB.insert(reports).values(newReport);
+    const result = await mysqlDatabase.insert(reports).values(newReport);
 
     return result;
   },

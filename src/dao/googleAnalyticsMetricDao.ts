@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import { googleAnalyticsMetrics, NewGoogleAnalyticsMetric } from "#db/schema";
 
 export const googleAnalyticsMetricDao = {
@@ -9,7 +9,7 @@ export const googleAnalyticsMetricDao = {
     integrationId: number,
     since: Date
   ) => {
-    const result = await planetScaleDB.query.googleAnalyticsMetrics.findMany({
+    const result = await mysqlDatabase.query.googleAnalyticsMetrics.findMany({
       where: and(
         eq(googleAnalyticsMetrics.sourceId, accountId),
         eq(googleAnalyticsMetrics.integrationId, integrationId),
@@ -20,7 +20,7 @@ export const googleAnalyticsMetricDao = {
     return result;
   },
   createMany: async (newGoogleAnalyticsMetrics: NewGoogleAnalyticsMetric[]) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(googleAnalyticsMetrics)
       .values(newGoogleAnalyticsMetrics)
       .onDuplicateKeyUpdate({ set: { id: sql`id` } });

@@ -4,9 +4,9 @@ import { Response } from "express";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import {
   MetaAdAccountDetails,
+  MetaInsightsMetric,
   MetaIntegration,
   MetaPageDetails,
-  MetaPageInsightMetric,
 } from "#db/schema";
 import { MetaInsights, metaInsights } from "#modules/meta";
 import { metaAuth } from "#modules/meta/metaAuth";
@@ -86,7 +86,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
     },
     getPageInsights: async (
       req: TypedRequest<object, object, { pageId: number }>,
-      res: Response<Omit<MetaPageInsightMetric, "metricId">[]>
+      res: Response<Omit<MetaInsightsMetric, "id">[]>
     ) => {
       try {
         const { pageId } = req.query;

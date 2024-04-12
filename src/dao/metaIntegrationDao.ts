@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { planetScaleDB } from "src/db/planetscale";
 
+import { mysqlDatabase } from "#db/mysql";
 import {
   metaIntegrations,
   NewMetaIntegration,
@@ -8,7 +8,7 @@ import {
 
 export const metaIntegrationDao = {
   getAccessTokenByUserId: async (userId: number) => {
-    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+    const result = await mysqlDatabase.query.metaIntegrations.findFirst({
       columns: {
         accessToken: true,
       },
@@ -18,7 +18,7 @@ export const metaIntegrationDao = {
     return result?.accessToken;
   },
   getIntegrationWithSelectedByUserId: async (userId: number) => {
-    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+    const result = await mysqlDatabase.query.metaIntegrations.findFirst({
       with: {
         selectedPage: true,
         selectedAdAccount: true,
@@ -29,26 +29,26 @@ export const metaIntegrationDao = {
     return result;
   },
   getIntegrationByUserId: async (userId: number) => {
-    const result = await planetScaleDB.query.metaIntegrations.findFirst({
+    const result = await mysqlDatabase.query.metaIntegrations.findFirst({
       where: eq(metaIntegrations.ownerId, userId),
     });
 
     return result;
   },
   saveAccessToken: async (userId: number, accessToken: string) => {
-    await planetScaleDB
+    await mysqlDatabase
       .update(metaIntegrations)
       .set({ accessToken })
       .where(eq(metaIntegrations.ownerId, userId));
   },
   update: async (userId: number, update: Partial<NewMetaIntegration>) => {
-    await planetScaleDB
+    await mysqlDatabase
       .update(metaIntegrations)
       .set(update)
       .where(eq(metaIntegrations.ownerId, userId));
   },
   create: async (newMetaIntegration: NewMetaIntegration) => {
-    const result = await planetScaleDB
+    const result = await mysqlDatabase
       .insert(metaIntegrations)
       .values(newMetaIntegration)
       .onDuplicateKeyUpdate({
