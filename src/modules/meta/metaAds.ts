@@ -35,11 +35,11 @@ export class MetaAds {
       `${this.baseUrl}/${this.apiVersion}/act_${accountId}/insights`,
       {
         params: {
-          metric: metricsNames.join(","),
+          fields: metricsNames.join(","),
           access_token: integration.accessToken,
           since: format(since, "yyyy-MM-dd"),
           until: format(until, "yyyy-MM-dd"),
-          time_increment: "day",
+          time_increment: 1,
         },
       }
     );
@@ -67,7 +67,7 @@ export class MetaAds {
     }
 
     logger.debug(`Meta: inserting Ad account insights metrics to DB`);
-    await metaAdAccountMetricDao.createMany(metrics);
+    if (metrics.length > 0) await metaAdAccountMetricDao.createMany(metrics);
 
     return metrics;
   };

@@ -9,7 +9,7 @@ import {
   ReporterDataProvider,
   ReportMetricSource,
 } from "../types";
-import { formatTrackedMetricsConfigs } from "../utils";
+import { appendReportWithData } from "../utils";
 
 class GoogleAnalyticsDataProvider implements ReporterDataProvider {
   source: ReportMetricSource = "google-analytics";
@@ -27,36 +27,13 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
       if (!integration.selectedPage)
         throw new Error("Google analytics account not selected");
 
-      const [metricsConfigSet, metricsConfigMap] = formatTrackedMetricsConfigs(
-        metricsConfig,
-        this.source
-      );
-
       const metrics = await googleAnalyticsMetricDao.getByAccountSince(
         integration.selectedPage,
         integration.id,
         subDays(endOfYesterday(), 7 * 4)
       );
 
-      for (let i = 0; i < metrics.length; i++) {
-        const metricId = metrics[i]
-          .metricId as keyof GeneralDashboardReportData;
-        const metricConfig = metricsConfigMap[metricId];
-
-        if (!metricsConfigSet.has(metricId)) continue;
-        if (!metricConfig) throw new Error("Metric config was not found");
-
-        const datapoint = {
-          value: metrics[i].value,
-          createdAt: metrics[i].createdAt,
-        };
-
-        if (!report[metricId]) {
-          report[metricId] = {};
-        }
-
-        report[metricId][this.source] = datapoint;
-      }
+      appendReportWithData(report, metrics, metricsConfig, this.source);
     } catch (err) {
       /* empty */
     }

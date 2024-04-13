@@ -18,7 +18,6 @@ services:
     volumes:
       - ./.docker/rabbitmq/data/:/var/lib/rabbitmq
       - ./.docker/rabbitmq/log/:/var/log/rabbitmq
-      # - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 5s

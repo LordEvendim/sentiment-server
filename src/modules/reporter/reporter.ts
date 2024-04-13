@@ -1,10 +1,10 @@
 import { logger } from "#modules/logger";
 
 import { generalReportMetricsConfig } from "./metrics";
-import { googleAdsDataProvider } from "./reporter-data-providers/googleAdsDataProvider";
-import { googleAnalyticsDataProvider } from "./reporter-data-providers/googleAnalyticsDataProvider";
-import { metaAdsDataProvider } from "./reporter-data-providers/metaAdsDataProvider";
-import { metaInsightsDataProvider } from "./reporter-data-providers/metaInsightsDataProvider";
+import { googleAdsDataProvider } from "./providers/googleAdsDataProvider";
+import { googleAnalyticsDataProvider } from "./providers/googleAnalyticsDataProvider";
+import { metaAdsDataProvider } from "./providers/metaAdsDataProvider";
+import { metaInsightsDataProvider } from "./providers/metaInsightsDataProvider";
 import {
   GeneralDashboardReportData,
   ReporterDataProvider,

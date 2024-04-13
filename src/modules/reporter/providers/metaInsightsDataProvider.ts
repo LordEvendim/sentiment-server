@@ -9,7 +9,7 @@ import {
   ReporterDataProvider,
   ReportMetricSource,
 } from "../types";
-import { formatTrackedMetricsConfigs } from "../utils";
+import { appendReportWithData } from "../utils";
 
 class MetaInsightsDataProvider implements ReporterDataProvider {
   source: ReportMetricSource = "meta-insights";
@@ -26,36 +26,13 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
       if (!integration) throw new Error("Meta is not integrated");
       if (!integration.selectedPage) throw new Error("Meta page not selected");
 
-      const [metricsConfigSet, metricsConfigMap] = formatTrackedMetricsConfigs(
-        metricsConfig,
-        this.source
-      );
-
       const metrics = await metaInsightsMetricDao.getByPageSince(
         integration.selectedPage,
         integration.id,
         subDays(endOfYesterday(), 7 * 4)
       );
 
-      for (let i = 0; i < metrics.length; i++) {
-        const metricId = metrics[i]
-          .metricId as keyof GeneralDashboardReportData;
-        const metricConfig = metricsConfigMap[metricId];
-
-        if (!metricsConfigSet.has(metricId)) continue;
-        if (!metricConfig) throw new Error("Metric config was not found");
-
-        const datapoint = {
-          value: metrics[i].value,
-          createdAt: metrics[i].createdAt,
-        };
-
-        if (!report[metricId]) {
-          report[metricId] = {};
-        }
-
-        report[metricId][this.source] = datapoint;
-      }
+      appendReportWithData(report, metrics, metricsConfig, this.source);
     } catch (err) {
       /* empty */
     }
