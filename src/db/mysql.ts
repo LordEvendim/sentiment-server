@@ -19,7 +19,7 @@ const prodConfig = {
   password: process.env.MYSQL_PASSWORD,
 } satisfies mysql.ConnectionOptions;
 
-const connection = await mysql.createConnection(
+const connection = mysql.createPool(
   process.env.NODE_ENV === "prod" ? prodConfig : devConfig
 );
 
