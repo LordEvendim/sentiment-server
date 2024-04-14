@@ -4,8 +4,8 @@ import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 
 import {
-  GeneralDashboardReportData,
   MetricConfig,
+  ReportData,
   ReporterDataProvider,
   ReportMetricSource,
 } from "../types";
@@ -17,7 +17,7 @@ class MetaAdsDataProvider implements ReporterDataProvider {
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: GeneralDashboardReportData
+    report: ReportData
   ) => {
     try {
       const metaIntegration =

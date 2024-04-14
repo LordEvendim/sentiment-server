@@ -5,11 +5,7 @@ import { googleAdsDataProvider } from "./providers/googleAdsDataProvider";
 import { googleAnalyticsDataProvider } from "./providers/googleAnalyticsDataProvider";
 import { metaAdsDataProvider } from "./providers/metaAdsDataProvider";
 import { metaInsightsDataProvider } from "./providers/metaInsightsDataProvider";
-import {
-  GeneralDashboardReportData,
-  ReporterDataProvider,
-  ReportMetricSource,
-} from "./types";
+import { ReportData, ReporterDataProvider, ReportMetricSource } from "./types";
 
 const reportDataProviders: Record<
   ReportMetricSource,
@@ -23,11 +19,7 @@ const reportDataProviders: Record<
 
 class Reporter {
   getGeneralDashboardData = async (userId: number) => {
-    const report: GeneralDashboardReportData = {
-      impressions: {},
-      reach: {},
-    };
-
+    const report: ReportData = [];
     // create an object with used data providers
     const usedDataProvdiers = new Set<ReportMetricSource>();
     for (let i = 0; i < generalReportMetricsConfig.length; i++) {

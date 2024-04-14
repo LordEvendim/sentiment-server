@@ -4,37 +4,27 @@ export type ReportMetricSource =
   | "google-analytics"
   | "google-ads";
 
-export type MetricConfig =
-  | {
-      id: string;
-      source: ReportMetricSource;
-      action: "separate";
-    }
-  | {
-      id: string;
-      source: ReportMetricSource;
-      action: "aggregate";
-      aggregatedMetricId: string;
-    };
-
-export type MetricDataPoint = {
-  value: number;
-  createdAt: Date;
+export type MetricConfig = {
+  id: string;
+  source: ReportMetricSource;
+  aggregatedMetricId?: string;
 };
 
-export interface GeneralDashboardReportData {
-  impressions: {
-    [provider in ReportMetricSource]?: MetricDataPoint;
-  };
-  reach: {
-    [provider in ReportMetricSource]?: MetricDataPoint;
-  };
-}
+export type MetricDatapoint = {
+  value: number;
+  date: Date;
+};
+
+export type ReportData = {
+  metricId: string;
+  source: ReportMetricSource;
+  value: number;
+}[];
 
 export interface ReporterDataProvider {
   report(
     userId: number,
     metrics: MetricConfig[],
-    report: GeneralDashboardReportData
+    report: ReportData
   ): Promise<void>;
 }

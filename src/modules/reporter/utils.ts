@@ -1,8 +1,4 @@
-import {
-  GeneralDashboardReportData,
-  MetricConfig,
-  ReportMetricSource,
-} from "./types";
+import { MetricConfig, ReportData, ReportMetricSource } from "./types";
 
 export const getMetricsConfigMap = (
   metrics: MetricConfig[],
@@ -29,31 +25,39 @@ interface Metric {
 }
 
 export const appendReportWithData = (
-  report: GeneralDashboardReportData,
+  report: ReportData,
   metrics: Metric[],
   metricsConfig: MetricConfig[],
   source: ReportMetricSource
 ) => {
   const metricsConfigMap = getMetricsConfigMap(metricsConfig, source);
+  const values = new Map<string, number>();
 
+  // aggregate metrics
   for (let i = 0; i < metrics.length; i++) {
-    const metricId = metrics[i].metricId as keyof GeneralDashboardReportData;
+    const metricId = metrics[i].metricId;
     const metricConfig = metricsConfigMap.get(metricId);
 
     if (!metricConfig) throw new Error("Metric config was not found");
-    if (!report[metricId]) report[metricId] = {};
 
-    const datapoint = {
-      value: metrics[i].value,
-      createdAt: metrics[i].createdAt,
-    };
+    const targetMetricId = metricConfig.aggregatedMetricId ?? metricConfig.id;
 
-    if (metricConfig.action === "separate") {
-      report[metricId][source] = datapoint;
-    } else if (metricConfig.action === "aggregate") {
-      report[
-        metricConfig.aggregatedMetricId as keyof GeneralDashboardReportData
-      ][source] = datapoint;
-    }
+    values.set(
+      targetMetricId,
+      values.has(targetMetricId)
+        ? values.get(targetMetricId)! + metrics[i].value
+        : metrics[i].value
+    );
+  }
+
+  // append report data
+  for (const [metricId, value] of values.entries()) {
+    const metricConfig = metricsConfigMap.get(metricId)!;
+
+    report.push({
+      metricId: metricConfig.aggregatedMetricId ?? metricConfig.id,
+      value,
+      source,
+    });
   }
 };

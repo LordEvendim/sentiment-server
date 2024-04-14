@@ -4,8 +4,8 @@ import { googleAnalyticsMetricDao } from "#dao/googleAnalyticsMetricDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 
 import {
-  GeneralDashboardReportData,
   MetricConfig,
+  ReportData,
   ReporterDataProvider,
   ReportMetricSource,
 } from "../types";
@@ -17,7 +17,7 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: GeneralDashboardReportData
+    report: ReportData
   ) => {
     try {
       const integration =
