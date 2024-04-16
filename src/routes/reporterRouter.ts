@@ -17,4 +17,10 @@ router.get(
   reporterController.getWeeklyPageReport
 );
 
+router.get(
+  "/dashboard/general",
+  isAuthenticated,
+  reporterController.getGeneralDashboardData
+);
+
 export { router as reporterRouter };
