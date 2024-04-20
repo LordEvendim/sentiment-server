@@ -2,12 +2,11 @@
   "name": "server",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "yarn docker:run:dev && tsx watch --clear-screen=false src/index.ts",
     "start": "node ./dist/index.js",
     "start:dev": "tsx ./src/index.ts",
-    "build": "tsup src/index.ts --format esm,cjs && (copy \"./.env\" \"./dist\" /y || cp \"./.env\" \"./dist\")",
+    "build": "tsup src/index.ts --format esm,cjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "lint:verbose": "tsc --noEmit && (TIMING=1 || set TIMING=1) && eslint \"src/**/*.ts*\"",
