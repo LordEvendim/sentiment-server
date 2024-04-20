@@ -4,10 +4,7 @@ import { logger } from "#modules/logger";
 
 const devConfig = {} satisfies RedisOptions;
 
-const prodConfig = {
-  host: process.env.REDIS_INTERNAL_HOST,
-  port: parseInt(process.env.REDIS_INTERNAL_PORT ?? "6379"),
-} satisfies RedisOptions;
+const prodConfig = process.env.REDIS_PRIVATE_URL!;
 
 class RedisConnectionManager {
   public connection: Redis;
