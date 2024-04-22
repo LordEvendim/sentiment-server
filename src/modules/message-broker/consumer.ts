@@ -2,7 +2,7 @@ import amqp from "amqplib";
 
 import { logger } from "#modules/logger";
 
-import { Queues, queuesConfig } from "./queues";
+import { QueueNames, queuesConfig } from "./queues";
 import { TaskData, tasks } from "./tasks";
 
 class QueueConsumer {
@@ -25,7 +25,7 @@ class QueueConsumer {
         await connection.close();
       });
 
-      let queueName: Queues;
+      let queueName: QueueNames;
 
       for (queueName in queuesConfig) {
         logger.debug(

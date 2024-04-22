@@ -4,6 +4,11 @@ import { mysqlDatabase } from "#db/mysql";
 import { NewUser, User, users } from "#db/schema/users";
 
 export const userDao = {
+  getAll: async (): Promise<User[] | undefined> => {
+    const result = await mysqlDatabase.query.users.findMany();
+
+    return result;
+  },
   getById: async (id: number): Promise<User | undefined> => {
     const result = await mysqlDatabase.query.users.findFirst({
       where: eq(users.id, id),

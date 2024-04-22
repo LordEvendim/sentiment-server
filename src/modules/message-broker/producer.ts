@@ -2,7 +2,7 @@ import amqp from "amqplib";
 
 import { logger } from "#modules/logger";
 
-import { Queues, queuesConfig } from "./queues";
+import { QueueNames, Queues, queuesConfig } from "./queues";
 
 class QueueProducer {
   isStarting: boolean = false;
@@ -33,7 +33,7 @@ class QueueProducer {
     }
   }
 
-  async sendMessage(queueName: Queues, message: object) {
+  async sendMessage<T extends QueueNames>(queueName: T, message: Queues[T]) {
     try {
       if (!this.channel || !this.connection) {
         this.start();

@@ -31,6 +31,7 @@ export const createServer = () => {
 
   queueProducer.start();
   queueConsumer.start();
+  // scheduler.start();
 
   app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);

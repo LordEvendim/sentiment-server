@@ -1,9 +1,18 @@
 import { Options } from "amqplib";
 
-export type Queues = "report";
+export type Queues = {
+  report: {
+    userId: number;
+  };
+  fetch: {
+    userId: number;
+  };
+};
+
+export type QueueNames = keyof Queues;
 
 export const queuesConfig: Record<
-  Queues,
+  QueueNames,
   {
     queue: Options.AssertQueue;
     consume: Options.Consume;
@@ -11,6 +20,17 @@ export const queuesConfig: Record<
   }
 > = {
   report: {
+    queue: {
+      durable: true,
+    },
+    queueSend: {
+      persistent: true,
+    },
+    consume: {
+      noAck: false,
+    },
+  },
+  fetch: {
     queue: {
       durable: true,
     },
