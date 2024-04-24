@@ -28,12 +28,11 @@ export class GoogleAds {
         Host: "googleads.googleapis.com",
         Authorization: `Bearer ${integration.accessToken}`,
         "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
-        // login-customer-id:
       },
     });
 
-    const transformedAccounts = result.data.resourceNames.map((account) => ({
-      id: parseInt(account),
+    const transformedAccounts = result.data.resourceNames.map((accountId) => ({
+      id: parseInt(accountId.split("/")[1]),
       integrationId: integration.id,
     })) satisfies NewGoogleAdAccount[];
 

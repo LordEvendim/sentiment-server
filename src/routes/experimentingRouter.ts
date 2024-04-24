@@ -1,12 +1,8 @@
 import express, { Request, Response, Router } from "express";
 
 import { isAdmin } from "#middleware/isAdmin";
-import { reporter } from "#modules/reporter";
+import { googleAds } from "#modules/google/googleAds";
 import { handleControllerError } from "#utils/errorHandling";
-import { metaInsights } from "#modules/meta";
-import { subDays, startOfYesterday, format } from "date-fns";
-import { metaAds } from "#modules/meta/metaAds";
-import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 
 const router: Router = express.Router();
 
@@ -32,7 +28,8 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     //   subDays(startOfYesterday(), 4 * 7),
     //   subDays(startOfYesterday(), 0)
     // );
-    const data = await reporter.getGeneralDashboardData(1);
+    // const data = await reporter.getGeneralDashboardData(1);
+    const data = await googleAds.connectUserAccounts(1);
 
     res.send(data);
   } catch (error: unknown) {

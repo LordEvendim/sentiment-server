@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 
+import { googleIntegrations } from "./googleIntegrations";
 import { metaIntegrations } from "./metaIntegrations";
 import { reports } from "./reports";
 
@@ -13,7 +14,8 @@ export const users = mysqlTable("users", {
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
-  integrations: one(metaIntegrations),
+  metaIntegrations: one(metaIntegrations),
+  googleIntegrations: one(googleIntegrations),
   reports: many(reports),
 }));
 

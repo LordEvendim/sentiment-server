@@ -3,6 +3,7 @@ import { google } from "googleapis";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { logger } from "#modules/logger";
 
+import { googleAds } from "./googleAds";
 import { googleAnalytics } from "./googleAnalytics";
 
 // https://developers.google.com/identity/protocols/oauth2/scopes#analytics
@@ -46,6 +47,7 @@ export class GoogleAuth {
     });
 
     await googleAnalytics.connectUserAccounts(userId);
+    await googleAds.connectUserAccounts(userId);
 
     return tokens.access_token;
   };

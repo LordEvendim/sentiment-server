@@ -14,6 +14,11 @@ router.get(
 
 router.post("/selected-page", isAuthenticated, googleController.selectPage);
 router.post(
+  "/selected-ad-account",
+  isAuthenticated,
+  googleController.selectAdAccount
+);
+router.post(
   "/access-token",
   isAuthenticated,
   googleController.createAccessToken

@@ -2,6 +2,7 @@ import { Response } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { GoogleAnalytics, googleAnalytics, googleAuth } from "#modules/google";
+import { googleAds } from "#modules/google/googleAds";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -10,13 +11,16 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
     getUserPages: async (
       req: TypedRequest<object, object, object>,
       res: Response<{
-        analyticsAccounts:
-          | {
-              name: string;
-              id: number;
-            }[]
-          | undefined;
+        analyticsAccounts: {
+          id: number;
+          name: string;
+          parentAccountName: string;
+        }[];
+        adAccounts: {
+          id: number;
+        }[];
         selectedAnalyticsAccount: number | undefined;
+        selectedAdAccount: number | undefined;
       }>
     ) => {
       try {
@@ -24,13 +28,16 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
 
         if (!userId) throw new Error("Invlid request");
 
-        const result = await googleAnalytics.getUserAccounts(userId);
-        const selectedPage =
+        const analyticsAccounts = await googleAnalytics.getUserAccounts(userId);
+        const adAccounts = await googleAds.getUserAccounts(userId);
+        const integration =
           await googleIntegrationDao.getIntegrationByUserId(userId);
 
         return res.status(200).send({
-          analyticsAccounts: result,
-          selectedAnalyticsAccount: selectedPage?.selectedPage ?? undefined,
+          analyticsAccounts: analyticsAccounts ?? [],
+          adAccounts: adAccounts ?? [],
+          selectedAnalyticsAccount: integration?.selectedPage ?? undefined,
+          selectedAdAccount: integration?.selectedAdAccount ?? undefined,
         });
       } catch (error) {
         return handleControllerError(res, error);
@@ -97,6 +104,23 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         const result = await googleAnalytics.selectPage(userId, pageId);
 
         return res.status(200).send({ selectedPage: result });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    selectAdAccount: async (
+      req: TypedRequest<{ accountId: number }>,
+      res: Response<{ selectedAccount: number }>
+    ) => {
+      try {
+        const { accountId } = req.body;
+        const userId = req.session.user?.id;
+
+        if (!userId || !accountId) throw new Error("Invlid request");
+
+        const result = await googleAds.selectAccount(userId, accountId);
+
+        return res.status(200).send({ selectedAccount: result });
       } catch (error) {
         return handleControllerError(res, error);
       }
