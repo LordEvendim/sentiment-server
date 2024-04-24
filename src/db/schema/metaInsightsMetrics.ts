@@ -14,8 +14,8 @@ export const metaInsightsMetrics = mysqlTable(
   "meta_insights_metrics",
   {
     metricId: varchar("metric_id", { length: 256 }).notNull(), // metricId is used to get metrics details, metrics, etc.
-    value: int("value").notNull(),
     createdAt: date("created_at").notNull(),
+    value: int("value").notNull(),
     period: int("period").notNull(), // in days: 0 -> lifetime
     sourceId: bigint("source_id", { mode: "number" }).notNull(),
     integrationId: bigint("integration_id", { mode: "number" }).notNull(),

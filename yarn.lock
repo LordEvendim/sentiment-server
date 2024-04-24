@@ -37,13 +37,6 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@drizzle-team/studio@^0.0.39":
-  version "0.0.39"
-  resolved "https://registry.yarnpkg.com/@drizzle-team/studio/-/studio-0.0.39.tgz#70e9155503f7343e8f1917d316f93e64c23760e1"
-  integrity sha512-c5Hkm7MmQC2n5qAsKShjQrHoqlfGslB8+qWzsGGZ+2dHMRTNG60UuzalF0h0rvBax5uzPXuGkYLGaQ+TUX3yMw==
-  dependencies:
-    superjson "^2.2.1"
-
 "@esbuild-kit/core-utils@^3.3.2":
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/@esbuild-kit/core-utils/-/core-utils-3.3.2.tgz#186b6598a5066f0413471d7c4d45828e399ba96c"
@@ -473,6 +466,16 @@
     long "^5.0.0"
     protobufjs "^7.2.4"
     yargs "^17.7.2"
+
+"@hono/node-server@^1.9.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.11.0.tgz#18d73d0a79d1c0ca387d02866231b5e2d9eb7b5e"
+  integrity sha512-TLIJq9TMtD1NEG1mVoqNUn1Ita0qSaB5XboZErjFBcO/GJYXwWY4dVdTi9G0lbxtu0x+hJXDItcLaFHb7rlFTw==
+
+"@hono/zod-validator@^0.2.0":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@hono/zod-validator/-/zod-validator-0.2.1.tgz#41ed7464fea2f1453e22e812fe9de0b5119c158e"
+  integrity sha512-HFoxln7Q6JsE64qz2WBS28SD33UB2alp3aRKmcWnNLDzEL1BLsWfbdX6e1HIiUprHYTIXf5y7ax8eYidKUwyaA==
 
 "@humanwhocodes/config-array@^0.11.13":
   version "0.11.13"
@@ -2075,13 +2078,14 @@ dreamopt@~0.8.0:
   dependencies:
     wordwrap ">=0.0.2"
 
-drizzle-kit@^0.20.14:
-  version "0.20.14"
-  resolved "https://registry.yarnpkg.com/drizzle-kit/-/drizzle-kit-0.20.14.tgz#bd9bdc01db6630292077d99ba6d2cee3a96e54de"
-  integrity sha512-0fHv3YIEaUcSVPSGyaaBfOi9bmpajjhbJNdPsRMIUvYdLVxBu9eGjH8mRc3Qk7HVmEidFc/lhG1YyJhoXrn5yA==
+drizzle-kit@^0.20.17:
+  version "0.20.17"
+  resolved "https://registry.yarnpkg.com/drizzle-kit/-/drizzle-kit-0.20.17.tgz#f4fa3445b3c5b1b4e3ac6b40f97111988e1b8482"
+  integrity sha512-mLVDS4nXmO09wFVlzGrdshWnAL+U9eQGC5zRs6hTN6Q9arwQGWU2XnZ17I8BM8Quau8CQRx3Ms6VPgRWJFVp7Q==
   dependencies:
-    "@drizzle-team/studio" "^0.0.39"
     "@esbuild-kit/esm-loader" "^2.5.5"
+    "@hono/node-server" "^1.9.0"
+    "@hono/zod-validator" "^0.2.0"
     camelcase "^7.0.1"
     chalk "^5.2.0"
     commander "^9.4.1"
@@ -2090,9 +2094,11 @@ drizzle-kit@^0.20.14:
     esbuild-register "^3.5.0"
     glob "^8.1.0"
     hanji "^0.0.5"
+    hono "^4.1.4"
     json-diff "0.9.0"
     minimatch "^7.4.3"
     semver "^7.5.4"
+    superjson "^2.2.1"
     zod "^3.20.2"
 
 drizzle-orm@^0.30.8:
@@ -3174,6 +3180,11 @@ helmet@^7.1.0:
   version "7.1.0"
   resolved "https://registry.yarnpkg.com/helmet/-/helmet-7.1.0.tgz#287279e00f8a3763d5dccbaf1e5ee39b8c3784ca"
   integrity sha512-g+HZqgfbpXdCkme/Cd/mZkV0aV3BZZZSugecH03kl38m/Kmdx8jKjBikpDj2cr+Iynv4KpYEviojNdTJActJAg==
+
+hono@^4.1.4:
+  version "4.2.7"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.2.7.tgz#439ae5b0fc3620f254988b228b0e0c4d91ffe367"
+  integrity sha512-k1xHi86tJnRIVvqhFMBDGFKJ8r5O+bEsT4P59ZK59r0F300Xd910/r237inVfuT/VmE86RQQffX4OYNda6dLXw==
 
 http-errors@2.0.0:
   version "2.0.0"

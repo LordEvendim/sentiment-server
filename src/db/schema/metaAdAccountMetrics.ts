@@ -14,8 +14,8 @@ export const metaAdAccountMetrics = mysqlTable(
   "meta_ad_account_metrics",
   {
     metricId: varchar("metric_id", { length: 256 }).notNull(), // metricId is used to get metrics details, metrics, etc.
-    value: varchar("value", { length: 15 }).notNull(),
     createdAt: date("created_at").notNull(),
+    value: varchar("value", { length: 15 }).notNull(),
     period: int("period").notNull(), // in days: 0 -> lifetime
     sourceId: bigint("source_id", { mode: "number" }).notNull(),
     integrationId: int("integration_id").notNull(),

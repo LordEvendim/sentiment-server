@@ -7,10 +7,7 @@ export default {
   dbCredentials:
     process.env.NODE_ENV === "prod"
       ? {
-          host: process.env.MYSQL_HOST!,
-          user: process.env.MYSQL_USERNAME!,
-          password: process.env.MYSQL_PASSWORD!,
-          database: process.env.MYSQL_DB!,
+          uri: process.env.MYSQL_URL!,
         }
       : {
           host: "localhost",

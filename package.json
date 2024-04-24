@@ -19,7 +19,7 @@
     "drizzle:studio": "drizzle-kit studio",
     "drizzle:push": "yarn drizzle:push:dev && yarn drizzle:push:prod",
     "drizzle:push:dev": "drizzle-kit push:mysql",
-    "drizzle:push:prod": "set NODE_ENV=prod && drizzle-kit push:mysql",
+    "drizzle:push:prod": "cmd /V /C \"set NODE_ENV=prod&& drizzle-kit push:mysql\"",
     "drizzle:push:prod:lin": "NODE_ENV=prod drizzle-kit push:mysql"
   },
   "dependencies": {
@@ -73,7 +73,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "dotenv": "^16.0.3",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.14",
+    "drizzle-kit": "^0.20.17",
     "eslint": "^8.56.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-simple-import-sort": "^12.0.0",
