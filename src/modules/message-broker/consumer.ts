@@ -7,7 +7,7 @@ import { TaskData, tasks } from "./tasks";
 
 class QueueConsumer {
   shouldReject = true;
-  retriesLimit = 5;
+  retriesLimit = 2;
 
   async start() {
     try {
@@ -32,6 +32,8 @@ class QueueConsumer {
           "Message Broker: setting up consumer for queue: " + queueName
         );
         await channel.assertQueue(queueName, queuesConfig[queueName].queue);
+
+        await channel.prefetch(1);
         await channel.consume(
           queueName,
           async (message) => {

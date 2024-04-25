@@ -18,7 +18,6 @@ interface Metric {
   metricId: string;
   value: number;
   createdAt: Date;
-  id: number;
   integrationId: number;
   period: number;
   sourceId: number;

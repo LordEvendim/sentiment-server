@@ -26,7 +26,12 @@ export const metaAdAccountMetricDao = {
     const result = await mysqlDatabase
       .insert(metaAdAccountMetrics)
       .values(newMetaAdAccountMetrics)
-      .onDuplicateKeyUpdate({ set: { id: sql`id` } });
+      .onDuplicateKeyUpdate({
+        set: {
+          createdAt: sql`values(created_at)`,
+          metricId: sql`values(metric_id)`,
+        },
+      });
 
     return result;
   },

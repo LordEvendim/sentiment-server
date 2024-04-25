@@ -23,7 +23,12 @@ export const googleAnalyticsMetricDao = {
     const result = await mysqlDatabase
       .insert(googleAnalyticsMetrics)
       .values(newGoogleAnalyticsMetrics)
-      .onDuplicateKeyUpdate({ set: { id: sql`id` } });
+      .onDuplicateKeyUpdate({
+        set: {
+          createdAt: sql`values(created_at)`,
+          metricId: sql`values(metric_id)`,
+        },
+      });
 
     return result;
   },

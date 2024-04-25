@@ -10,6 +10,23 @@ export class GoogleAds {
 
   constructor() {}
 
+  pullData = async (
+    userId: number,
+    propertyId: number,
+    since: Date,
+    until: Date
+  ) => {
+    logger.debug(`Google: getting weekly Google Ads Data for ${userId}`);
+    const integration =
+      await googleIntegrationDao.getIntegrationWithSelectedByUserId(userId);
+
+    if (!integration) throw new Error("Google: integration not connected");
+
+    if (!integration.accessToken) throw new Error("Google Ads is not connectd");
+
+    // pull data from the api
+  };
+
   getUserAccounts = async (userId: number) => {
     return await googleAdAccountDao.getUserAdAccounts(userId);
   };

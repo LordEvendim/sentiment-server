@@ -23,7 +23,12 @@ export const metaInsightsMetricDao = {
     const result = await mysqlDatabase
       .insert(metaInsightsMetrics)
       .values(newMetaInsightsMetrics)
-      .onDuplicateKeyUpdate({ set: { id: sql`id` } });
+      .onDuplicateKeyUpdate({
+        set: {
+          createdAt: sql`values(created_at)`,
+          metricId: sql`values(metric_id)`,
+        },
+      });
 
     return result;
   },

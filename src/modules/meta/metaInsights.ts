@@ -1,5 +1,6 @@
 import axios from "axios";
 import { format, startOfYesterday } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 import { metaAdAccountDao } from "#dao/metaAdAccountDao";
 import { metaInsightsMetricDao } from "#dao/metaInsightsMetricDao";
@@ -23,6 +24,26 @@ import { metaMetricPeriodToDays } from "./utils";
 export class MetaInsights {
   apiVersion = "v18.0";
   baseUrl = "https://graph.facebook.com";
+
+  pullLastDayData = async (userId: number) => {
+    logger.debug(`Meta: pulling last day page data of ${userId}`);
+
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Meta: integration not connected");
+    if (!integration.selectedPage) throw new Error("Meta: page not selected");
+
+    const lastDay = toZonedTime(Date.now(), "America/New_York");
+
+    const data = await this.getPageInsights(
+      userId,
+      integration.selectedPage,
+      lastDay,
+      lastDay
+    );
+
+    return data;
+  };
 
   getUserAccesToken = async (userId: number) => {
     return await metaIntegrationDao.getAccessTokenByUserId(userId);

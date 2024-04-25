@@ -1,5 +1,6 @@
 import axios from "axios";
 import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -13,6 +14,26 @@ export class MetaAds {
   baseUrl = "https://graph.facebook.com";
 
   getAccountOverview = async () => {};
+
+  pullLastDayData = async (userId: number) => {
+    logger.debug("Meta: pulling last day data");
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Meta: integration not connected");
+    if (!integration.selectedAdAccount)
+      throw new Error("Meta: ad account not selected");
+
+    const lastDay = toZonedTime(Date.now(), "America/New_York");
+
+    const data = await this.getAdAccountInsights(
+      userId,
+      integration.selectedAdAccount,
+      lastDay,
+      lastDay
+    );
+
+    return data;
+  };
 
   getAdAccountInsights = async (
     userId: number,
