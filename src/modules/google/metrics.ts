@@ -1,3 +1,4 @@
+// https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#metrics
 export type GoogleAnalyticsMetricsNames =
   | "activeUsers"
   // | "bounceRate"

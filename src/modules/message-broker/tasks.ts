@@ -1,7 +1,6 @@
 import { ConsumeMessage } from "amqplib";
 
-import { metaInsights } from "#modules/meta";
-import { metaAds } from "#modules/meta/metaAds";
+import { logger } from "#modules/logger";
 import { generativeReporter } from "#modules/reporter";
 import { wait } from "#utils/wait";
 
@@ -29,11 +28,14 @@ export const tasks: Record<
 
     await generativeReporter.generateWeeklyReport(data.userId);
   },
-  fetch: async (message) => {
+  pull: async (message) => {
     const data = JSON.parse(message.content.toString()) as FetchTask;
 
-    await metaAds.pullLastDayData(data.userId);
-    await metaInsights.pullLastDayData(data.userId);
+    logger.debug("Queue Consumer: pulling data for user " + data.userId);
+
+    // await metaAds.pullLastDayData(data.userId);
+    // await metaInsights.pullLastDayData(data.userId);
+    // await googleAnalytics.pullLastDayData(data.userId);
 
     await wait(1);
   },

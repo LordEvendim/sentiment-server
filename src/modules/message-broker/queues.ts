@@ -4,7 +4,7 @@ export type Queues = {
   report: {
     userId: number;
   };
-  fetch: {
+  pull: {
     userId: number;
   };
 };
@@ -30,7 +30,7 @@ export const queuesConfig: Record<
       noAck: false,
     },
   },
-  fetch: {
+  pull: {
     queue: {
       durable: true,
     },

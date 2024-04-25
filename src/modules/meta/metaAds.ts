@@ -13,8 +13,6 @@ export class MetaAds {
   apiVersion = "v18.0";
   baseUrl = "https://graph.facebook.com";
 
-  getAccountOverview = async () => {};
-
   pullLastDayData = async (userId: number) => {
     logger.debug("Meta: pulling last day data");
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);

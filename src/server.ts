@@ -8,6 +8,7 @@ import cors from "#config/cors";
 import { sessionConfig } from "#config/session";
 import { endpointLogging } from "#middleware/endpointLogging";
 import { queueConsumer, queueProducer } from "#modules/message-broker";
+import { scheduler } from "#modules/scheduler/scheduler";
 import { authRouter } from "#routes/authRouter";
 import { experimentingRouter } from "#routes/experimentingRouter";
 import { googleRouter } from "#routes/googleRouter";
@@ -31,7 +32,7 @@ export const createServer = () => {
 
   queueProducer.start();
   queueConsumer.start();
-  // scheduler.start();
+  scheduler.start();
 
   app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);

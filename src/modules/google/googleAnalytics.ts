@@ -230,12 +230,6 @@ export class GoogleAnalytics {
     const metricsOuput: NewGoogleAnalyticsMetric[] = [];
 
     for (let i = 0; i < metrics.length; i += metricsBatchSize) {
-      console.log(
-        [...metrics].splice(i, i + metricsBatchSize).map((metric) => ({
-          name: metric,
-        }))
-      );
-
       const result = await axios.post<GoogleAnalyticsReportOutput>(
         `${this.dataApiUrl}/properties/${propertyId}:runReport`,
         {

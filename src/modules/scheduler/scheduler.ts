@@ -23,7 +23,7 @@ class Scheduler {
         }
 
         for (let i = 0; i < users.length; i++) {
-          queueProducer.sendMessage("fetch", { userId: users[i].id });
+          await queueProducer.sendMessage("pull", { userId: users[i].id });
         }
       },
       null, // onComplete
