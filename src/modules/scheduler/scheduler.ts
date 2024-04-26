@@ -12,17 +12,17 @@ class Scheduler {
     const fetchDataJob = new CronJob(
       "10 */12 * * *", // https://crontab.cronhub.io/
       async function () {
-        logger.debug(`Scheduler: running cron job: fetch daily data`);
-        logger.debug("Scheduler: fetch job: Queueing tasks");
+        logger.debug(`Scheduler: running cron job: pull daily data`);
 
         const users = await userDao.getAll();
 
-        if (!users) {
-          logger.debug("Scheduler: fetch job: canceling task: no users");
+        if (!users || users.length === 0) {
+          logger.debug("Scheduler: pull job: canceling task: no users");
           return;
         }
 
         for (let i = 0; i < users.length; i++) {
+          logger.debug("Scheduler: sending pull job for user " + users[i].id);
           await queueProducer.sendMessage("pull", { userId: users[i].id });
         }
       },

@@ -30,7 +30,6 @@ export const tasks: Record<
   },
   pull: async (message) => {
     const data = JSON.parse(message.content.toString()) as FetchTask;
-
     logger.debug("Queue Consumer: pulling data for user " + data.userId);
 
     // await metaAds.pullLastDayData(data.userId);
