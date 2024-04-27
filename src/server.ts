@@ -19,14 +19,14 @@ import { userRouter } from "#routes/userRouter";
 const app: Application = express();
 
 export const createServer = () => {
-  app.set("trust proxy", 1);
+  // app.set("trust proxy", 1);
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(cors);
+  // app.use(cors);
 
   app.use(session(sessionConfig));
-  app.use(helmet());
+  // app.use(helmet());
 
   app.use(endpointLogging);
 
