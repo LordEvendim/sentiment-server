@@ -6,10 +6,10 @@ import { createServer } from "./server";
 
 const server = createServer();
 
-const port = process.env.PORT || 3001;
+const port = (process.env.PORT as number | undefined) || 3001;
 
 try {
-  server.listen(port, (): void => {
+  server.listen(port, "0.0.0.0", () => {
     logger.info(`Server: started on port: ${port}`);
     logger.info(`Server: started in environment: ${process.env.NODE_ENV}`);
   });
