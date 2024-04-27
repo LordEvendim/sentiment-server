@@ -8,7 +8,8 @@ const corsDevelopment: CorsOptions = {
 const corsProduction: CorsOptions = {
   optionsSuccessStatus: 200,
   credentials: true,
-  origin: ["https://clickclarity.ai"],
+  // origin: ["https://clickclarity.ai"],
+  origin: ["*"],
 };
 
 export default cors(
