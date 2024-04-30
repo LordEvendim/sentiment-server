@@ -14,9 +14,7 @@ const devConfig = {
 } satisfies mysql.ConnectionOptions;
 
 const prodConfig = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USERNAME,
-  password: process.env.MYSQL_PASSWORD,
+  uri: process.env.MYSQL_URL,
 } satisfies mysql.ConnectionOptions;
 
 const connection = mysql.createPool(
