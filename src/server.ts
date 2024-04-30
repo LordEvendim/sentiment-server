@@ -19,20 +19,25 @@ import { userRouter } from "#routes/userRouter";
 const app: Application = express();
 
 export const createServer = () => {
-  // app.set("trust proxy", 1);
+  app.set("trust proxy", 1);
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  // app.use(cors);
+  app.use(cors);
 
   app.use(session(sessionConfig));
-  // app.use(helmet());
+  app.use(helmet());
 
   app.use(endpointLogging);
 
   queueProducer.start();
   queueConsumer.start();
   scheduler.start();
+
+  // Healthcheck
+  app.get("/", (req, res) => {
+    res.status(200).send({ status: "ok" });
+  });
 
   app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);
@@ -41,10 +46,10 @@ export const createServer = () => {
   app.use("/reporter", reporterRouter);
   app.use("/google", googleRouter);
 
-  return https.createServer(
-    process.env.NODE_ENV === "dev"
-      ? { key: readFileSync("./key.pem"), cert: readFileSync("./cert.pem") }
-      : {},
-    app
-  );
+  return process.env.NODE_ENV === "dev"
+    ? https.createServer(
+        { key: readFileSync("./key.pem"), cert: readFileSync("./cert.pem") },
+        app
+      )
+    : app;
 };
