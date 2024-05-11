@@ -14,6 +14,7 @@ import {
 } from "#db/schema";
 import { logger } from "#modules/logger";
 
+import { metaGateway } from "./metaGateway";
 import {
   BreakdownOptions,
   PageInsights,
@@ -211,9 +212,9 @@ export class MetaInsights {
     if (!isPageOwner) throw new Error("User is not a page owner");
     if (!pageAccessToken) throw new Error("This page is not integrated");
 
-    const result = await axios.get<PageInsights>(
-      `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
-      {
+    const result = await metaGateway.callBUC<PageInsights>({
+      url: `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
+      config: {
         params: {
           metric: [
             "page_impressions",
@@ -238,8 +239,10 @@ export class MetaInsights {
           until: format(until, "yyyy-MM-dd"),
           period: "day",
         },
-      }
-    );
+      },
+      userId: userId,
+      businessId: pageId,
+    });
 
     const metrics: NewMetaInsightsMetric[] = [];
 

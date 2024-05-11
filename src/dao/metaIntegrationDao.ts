@@ -41,11 +41,20 @@ export const metaIntegrationDao = {
       .set({ accessToken })
       .where(eq(metaIntegrations.ownerId, userId));
   },
-  update: async (userId: number, update: Partial<NewMetaIntegration>) => {
+  updateByUserId: async (
+    userId: number,
+    update: Partial<NewMetaIntegration>
+  ) => {
     await mysqlDatabase
       .update(metaIntegrations)
       .set(update)
       .where(eq(metaIntegrations.ownerId, userId));
+  },
+  update: async (id: number, update: Partial<NewMetaIntegration>) => {
+    await mysqlDatabase
+      .update(metaIntegrations)
+      .set(update)
+      .where(eq(metaIntegrations.id, id));
   },
   create: async (newMetaIntegration: NewMetaIntegration) => {
     const result = await mysqlDatabase

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
@@ -7,6 +6,7 @@ import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { NewMetaAdAccountMetric } from "#db/schema/metaAdAccountMetrics";
 import { logger } from "#modules/logger";
 
+import { metaGateway } from "./metaGateway";
 import { AdAccountInsights } from "./types";
 
 export class MetaAds {
@@ -50,9 +50,9 @@ export class MetaAds {
 
     const metricsNames = ["clicks", "impressions", "spend", "reach", "cpc"];
 
-    const result = await axios.get<AdAccountInsights>(
-      `${this.baseUrl}/${this.apiVersion}/act_${accountId}/insights`,
-      {
+    const result = await metaGateway.callBUC<AdAccountInsights>({
+      url: `${this.baseUrl}/${this.apiVersion}/act_${accountId}/insights`,
+      config: {
         params: {
           fields: metricsNames.join(","),
           access_token: integration.accessToken,
@@ -60,8 +60,10 @@ export class MetaAds {
           until: format(until, "yyyy-MM-dd"),
           time_increment: 1,
         },
-      }
-    );
+      },
+      userId: userId,
+      businessId: accountId,
+    });
 
     const metrics: NewMetaAdAccountMetric[] = [];
 
