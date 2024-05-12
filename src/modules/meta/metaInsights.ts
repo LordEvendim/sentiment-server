@@ -209,6 +209,25 @@ export class MetaInsights {
       pageId
     );
 
+    const metricsNames = [
+      "page_impressions",
+      "page_impressions_unique",
+      "page_impressions_organic_v2",
+      "page_impressions_organic_unique_v2",
+      "page_impressions_viral",
+      "page_impressions_viral_unique",
+      "page_impressions_by_age_gender_unique",
+      "page_impressions_by_country_unique",
+      "page_total_actions",
+      "page_cta_clicks_logged_in_total",
+      "page_cta_clicks_logged_in_unique",
+      "page_call_phone_clicks_logged_in_unique",
+      "page_post_engagements",
+      "page_consumptions_unique",
+      // "page_engaged_users",
+      // "profile_likes",
+    ];
+
     if (!isPageOwner) throw new Error("User is not a page owner");
     if (!pageAccessToken) throw new Error("This page is not integrated");
 
@@ -216,24 +235,7 @@ export class MetaInsights {
       url: `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
       config: {
         params: {
-          metric: [
-            "page_impressions",
-            "page_impressions_unique",
-            "page_impressions_organic_v2",
-            "page_impressions_organic_unique_v2",
-            "page_impressions_viral",
-            "page_impressions_viral_unique",
-            "page_impressions_by_age_gender_unique",
-            "page_impressions_by_country_unique",
-            "page_total_actions",
-            "page_cta_clicks_logged_in_total",
-            "page_cta_clicks_logged_in_unique",
-            "page_call_phone_clicks_logged_in_unique",
-            "page_post_engagements",
-            "page_consumptions_unique",
-            // "page_engaged_users",
-            // "profile_likes",
-          ].join(","),
+          metric: metricsNames.join(","),
           access_token: pageAccessToken,
           since: format(since, "yyyy-MM-dd"),
           until: format(until, "yyyy-MM-dd"),

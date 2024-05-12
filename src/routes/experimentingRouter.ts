@@ -2,7 +2,7 @@ import express, { Request, Response, Router } from "express";
 
 import { isAdmin } from "#middleware/isAdmin";
 import { logger } from "#modules/logger";
-import { metaInsights } from "#modules/meta";
+import { metaAds } from "#modules/meta/metaAds";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -14,7 +14,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
 
     // const data = await googleAnalytics.pullLastDayData(1);
 
-    const data = await metaInsights.pullLastDayData(1);
+    const data = await metaAds.pullLastDayData(1);
 
     res.send(data);
   } catch (error: unknown) {

@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { eachDayOfInterval, format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
@@ -66,6 +66,7 @@ export class MetaAds {
     });
 
     const metrics: NewMetaAdAccountMetric[] = [];
+    const pushedMetrics = new Set<string>();
 
     for (let i = 0; i < result.data.data.length; i++) {
       const dataPoint = result.data.data[i];
@@ -76,6 +77,9 @@ export class MetaAds {
 
         if (!value) continue;
 
+        pushedMetrics.add(
+          metricName + format(dataPoint.date_stop, "yyyy-MM-dd")
+        );
         metrics.push({
           createdAt: new Date(dataPoint.date_stop),
           integrationId: integration.id,
@@ -83,6 +87,27 @@ export class MetaAds {
           period: 1,
           sourceId: accountId,
           value: value,
+        });
+      }
+    }
+
+    // fill gaps caused by missing metrics with zero value
+    const days = eachDayOfInterval({
+      start: since,
+      end: until,
+    });
+
+    for (const day of days) {
+      for (const metric of metricsNames) {
+        if (pushedMetrics.has(metric + format(day, "yyyy-MM-dd"))) continue;
+
+        metrics.push({
+          createdAt: day,
+          integrationId: integration.id,
+          metricId: metric,
+          period: 1,
+          sourceId: accountId,
+          value: "0",
         });
       }
     }

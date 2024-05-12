@@ -1,5 +1,5 @@
 import axios from "axios";
-import { format, parse, subDays } from "date-fns";
+import { eachDayOfInterval, format, parse, subDays } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { googleAnalyticsMetricDao } from "#dao/googleAnalyticsMetricDao";
@@ -228,6 +228,7 @@ export class GoogleAnalytics {
 
     const metricsBatchSize = 10;
     const metricsOuput: NewGoogleAnalyticsMetric[] = [];
+    const pushedMetrics = new Set<string>();
 
     for (let i = 0; i < metrics.length; i += metricsBatchSize) {
       const result = await axios.post<GoogleAnalyticsReportOutput>(
@@ -267,6 +268,9 @@ export class GoogleAnalytics {
         const formattedRowDate = parse(`${rowDate}Z`, "yyyyMMddX", new Date());
 
         for (let j = 0; j < result.data.rows[0].metricValues.length; j++) {
+          pushedMetrics.add(
+            metrics[i + j] + format(formattedRowDate, "yyyy-MM-dd")
+          );
           metricsOuput.push({
             metricId: metrics[i + j],
             value: parseFloat(result.data.rows[0].metricValues[i].value),
@@ -276,6 +280,27 @@ export class GoogleAnalytics {
             sourceId: propertyId,
           });
         }
+      }
+    }
+
+    // fill gaps caused by missing metrics with zero value
+    const days = eachDayOfInterval({
+      start: since,
+      end: until,
+    });
+
+    for (const day of days) {
+      for (const metric of metrics) {
+        if (pushedMetrics.has(metric + format(day, "yyyy-MM-dd"))) continue;
+
+        metricsOuput.push({
+          createdAt: day,
+          integrationId: integration.id,
+          metricId: metric,
+          period: 1,
+          sourceId: propertyId,
+          value: 0,
+        });
       }
     }
 

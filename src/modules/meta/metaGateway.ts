@@ -176,16 +176,13 @@ class MetaGateway {
       const result = await axios.get<T>(url, config);
 
       if (result.headers?.["x-business-use-case-usage"]) {
-        console.log("inseting");
         const businessUsage = JSON.parse(
           result.headers["x-business-use-case-usage"]
         );
-        console.log(businessUsage);
 
         const usage = businessUsage?.[
           businessId.toString()
         ][0] as AppUsageHeader;
-        console.log(usage);
         for (const [, value] of Object.entries(usage)) {
           if (value > USAGE_THRESHOLD) {
             logger.warn("Meta Gateway: usage aboce threshold");
