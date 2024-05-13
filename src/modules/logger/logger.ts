@@ -1,5 +1,7 @@
 import { createLogger, format, transports } from "winston";
 
+import { DiscordTransport } from "./discordTransport";
+
 const { combine, timestamp, printf } = format;
 
 const myFormat = printf(({ level, message, timestamp }) => {
@@ -32,3 +34,10 @@ export const logger = createLogger({
     }),
   ],
 });
+
+process.env.NODE_ENV === "prod" &&
+  logger.add(
+    new DiscordTransport({
+      level: "error",
+    })
+  );

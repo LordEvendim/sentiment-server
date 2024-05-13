@@ -21,6 +21,13 @@ export type ReportData = {
   value: number;
 }[];
 
+export type GenerativeReportData = {
+  metricId: string;
+  source: ReportMetricSource;
+  value: number;
+  createdAt: Date;
+}[];
+
 export interface ReporterDataProvider {
   report(
     userId: number,

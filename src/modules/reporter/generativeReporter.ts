@@ -1,14 +1,18 @@
-import { endOfYesterday, subDays } from "date-fns";
+import {
+  addWeeks,
+  eachDayOfInterval,
+  format,
+  isWithinInterval,
+  subWeeks,
+} from "date-fns";
 
-import { metaIntegrationDao } from "#dao/metaIntegrationDao";
-import { metaPageDao } from "#dao/metaPageDao";
 import { reportDao } from "#dao/reportDao";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
-import { logger } from "#modules/logger";
 import { MetaInsights, metaInsights } from "#modules/meta";
 
-import { prompts } from "./prompts";
+import { reporter } from "./reporter";
+import { ReportMetricSource } from "./types";
 
 class GenerativeReporter {
   metaDataProvider: MetaInsights;
@@ -19,42 +23,6 @@ class GenerativeReporter {
     this.generativeAi = generativeAi;
   }
 
-  generateWeeklyPageReport = async (userId: number) => {
-    const metaIntegration =
-      await metaIntegrationDao.getIntegrationByUserId(userId);
-
-    if (!metaIntegration) throw new Error("User is not connected to Meta");
-    if (!metaIntegration.selectedPage)
-      throw new Error("User has not selected a page");
-
-    const metaPageInsights = await this.metaDataProvider.getPageInsights(
-      userId,
-      metaIntegration.selectedPage,
-      subDays(endOfYesterday(), 7),
-      endOfYesterday()
-    );
-
-    const page = await metaPageDao.getPage(
-      metaIntegration.selectedPage,
-      metaIntegration.id
-    );
-
-    if (!page) throw new Error("Page doesn't exist");
-
-    const report = await this.generativeAi.getTextResponse(
-      prompts.getPageInsightsPrompt(page.pageId.toString(), "week") +
-        JSON.stringify(metaPageInsights)
-    );
-
-    await reportDao.create({
-      createdAd: Date.now(),
-      data: report,
-      ownerId: userId,
-    });
-
-    return report;
-  };
-
   getWeeklyPageReport = async (userId: number) => {
     const report = await reportDao.getByUserId(userId);
 
@@ -62,7 +30,75 @@ class GenerativeReporter {
   };
 
   generateWeeklyReport = async (userId: number) => {
-    logger.info(`Reporter: Generating weekly report for ${userId}`);
+    let input = "Give recommendations and insights \n\n";
+
+    const data = await reporter.getLast4WeeksOverviewReportData(userId);
+
+    console.log(data);
+
+    const usedSources = new Set<ReportMetricSource>();
+    for (let i = 0; i < data.length; i++) {
+      usedSources.add(data[i].source);
+    }
+
+    const days = eachDayOfInterval({
+      end: Date.now(),
+      start: subWeeks(Date.now(), 4),
+    });
+
+    for (const day of days)
+      data.push({
+        createdAt: day,
+        metricId: "spend",
+        source: "meta-ads",
+        value: (Math.random() + 1) * 10,
+      });
+
+    usedSources.add("google-ads");
+    usedSources.add("google-analytics");
+    usedSources.add("meta-ads");
+    usedSources.add("meta-insights");
+
+    const firstWeek = subWeeks(Date.now(), 4);
+
+    for (const source of usedSources.values()) {
+      input += `////// ${source
+        .split("-")
+        .map((s) => s[0].toUpperCase() + s.slice(1))
+        .join(" ")} \n`;
+
+      let currentWeek = firstWeek;
+
+      for (let i = 0; i < 4; i++) {
+        input += `Week ${i + 1}\n`;
+
+        // display data and metrics
+        input += [...data]
+          .filter((datapoint) => datapoint.source === source)
+          .filter((d) =>
+            isWithinInterval(d.createdAt, {
+              start: currentWeek,
+              end: addWeeks(currentWeek, 1),
+            })
+          )
+          .sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf())
+          .map(
+            (d) =>
+              `${format(d.createdAt, "yyyy-MM-dd")} - ${
+                d.metricId
+              } - ${d.value.toFixed(3)}`
+          )
+          .join("\n");
+
+        input += "\n\n";
+        currentWeek = addWeeks(currentWeek, 1);
+      }
+
+      input += "\n";
+    }
+
+    console.log(input);
+    return input;
   };
 }
 

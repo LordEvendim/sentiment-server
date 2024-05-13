@@ -1,8 +1,7 @@
 import express, { Request, Response, Router } from "express";
 
 import { isAdmin } from "#middleware/isAdmin";
-import { logger } from "#modules/logger";
-import { metaAds } from "#modules/meta/metaAds";
+import { generativeReporter } from "#modules/reporter";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -14,11 +13,10 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
 
     // const data = await googleAnalytics.pullLastDayData(1);
 
-    const data = await metaAds.pullLastDayData(1);
+    const data = await generativeReporter.generateWeeklyReport(1);
 
     res.send(data);
   } catch (error: unknown) {
-    logger.error("Handling exp error");
     handleControllerError(res, error);
   }
 });

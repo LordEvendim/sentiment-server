@@ -1,11 +1,19 @@
 import { logger } from "#modules/logger";
 
-import { generalReportMetricsConfig } from "./metrics";
+import {
+  generalDashboardMetricsConfig,
+  generalLast4WeeksReportMetricsConfig,
+} from "./metrics";
 import { googleAdsDataProvider } from "./providers/googleAdsDataProvider";
 import { googleAnalyticsDataProvider } from "./providers/googleAnalyticsDataProvider";
 import { metaAdsDataProvider } from "./providers/metaAdsDataProvider";
 import { metaInsightsDataProvider } from "./providers/metaInsightsDataProvider";
-import { ReportData, ReporterDataProvider, ReportMetricSource } from "./types";
+import {
+  GenerativeReportData,
+  ReportData,
+  ReporterDataProvider,
+  ReportMetricSource,
+} from "./types";
 
 const reportDataProviders: Record<
   ReportMetricSource,
@@ -22,8 +30,8 @@ class Reporter {
     const report: ReportData = [];
     // create an object with used data providers
     const usedDataProvdiers = new Set<ReportMetricSource>();
-    for (let i = 0; i < generalReportMetricsConfig.length; i++) {
-      const source = generalReportMetricsConfig[i].source;
+    for (let i = 0; i < generalDashboardMetricsConfig.length; i++) {
+      const source = generalDashboardMetricsConfig[i].source;
 
       usedDataProvdiers.add(source);
     }
@@ -34,7 +42,32 @@ class Reporter {
 
       await reportDataProviders[dataProvierName]?.report(
         userId,
-        generalReportMetricsConfig.filter(
+        generalDashboardMetricsConfig.filter(
+          (config) => config.source === dataProvierName
+        ),
+        report
+      );
+    }
+
+    return report;
+  };
+  getLast4WeeksOverviewReportData = async (userId: number) => {
+    const report: GenerativeReportData = [];
+    // create an object with used data providers
+    const usedDataProvdiers = new Set<ReportMetricSource>();
+    for (let i = 0; i < generalLast4WeeksReportMetricsConfig.length; i++) {
+      const source = generalLast4WeeksReportMetricsConfig[i].source;
+
+      usedDataProvdiers.add(source);
+    }
+
+    // get metrics only form used data providers
+    for (const dataProvierName of usedDataProvdiers.values()) {
+      logger.debug(`Reporter: getting data from: ${dataProvierName}`);
+
+      await reportDataProviders[dataProvierName]?.report(
+        userId,
+        generalDashboardMetricsConfig.filter(
           (config) => config.source === dataProvierName
         ),
         report

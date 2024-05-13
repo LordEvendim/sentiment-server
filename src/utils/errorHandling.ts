@@ -5,7 +5,7 @@ import { logger } from "#modules/logger/logger";
 
 export const handleControllerError = (res: Response, error: unknown) => {
   if (error instanceof Error || error instanceof ZodError) {
-    logger.error(error);
+    logger.error(error.stack ?? error);
     return res.status(500).send(error.message);
   }
 
