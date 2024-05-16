@@ -16,9 +16,7 @@ const createReporterController = () => {
 
         if (!user) throw new Error("User not authenticated");
 
-        const result = await generativeReporter.generateWeeklyPageReport(
-          user.id
-        );
+        const result = await generativeReporter.generateWeeklyReport(user.id);
 
         return res.status(200).send(result);
       } catch (error) {
@@ -27,7 +25,7 @@ const createReporterController = () => {
     },
     getWeeklyPageReport: async (
       req: TypedRequest<object, { pageId: string }>,
-      res: Response<string>
+      res: Response<string | undefined>
     ) => {
       try {
         const { user } = req.session;
@@ -36,16 +34,14 @@ const createReporterController = () => {
 
         const report = await generativeReporter.getWeeklyPageReport(user.id);
 
-        if (!report) throw new Error("Report not found");
-
-        return res.status(200).send(report.data);
+        return res.status(200).send(report?.data);
       } catch (error) {
         return handleControllerError(res, error);
       }
     },
     getGeneralDashboardData: async (
       req: TypedRequest<object, object>,
-      res: Response<ReportData>
+      res: Response<ReportData | undefined>
     ) => {
       try {
         const { user } = req.session;
@@ -53,8 +49,6 @@ const createReporterController = () => {
         if (!user) throw new Error("User not authenticated");
 
         const report = await reporter.getGeneralDashboardData(user.id);
-
-        if (!report) throw new Error("Report not found");
 
         return res.status(200).send(report);
       } catch (error) {

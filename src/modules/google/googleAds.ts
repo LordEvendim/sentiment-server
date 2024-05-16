@@ -103,7 +103,7 @@ export class GoogleAds {
     logger.debug(
       `Google: selecting Google Ad Account to ${accountId} for ${userId}`
     );
-    await googleIntegrationDao.update(userId, {
+    await googleIntegrationDao.updateByUserId(userId, {
       selectedAdAccount: accountId,
     });
 

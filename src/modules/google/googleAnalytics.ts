@@ -144,7 +144,7 @@ export class GoogleAnalytics {
     logger.debug(
       `Google: selecting Google Analytics Account to ${pageId} for ${userId}`
     );
-    await googleIntegrationDao.update(userId, {
+    await googleIntegrationDao.updateByUserId(userId, {
       selectedPage: pageId,
     });
 

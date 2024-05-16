@@ -38,11 +38,20 @@ export const googleIntegrationDao = {
       .set({ accessToken })
       .where(eq(googleIntegrations.ownerId, userId));
   },
-  update: async (userId: number, update: Partial<NewGoogleIntegration>) => {
+  updateByUserId: async (
+    userId: number,
+    update: Partial<NewGoogleIntegration>
+  ) => {
     await mysqlDatabase
       .update(googleIntegrations)
       .set(update)
       .where(eq(googleIntegrations.ownerId, userId));
+  },
+  update: async (id: number, update: Partial<NewGoogleIntegration>) => {
+    await mysqlDatabase
+      .update(googleIntegrations)
+      .set(update)
+      .where(eq(googleIntegrations.id, id));
   },
   create: async (newGoogleIntegration: NewGoogleIntegration) => {
     const result = await mysqlDatabase

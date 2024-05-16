@@ -302,7 +302,7 @@ export class MetaInsights {
 
   selectPage = async (userId: number, pageId: number) => {
     logger.debug(`Meta: selecting Facebook Page for ${userId} to ${pageId}`);
-    await metaIntegrationDao.update(userId, {
+    await metaIntegrationDao.updateByUserId(userId, {
       selectedPage: pageId,
     });
 
@@ -313,7 +313,7 @@ export class MetaInsights {
     logger.debug(
       `Meta: selecting Meta Ad account for ${userId} to ${accountId}`
     );
-    await metaIntegrationDao.update(userId, {
+    await metaIntegrationDao.updateByUserId(userId, {
       selectedAdAccount: accountId,
     });
 
