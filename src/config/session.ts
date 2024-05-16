@@ -19,6 +19,6 @@ export const sessionConfig = {
     secure: true,
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 365 * 7,
-    domain: process.env.SERVER_ENV === "prod" ? "clickclarity.ai" : "localhost",
+    domain: process.env.NODE_ENV === "prod" ? "clickclarity.ai" : "localhost",
   },
 } satisfies SessionOptions;
