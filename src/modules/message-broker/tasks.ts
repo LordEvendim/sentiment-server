@@ -34,8 +34,18 @@ export const tasks: Record<
     const data = JSON.parse(message.content.toString()) as FetchTask;
     logger.debug("Queue Consumer: pulling data for user " + data.userId);
 
-    await metaAds.pullLastDayData(data.userId);
-    await metaInsights.pullLastDayData(data.userId);
+    try {
+      await metaAds.pullLastDayData(data.userId);
+    } catch (error) {
+      logger.error(error);
+    }
+
+    try {
+      await metaInsights.pullLastDayData(data.userId);
+    } catch (error) {
+      logger.error(error);
+    }
+
     // await googleAnalytics.pullLastDayData(data.userId);
     // await googleAds.pullLastDayData(data.userId);
 
