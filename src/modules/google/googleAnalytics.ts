@@ -1,5 +1,5 @@
 import axios from "axios";
-import { eachDayOfInterval, format, parse, subDays } from "date-fns";
+import { eachDayOfInterval, format, parse, subDays, subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { googleAnalyticsMetricDao } from "#dao/googleAnalyticsMetricDao";
@@ -43,6 +43,27 @@ export class GoogleAnalytics {
       userId,
       integration.selectedPage,
       lastDay,
+      lastDay
+    );
+
+    return data;
+  };
+
+  pullLastFourWeeks = async (userId: number) => {
+    logger.debug("Google: pulling last four weeks");
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google: integration not connected");
+    if (!integration.selectedPage) throw new Error("Google: page not selected");
+
+    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
+
+    const data = await this.pullData(
+      userId,
+      integration.selectedPage,
+      since,
       lastDay
     );
 
@@ -148,6 +169,8 @@ export class GoogleAnalytics {
       selectedPage: pageId,
     });
 
+    this.pullLastFourWeeks(userId);
+
     return pageId;
   };
 
@@ -215,7 +238,7 @@ export class GoogleAnalytics {
     since: Date,
     until: Date
   ) => {
-    logger.debug(`Google: getting weekly Google Analytics Data for ${userId}`);
+    logger.debug(`Google: getting Google Analytics Data for ${userId}`);
     const integration =
       await googleIntegrationDao.getIntegrationWithSelectedByUserId(userId);
 
@@ -258,7 +281,7 @@ export class GoogleAnalytics {
         }
       );
 
-      if (!result.data.rows) return [];
+      if (!result.data.rows) result.data.rows = [];
 
       // Handle multiple rows for dimenssions
       const rows = result.data.rows.length ?? 0;

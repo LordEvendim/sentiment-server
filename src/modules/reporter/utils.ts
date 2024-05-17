@@ -37,7 +37,7 @@ export const appendReportWithData = (
     const metricId = metrics[i].metricId;
     const metricConfig = metricsConfigMap.get(metricId);
 
-    if (!metricConfig) throw new Error("Metric config was not found");
+    if (!metricConfig) continue;
 
     const targetMetricId = metricConfig.aggregatedMetricId ?? metricConfig.id;
 

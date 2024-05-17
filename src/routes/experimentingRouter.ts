@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 
 import { isAdmin } from "#middleware/isAdmin";
-import { googleAds } from "#modules/google/googleAds";
+import { reporter } from "#modules/reporter";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -15,7 +15,11 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
 
     // const data = await generativeReporter.generateWeeklyReport(1);
 
-    const data = await googleAds.pullLastDayData(1);
+    // const data = await googleAds.pullLastDayData(1);
+    // await queueProducer.sendMessage("pull", { userId: 1 });
+    // const data = {};
+
+    const data = await reporter.getGeneralDashboardData(1);
 
     res.send(data);
   } catch (error: unknown) {

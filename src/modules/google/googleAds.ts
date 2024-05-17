@@ -1,4 +1,5 @@
 import axios from "axios";
+import { subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { googleAdAccountDao } from "#dao/googleAdAccountDao";
@@ -34,6 +35,28 @@ export class GoogleAds {
     return data;
   };
 
+  pullLastFourWeeks = async (userId: number) => {
+    logger.debug("Google: pulling last four weeks");
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google: integration not connected");
+    if (!integration.selectedAdAccount)
+      throw new Error("Google: ad account not selected");
+
+    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
+
+    const data = await this.pullAdGroupsData(
+      userId,
+      integration.selectedAdAccount,
+      since,
+      lastDay
+    );
+
+    return data;
+  };
+
   pullAdGroupsData = async (
     userId: number,
     propertyId: number,
@@ -50,17 +73,18 @@ export class GoogleAds {
 
     // pull data from the api
     const result = await axios.post(
-      `${this.baseUrl}/customers/${propertyId}/googleAds:searchStream`,
+      `${this.baseUrl}/customers/${propertyId}/googleAds:search`,
       undefined,
       {
         headers: {
           Host: "googleads.googleapis.com",
           Authorization: `Bearer ${integration.accessToken}`,
           "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+          // "login-customer-id": "", MANAGER ACCOUNT ID
         },
         params: {
           query:
-            "SELECT ad_group_criterion.keyword.text, ad_group_criterion.keyword.match_type, metrics.clicks, metrics.impressions, metrics.active_view_ctr, metrics.active_view_cpm, metrics.average_cpc, metrics.cost_micros FROM keyword_view WHERE metrics.clicks > 1 ORDER BY metrics.clicks",
+            "SELECT ad_group_criterion.keyword.text, ad_group_criterion.status FROM ad_group_criterion WHERE ad_group_criterion.type = 'KEYWORD' AND ad_group_criterion.status = 'ENABLED'",
         },
       }
     );

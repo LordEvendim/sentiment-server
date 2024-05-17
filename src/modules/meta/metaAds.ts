@@ -1,4 +1,4 @@
-import { eachDayOfInterval, format } from "date-fns";
+import { eachDayOfInterval, format, subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
@@ -27,6 +27,27 @@ export class MetaAds {
       userId,
       integration.selectedAdAccount,
       lastDay,
+      lastDay
+    );
+
+    return data;
+  };
+
+  pullLastFourWeeks = async (userId: number) => {
+    logger.debug("Meta: pulling last four weeks");
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Meta: integration not connected");
+    if (!integration.selectedAdAccount)
+      throw new Error("Meta: ad account not selected");
+
+    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
+
+    const data = await this.getAdAccountInsights(
+      userId,
+      integration.selectedAdAccount,
+      since,
       lastDay
     );
 

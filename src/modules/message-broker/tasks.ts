@@ -1,5 +1,6 @@
 import { ConsumeMessage } from "amqplib";
 
+import { googleAnalytics } from "#modules/google";
 import { logger } from "#modules/logger";
 import { metaInsights } from "#modules/meta";
 import { metaAds } from "#modules/meta/metaAds";
@@ -18,6 +19,10 @@ export interface ReportTask extends TaskData {
 }
 
 export interface FetchTask extends TaskData {
+  userId: number;
+}
+
+export interface InitialPullTask extends TaskData {
   userId: number;
 }
 
@@ -42,6 +47,12 @@ export const tasks: Record<
 
     try {
       await metaInsights.pullLastDayData(data.userId);
+    } catch (error) {
+      logger.error(error);
+    }
+
+    try {
+      await googleAnalytics.pullLastDayData(data.userId);
     } catch (error) {
       logger.error(error);
     }

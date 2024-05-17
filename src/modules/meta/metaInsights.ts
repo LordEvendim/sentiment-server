@@ -1,5 +1,5 @@
 import axios from "axios";
-import { format, startOfYesterday } from "date-fns";
+import { format, startOfYesterday, subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { metaAdAccountDao } from "#dao/metaAdAccountDao";
@@ -14,6 +14,7 @@ import {
 } from "#db/schema";
 import { logger } from "#modules/logger";
 
+import { metaAds } from "./metaAds";
 import { metaGateway } from "./metaGateway";
 import {
   BreakdownOptions,
@@ -40,6 +41,26 @@ export class MetaInsights {
       userId,
       integration.selectedPage,
       lastDay,
+      lastDay
+    );
+
+    return data;
+  };
+
+  pullLastFourWeeks = async (userId: number) => {
+    logger.debug("Meta: pulling last four weeks");
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Meta: integration not connected");
+    if (!integration.selectedPage) throw new Error("Meta: page not selected");
+
+    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
+
+    const data = await this.getPageInsights(
+      userId,
+      integration.selectedPage,
+      since,
       lastDay
     );
 
@@ -306,6 +327,8 @@ export class MetaInsights {
       selectedPage: pageId,
     });
 
+    this.pullLastFourWeeks(userId);
+
     return pageId;
   };
 
@@ -316,6 +339,8 @@ export class MetaInsights {
     await metaIntegrationDao.updateByUserId(userId, {
       selectedAdAccount: accountId,
     });
+
+    metaAds.pullLastFourWeeks(userId);
 
     return accountId;
   };
