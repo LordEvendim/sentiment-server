@@ -5,10 +5,13 @@ export const getMetricsConfigMap = (
   source: ReportMetricSource
 ) => {
   const trackedMetrics = metrics.filter((metric) => metric.source === source);
-  const trackedMetricsMap: Map<string, MetricConfig> = new Map();
+  const trackedMetricsMap: Map<string, MetricConfig[]> = new Map();
 
   for (let i = 0; i < trackedMetrics.length; i++) {
-    trackedMetricsMap.set(trackedMetrics[i].id, trackedMetrics[i]);
+    trackedMetricsMap.set(trackedMetrics[i].id, [
+      ...(trackedMetricsMap.get(trackedMetrics[i].id) ?? []),
+      trackedMetrics[i],
+    ]);
   }
 
   return trackedMetricsMap;
@@ -38,13 +41,16 @@ export const appendReportWithData = (
     const metricId = metrics[i].metricId;
     const metricConfig = metricsConfigMap.get(metricId);
 
-    if (!metricConfig) continue;
+    if (!metricConfig || metricConfig.length === 0) continue;
 
-    const targetMetricId = metricConfig.aggregatedMetricId ?? metricConfig.id;
+    for (let j = 0; j < metricConfig.length; j++) {
+      const targetMetricId =
+        metricConfig[j].aggregatedMetricId ?? metricConfig[j].id;
 
-    metricConfig.display === "metric"
-      ? values.set(targetMetricId, 0)
-      : chartValues.set(targetMetricId, []);
+      metricConfig[j].display === "metric"
+        ? values.set(targetMetricId, 0)
+        : chartValues.set(targetMetricId, []);
+    }
   }
 
   // aggregate metrics
@@ -52,30 +58,31 @@ export const appendReportWithData = (
     const metricId = metrics[i].metricId;
     const metricConfig = metricsConfigMap.get(metricId);
 
-    if (!metricConfig) continue;
+    if (!metricConfig || metricConfig.length === 0) continue;
 
-    const targetMetricId = metricConfig.aggregatedMetricId ?? metricConfig.id;
+    for (let j = 0; j < metricConfig.length; j++) {
+      const targetMetricId =
+        metricConfig[j].aggregatedMetricId ?? metricConfig[j].id;
 
-    if (metricConfig.display === "metric") {
-      values.set(
-        targetMetricId,
-        values.get(targetMetricId)! + metrics[i].value
-      );
-    } else {
-      const current = chartValues.get(targetMetricId)!;
-      current.push([metrics[i].createdAt.getTime(), metrics[i].value]);
+      if (metricConfig[j].display === "metric") {
+        values.set(
+          targetMetricId,
+          values.get(targetMetricId)! + metrics[i].value
+        );
+      } else {
+        const current = chartValues.get(targetMetricId)!;
+        current.push([metrics[i].createdAt.getTime(), metrics[i].value]);
 
-      chartValues.set(targetMetricId, current);
+        chartValues.set(targetMetricId, current);
+      }
     }
   }
 
   // append metric data
   for (const [metricId, value] of values.entries()) {
-    const metricConfig = metricsConfigMap.get(metricId)!;
-
     report.push({
       display: "metric",
-      metricId: metricConfig.aggregatedMetricId ?? metricConfig.id,
+      metricId: metricId,
       value,
       source,
     });
@@ -83,11 +90,9 @@ export const appendReportWithData = (
 
   // append chart data
   for (const [metricId, value] of chartValues.entries()) {
-    const metricConfig = metricsConfigMap.get(metricId)!;
-
     report.push({
       display: "chart",
-      metricId: metricConfig.aggregatedMetricId ?? metricConfig.id,
+      metricId: metricId,
       values: value,
       source,
     });
