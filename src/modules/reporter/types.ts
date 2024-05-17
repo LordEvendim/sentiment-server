@@ -5,6 +5,7 @@ export type ReportMetricSource =
   | "google-ads";
 
 export type MetricConfig = {
+  display: "chart" | "metric";
   id: string;
   source: ReportMetricSource;
   aggregatedMetricId?: string;
@@ -15,13 +16,23 @@ export type MetricDatapoint = {
   date: Date;
 };
 
-export type ReportData = {
-  metricId: string;
-  source: ReportMetricSource;
-  value: number;
-}[];
+export type ReportData = (
+  | {
+      display: "metric";
+      metricId: string;
+      source: ReportMetricSource;
+      value: number;
+    }
+  | {
+      display: "chart";
+      metricId: string;
+      source: ReportMetricSource;
+      values: [number, number][];
+    }
+)[];
 
 export type GenerativeReportData = {
+  display: "metric";
   metricId: string;
   source: ReportMetricSource;
   value: number;
