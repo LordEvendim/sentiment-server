@@ -1,9 +1,6 @@
 import { logger } from "#modules/logger";
 
-import {
-  generalDashboardMetricsConfig,
-  generalLast4WeeksReportMetricsConfig,
-} from "./metrics";
+import { generalDashboardMetricsConfig } from "./metrics";
 import { googleAdsDataProvider } from "./providers/googleAdsDataProvider";
 import { googleAnalyticsDataProvider } from "./providers/googleAnalyticsDataProvider";
 import { metaAdsDataProvider } from "./providers/metaAdsDataProvider";
@@ -55,8 +52,8 @@ class Reporter {
     const report: GenerativeReportData = [];
     // create an object with used data providers
     const usedDataProvdiers = new Set<ReportMetricSource>();
-    for (let i = 0; i < generalLast4WeeksReportMetricsConfig.length; i++) {
-      const source = generalLast4WeeksReportMetricsConfig[i].source;
+    for (let i = 0; i < generalDashboardMetricsConfig.length; i++) {
+      const source = generalDashboardMetricsConfig[i].source;
 
       usedDataProvdiers.add(source);
     }
@@ -65,7 +62,7 @@ class Reporter {
     for (const dataProvierName of usedDataProvdiers.values()) {
       logger.debug(`Reporter: getting data from: ${dataProvierName}`);
 
-      await reportDataProviders[dataProvierName]?.report(
+      await reportDataProviders[dataProvierName]?.generativeReport(
         userId,
         generalDashboardMetricsConfig.filter(
           (config) => config.source === dataProvierName

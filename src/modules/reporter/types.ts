@@ -32,7 +32,6 @@ export type ReportData = (
 )[];
 
 export type GenerativeReportData = {
-  display: "metric";
   metricId: string;
   source: ReportMetricSource;
   value: number;
@@ -44,5 +43,10 @@ export interface ReporterDataProvider {
     userId: number,
     metrics: MetricConfig[],
     report: ReportData
+  ): Promise<void>;
+  generativeReport(
+    userId: number,
+    metrics: MetricConfig[],
+    report: GenerativeReportData
   ): Promise<void>;
 }

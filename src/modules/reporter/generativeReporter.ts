@@ -1,14 +1,9 @@
-import {
-  addWeeks,
-  eachDayOfInterval,
-  format,
-  isWithinInterval,
-  subWeeks,
-} from "date-fns";
+import { addWeeks, isWithinInterval, subWeeks } from "date-fns";
 
 import { reportDao } from "#dao/reportDao";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
+import { logger } from "#modules/logger";
 import { MetaInsights, metaInsights } from "#modules/meta";
 
 import { reporter } from "./reporter";
@@ -41,24 +36,6 @@ class GenerativeReporter {
       usedSources.add(data[i].source);
     }
 
-    const days = eachDayOfInterval({
-      end: Date.now(),
-      start: subWeeks(Date.now(), 4),
-    });
-
-    for (const day of days)
-      data.push({
-        createdAt: day,
-        metricId: "spend",
-        source: "meta-ads",
-        value: (Math.random() + 1) * 10,
-      });
-
-    usedSources.add("google-ads");
-    usedSources.add("google-analytics");
-    usedSources.add("meta-ads");
-    usedSources.add("meta-insights");
-
     const firstWeek = subWeeks(Date.now(), 4);
 
     for (const source of usedSources.values()) {
@@ -72,23 +49,32 @@ class GenerativeReporter {
       for (let i = 0; i < 4; i++) {
         input += `Week ${i + 1}\n`;
 
-        // display data and metrics
-        input += [...data]
+        const weekMetrics = [...data]
           .filter((datapoint) => datapoint.source === source)
           .filter((d) =>
             isWithinInterval(d.createdAt, {
               start: currentWeek,
               end: addWeeks(currentWeek, 1),
             })
-          )
-          .sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf())
-          .map(
-            (d) =>
-              `${format(d.createdAt, "yyyy-MM-dd")} - ${
-                d.metricId
-              } - ${d.value.toFixed(3)}`
-          )
-          .join("\n");
+          );
+
+        const metricsMap = new Map<string, number>();
+
+        for (let j = 0; j < weekMetrics.length; j++) {
+          const currentMetricValue = metricsMap.get(weekMetrics[j].metricId);
+          const metricId = weekMetrics[j].metricId;
+
+          metricsMap.set(
+            metricId,
+            currentMetricValue === undefined
+              ? weekMetrics[j].value
+              : currentMetricValue + weekMetrics[j].value
+          );
+        }
+
+        for (const [key, value] of metricsMap) {
+          input += `${key} - ${value.toFixed(2)} \n`;
+        }
 
         input += "\n\n";
         currentWeek = addWeeks(currentWeek, 1);
@@ -97,8 +83,17 @@ class GenerativeReporter {
       input += "\n";
     }
 
-    console.log(input);
-    return input;
+    logger.debug("Generative Reporter: generating report");
+    const response = await gemini.getTextResponse(input);
+
+    logger.debug("Generative Reporter: inserting result");
+    await reportDao.create({
+      createdAd: Date.now(),
+      data: response,
+      ownerId: userId,
+    });
+
+    return response;
   };
 }
 

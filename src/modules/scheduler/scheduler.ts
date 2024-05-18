@@ -1,6 +1,8 @@
 import { CronJob } from "cron";
 
 import { userDao } from "#dao/userDao";
+import { redisConnection } from "#db/redis";
+import { USED_TOKENS_KEY } from "#modules/gemini";
 import { logger } from "#modules/logger";
 import { queueProducer } from "#modules/message-broker";
 
@@ -31,7 +33,26 @@ class Scheduler {
       "America/New_York" // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     );
 
-    this.jobs.push(fetchDataJob);
+    const clearGeminiLimitJob = new CronJob(
+      "0 0 * * *",
+      async function () {
+        try {
+          logger.debug("Scheduler: reseting Gemini token tracker");
+
+          await redisConnection.connection.set(USED_TOKENS_KEY, 0);
+        } catch (error: unknown) {
+          logger.error("Scheduler: failed to reste Gemini token tracker");
+          logger.error(error);
+
+          if (error instanceof Error) logger.error(error.stack);
+        }
+      },
+      null, // onComplete
+      true, // start
+      "America/New_York"
+    );
+
+    this.jobs.push(fetchDataJob, clearGeminiLimitJob);
   };
 }
 

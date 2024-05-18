@@ -7,7 +7,7 @@ import { handleControllerError } from "#utils/errorHandling";
 
 const createReporterController = () => {
   return {
-    generateWeeklyPageReport: async (
+    generateGeneralReport: async (
       req: TypedRequest<object>,
       res: Response<string>
     ) => {
@@ -23,7 +23,7 @@ const createReporterController = () => {
         return handleControllerError(res, error);
       }
     },
-    getWeeklyPageReport: async (
+    getGeneralReport: async (
       req: TypedRequest<object, { pageId: string }>,
       res: Response<string | undefined>
     ) => {

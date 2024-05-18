@@ -25,6 +25,26 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
       /* empty */
     }
   };
+  generativeReport = async (userId: number) => {
+    try {
+      const integration =
+        await googleIntegrationDao.getIntegrationByUserId(userId);
+
+      if (!integration) throw new Error("Google is not integrated");
+      if (!integration.selectedAdAccount)
+        throw new Error("Google ads account not selected");
+
+      // const metrics = await googleAnalyticsMetricDao.getByAccountSince(
+      //   integration.selectedAdAccount,
+      //   integration.id,
+      //   subDays(endOfYesterday(), 7 * 4)
+      // );
+
+      // appendReportWithData(report, metrics, metricsConfig, this.source);
+    } catch (err) {
+      /* empty */
+    }
+  };
 }
 
 export const googleAdsDataProvider = new GoogleAdsDataProvider();

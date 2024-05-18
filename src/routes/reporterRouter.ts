@@ -6,15 +6,15 @@ import { isAuthenticated } from "#middleware/isAuthenticated";
 const router: Router = express.Router();
 
 router.post(
-  "/page-weekly",
+  "/general/weekly",
   isAuthenticated,
-  reporterController.generateWeeklyPageReport
+  reporterController.generateGeneralReport
 );
 
 router.get(
-  "/page-weekly",
+  "/general/weekly",
   isAuthenticated,
-  reporterController.getWeeklyPageReport
+  reporterController.getGeneralReport
 );
 
 router.get(
