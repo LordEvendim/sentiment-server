@@ -1,4 +1,4 @@
-import { endOfYesterday, subDays } from "date-fns";
+import { endOfYesterday, subDays, subWeeks } from "date-fns";
 import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -9,12 +9,32 @@ import {
   MetaPageDetails,
 } from "#db/schema";
 import { MetaInsights, metaInsights } from "#modules/meta";
+import { metaAds } from "#modules/meta/metaAds";
 import { metaAuth } from "#modules/meta/metaAuth";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
 const createMetaController = (metaInsights: MetaInsights) => {
   return {
+    getTopCampaigns: async (
+      req: TypedRequest<object, object, object>,
+      res: Response
+    ) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+
+        const data = await metaAds.getTopCampaigns(
+          userId,
+          subWeeks(Date.now(), 7)
+        );
+
+        return res.status(200).send(data);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
     getUserPages: async (
       req: TypedRequest<object, object, object>,
       res: Response<{

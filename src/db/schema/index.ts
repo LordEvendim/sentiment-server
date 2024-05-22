@@ -5,6 +5,7 @@ export * from "./googleIntegrations";
 export * from "./metaAdAccountMetrics";
 export * from "./metaAdAccounts";
 export * from "./metaApiUsage";
+export * from "./metaCampaignMetrics";
 export * from "./metaInsightsMetrics";
 export * from "./metaIntegrations";
 export * from "./metaPages";

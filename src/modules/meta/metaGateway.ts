@@ -185,7 +185,7 @@ class MetaGateway {
         ][0] as AppUsageHeader;
         for (const [, value] of Object.entries(usage)) {
           if (value > USAGE_THRESHOLD) {
-            logger.warn("Meta Gateway: usage aboce threshold");
+            logger.warn("Meta Gateway: usage above threshold");
           }
         }
 
