@@ -6,6 +6,7 @@ import {
   metaCampaignMetrics,
   NewMetaCampaignMetric,
 } from "#db/schema/metaCampaignMetrics";
+import { TopMetaCampaign } from "#modules/meta/types";
 
 export const metaCampaignMetricDao = {
   getTopCampaigns: async (
@@ -13,8 +14,6 @@ export const metaCampaignMetricDao = {
     integrationId: number,
     since: Date
   ) => {
-    console.log(accountId);
-
     const result = await mysqlDatabase.execute(
       sql`
       select ${metaCampaignMetrics.campaignId}, 
@@ -31,7 +30,7 @@ export const metaCampaignMetricDao = {
       `
     );
 
-    return result[0];
+    return result[0] as unknown as TopMetaCampaign[];
   },
   getByAccountSince: async (
     accountId: number,

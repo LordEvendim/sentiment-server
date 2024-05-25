@@ -20,6 +20,11 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
   },
   {
     display: "metric",
+    id: "page_impressions",
+    source: "meta-insights",
+  },
+  {
+    display: "metric",
     id: "impressions",
     source: "meta-ads",
   },

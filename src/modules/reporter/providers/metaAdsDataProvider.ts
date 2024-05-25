@@ -58,7 +58,7 @@ class MetaAdsDataProvider implements ReporterDataProvider {
         await metaAdAccountMetricDao.getByPageSince(
           metaIntegration.selectedAdAccount,
           metaIntegration.id,
-          subDays(endOfYesterday(), 7 * 4)
+          subDays(endOfYesterday(), 7)
         )
       ).map((metric) => ({ ...metric, value: parseFloat(metric.value) }));
 

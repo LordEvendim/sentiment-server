@@ -53,7 +53,7 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
       const metrics = await metaInsightsMetricDao.getByPageSince(
         integration.selectedPage,
         integration.id,
-        subDays(endOfYesterday(), 7 * 4)
+        subDays(endOfYesterday(), 7)
       );
 
       report.push(

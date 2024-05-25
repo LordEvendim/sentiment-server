@@ -17,7 +17,7 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
       // const metrics = await googleAnalyticsMetricDao.getByAccountSince(
       //   integration.selectedAdAccount,
       //   integration.id,
-      //   subDays(endOfYesterday(), 7 * 4)
+      //   subDays(endOfYesterday(), 7)
       // );
 
       // appendReportWithData(report, metrics, metricsConfig, this.source);
