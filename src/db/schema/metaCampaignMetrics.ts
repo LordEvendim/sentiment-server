@@ -15,10 +15,10 @@ export const metaCampaignMetrics = mysqlTable(
   "meta_campaign_metrics",
   {
     campaignId: varchar("campaign_id", { length: 256 }).notNull(),
+    sourceId: bigint("source_id", { mode: "number" }).notNull(),
+    createdAt: date("created_at").notNull(),
     integrationId: bigint("integration_id", { mode: "number" }).notNull(),
     name: varchar("name", { length: 256 }).notNull(),
-    createdAt: date("created_at").notNull(),
-    sourceId: bigint("source_id", { mode: "number" }).notNull(),
     period: int("period").notNull(), // in days: 0 -> lifetime
     clicks: int("clicks"),
     reach: int("reach"),
@@ -30,7 +30,14 @@ export const metaCampaignMetrics = mysqlTable(
     spend: double("spend", { scale: 4 }),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.campaignId, table.createdAt] }),
+    pk: primaryKey({
+      columns: [
+        table.campaignId,
+        table.createdAt,
+        table.sourceId,
+        table.integrationId,
+      ],
+    }),
   })
 );
 

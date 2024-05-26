@@ -14,14 +14,21 @@ export const metaAdAccountMetrics = mysqlTable(
   "meta_ad_account_metrics",
   {
     metricId: varchar("metric_id", { length: 256 }).notNull(), // metricId is used to get metrics details, metrics, etc.
+    sourceId: bigint("source_id", { mode: "number" }).notNull(),
     createdAt: date("created_at").notNull(),
     value: varchar("value", { length: 15 }).notNull(),
     period: int("period").notNull(), // in days: 0 -> lifetime
-    sourceId: bigint("source_id", { mode: "number" }).notNull(),
     integrationId: int("integration_id").notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.metricId, table.createdAt] }),
+    pk: primaryKey({
+      columns: [
+        table.metricId,
+        table.createdAt,
+        table.sourceId,
+        table.integrationId,
+      ],
+    }),
   })
 );
 
