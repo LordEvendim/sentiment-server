@@ -17,6 +17,7 @@ export const metaCampaignMetricDao = {
     const result = await mysqlDatabase.execute(
       sql`
       select ${metaCampaignMetrics.campaignId}, 
+        ANY_VALUE(${metaCampaignMetrics.campaignId}) as id, 
         ANY_VALUE(${metaCampaignMetrics.name}) as name, 
         SUM(${metaCampaignMetrics.clicks}) as clicks, 
         AVG(${metaCampaignMetrics.cost_per_unique_inline_link_click}) as cost_per_unique_inline_link_click, 
@@ -30,7 +31,7 @@ export const metaCampaignMetricDao = {
       `
     );
 
-    return result[0] as unknown as TopMetaCampaign[];
+    return (result[0] ?? []) as unknown as TopMetaCampaign[];
   },
   getByAccountSince: async (
     accountId: number,

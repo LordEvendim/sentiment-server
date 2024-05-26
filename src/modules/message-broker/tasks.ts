@@ -42,22 +42,24 @@ export const tasks: Record<
     try {
       await metaAds.pullLastDayData(data.userId);
     } catch (error) {
+      logger.error("Cron pull: Meta Ads of:" + data.userId);
       logger.error(error);
     }
 
     try {
       await metaInsights.pullLastDayData(data.userId);
     } catch (error) {
+      logger.error("Cron pull: Meta Insights of:" + data.userId);
       logger.error(error);
     }
 
     try {
       await googleAnalytics.pullLastDayData(data.userId);
     } catch (error) {
+      logger.error("Cron pull: Google Analytics of: " + data.userId);
       logger.error(error);
     }
 
-    // await googleAnalytics.pullLastDayData(data.userId);
     // await googleAds.pullLastDayData(data.userId);
 
     await wait(1);

@@ -9,6 +9,7 @@ import { sessionConfig } from "#config/session";
 import { endpointLogging } from "#middleware/endpointLogging";
 import { queueConsumer, queueProducer } from "#modules/message-broker";
 import { scheduler } from "#modules/scheduler/scheduler";
+import { adminRouter } from "#routes/adminRouter";
 import { authRouter } from "#routes/authRouter";
 import { experimentingRouter } from "#routes/experimentingRouter";
 import { googleRouter } from "#routes/googleRouter";
@@ -40,12 +41,14 @@ export const createServer = () => {
     res.status(200).send({ status: "ok" });
   });
 
-  app.use("/exp", experimentingRouter);
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
   app.use("/meta", metaRouter);
   app.use("/reporter", reporterRouter);
   app.use("/google", googleRouter);
+
+  app.use("/exp", experimentingRouter);
+  app.use("/admin", adminRouter);
 
   return process.env.NODE_ENV === "dev"
     ? https.createServer(

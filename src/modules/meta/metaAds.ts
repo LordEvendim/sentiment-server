@@ -233,6 +233,9 @@ export class MetaAds {
     }
 
     logger.debug("Meta: saving campaign data");
+
+    if (campaignDatapoints.length === 0) return [];
+
     await metaCampaignMetricDao.createMany(
       campaignDatapoints.map((datapoint) => ({
         campaignId: datapoint.campaign_id,

@@ -27,6 +27,7 @@ export const googleAnalyticsMetricDao = {
         set: {
           createdAt: sql`values(created_at)`,
           metricId: sql`values(metric_id)`,
+          value: sql`values(value)`,
         },
       });
 

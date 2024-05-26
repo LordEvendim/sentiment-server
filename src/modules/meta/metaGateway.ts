@@ -3,7 +3,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 import { metaApiUsageDao } from "#dao/metaApiUsageDao";
-import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+// import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { User } from "#db/schema";
 import { logger } from "#modules/logger";
 
@@ -135,11 +135,11 @@ class MetaGateway {
       // code: 10 -> permission denied - remove access token
       // code: 190 -> access token expired - remove access token (generate new using refresh token)
       if ([102, 10, 190].includes(errorData.code)) {
-        await metaIntegrationDao
-          .updateByUserId(userId, {
-            accessToken: null,
-          })
-          .catch();
+        // await metaIntegrationDao
+        //   .updateByUserId(userId, {
+        //     accessToken: null,
+        //   })
+        //   .catch();
 
         throw new OAuthError(errorData.message);
       }
@@ -147,11 +147,11 @@ class MetaGateway {
       // Remove access token
       // code: 200-299 -> permission denied - remove access token
       if (errorData.code >= 200 && errorData.code <= 299) {
-        await metaIntegrationDao
-          .updateByUserId(userId, {
-            accessToken: null,
-          })
-          .catch();
+        // await metaIntegrationDao
+        //   .updateByUserId(userId, {
+        //     accessToken: null,
+        //   })
+        //   .catch();
 
         throw new OAuthError(errorData.message);
       }
@@ -272,11 +272,11 @@ class MetaGateway {
       // code: 190 -> access token expired - remove access token (generate new using refresh token)
       if ([102, 10, 190].includes(errorData.code)) {
         logger.debug("Meta Gateway: remove access token");
-        await metaIntegrationDao
-          .updateByUserId(userId, {
-            accessToken: null,
-          })
-          .catch();
+        // await metaIntegrationDao
+        //   .updateByUserId(userId, {
+        //     accessToken: null,
+        //   })
+        //   .catch();
 
         throw new OAuthError(errorData.message);
       }
@@ -285,11 +285,11 @@ class MetaGateway {
       // code: 200-299 -> permission denied - remove access token
       if (errorData.code >= 200 && errorData.code <= 299) {
         logger.debug("Meta Gateway: remove access token 2");
-        await metaIntegrationDao
-          .updateByUserId(userId, {
-            accessToken: null,
-          })
-          .catch();
+        // await metaIntegrationDao
+        //   .updateByUserId(userId, {
+        //     accessToken: null,
+        //   })
+        //   .catch();
 
         throw new OAuthError(errorData.message);
       }

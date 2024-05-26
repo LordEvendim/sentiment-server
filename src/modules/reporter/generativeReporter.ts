@@ -29,8 +29,6 @@ class GenerativeReporter {
 
     const data = await reporter.getLast4WeeksOverviewReportData(userId);
 
-    console.log(data);
-
     const usedSources = new Set<ReportMetricSource>();
     for (let i = 0; i < data.length; i++) {
       usedSources.add(data[i].source);

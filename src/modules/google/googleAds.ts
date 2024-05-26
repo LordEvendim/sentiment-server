@@ -23,8 +23,6 @@ export class GoogleAds {
 
     const lastDay = toZonedTime(Date.now(), "America/New_York");
 
-    console.log(integration.selectedAdAccount);
-
     const data = await this.pullAdGroupsData(
       userId,
       integration.selectedAdAccount,
