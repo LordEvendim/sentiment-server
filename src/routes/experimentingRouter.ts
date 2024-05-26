@@ -12,8 +12,6 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const userId = req.query.userId as number | undefined;
     if (!userId) return res.send("Error");
 
-    let data = {};
-
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
     if (!integration?.selectedAdAccount)
@@ -28,7 +26,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     //   since,
     //   lastDay
     // );
-    data = await generativeReporter.generateWeeklyReport(userId);
+    const data = await generativeReporter.generateWeeklyReport(userId);
 
     res.send(data);
   } catch (error: unknown) {

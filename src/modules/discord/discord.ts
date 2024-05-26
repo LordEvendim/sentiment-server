@@ -1,5 +1,3 @@
-import axios from "axios";
-
 class Discord {
   private requestAccessChannelWebhook =
     process.env.DISCORD_REQUEST_ACCESS_WEBHOOK;

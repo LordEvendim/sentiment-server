@@ -7,7 +7,7 @@ import { TaskData, tasks } from "./tasks";
 
 class QueueConsumer {
   shouldReject = true;
-  retriesLimit = 2;
+  retriesLimit = 1;
 
   async start() {
     try {
@@ -40,9 +40,9 @@ class QueueConsumer {
             if (!message) return;
             const data = JSON.parse(message.content.toString()) as TaskData;
 
-            await tasks[queueName](message);
-
             try {
+              await tasks[queueName](message);
+
               channel.ack(message);
             } catch (error: unknown) {
               data.retry < this.retriesLimit

@@ -1,7 +1,7 @@
-import { User } from "#db/schema/users";
+import { UserSession } from "./user";
 
 declare module "express-session" {
   interface SessionData {
-    user: Omit<User, "password">;
+    user: UserSession;
   }
 }

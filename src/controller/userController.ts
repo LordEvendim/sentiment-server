@@ -14,11 +14,27 @@ const createUserController = () => {
       try {
         const { id } = req.params;
 
-        if (!id) throw new Error("Username is required");
+        if (!id) throw new Error("Id is required");
 
         const user = await userDao.getById(id);
 
         return res.status(200).send(user);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    getUserCredits: async (
+      req: TypedRequest,
+      res: Response<{ value: number | undefined }>
+    ) => {
+      try {
+        const userSession = req.session.user;
+
+        if (!userSession) return res.status(404).send();
+
+        const user = await userDao.getById(userSession.id);
+
+        return res.status(200).send({ value: user?.credits });
       } catch (error) {
         return handleControllerError(res, error);
       }

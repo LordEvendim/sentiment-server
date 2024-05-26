@@ -1,5 +1,3 @@
-import { rest } from "msw";
-
 export const handlers = [
   // rest.get("https://api.binance.com/api/v3/exchangeInfo", (req, res, ctx) => {
   //   return res(ctx.status(200), ctx.json(pairDetailsFixtures.BTCUSDT));

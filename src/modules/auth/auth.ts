@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { SALTING_ROUNDS } from "#config/crypto";
 import { userDao } from "#dao/userDao";
 import { logger } from "#modules/logger";
-import { UserInfo } from "#types/user";
+import { UserSession } from "#types/user";
 
 import { AuthProvider } from "./types";
 
@@ -12,7 +12,7 @@ export class Auth implements AuthProvider {
   login = async (
     username: string,
     password: string
-  ): Promise<UserInfo | undefined> => {
+  ): Promise<UserSession | undefined> => {
     const user = await userDao.getByUsername(username);
 
     if (!user) throw new Error("User doesn't exist");

@@ -1,8 +1,8 @@
-import { UserInfo } from "#types/user";
+import { UserSession } from "#types/user";
 
 export interface PostLoginDetails extends Record<string, string> {
   username: string;
   password: string;
 }
 
-export type LoginResponse = UserInfo | Record<string, never>;
+export type LoginResponse = UserSession | Record<string, never>;

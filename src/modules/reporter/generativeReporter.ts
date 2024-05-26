@@ -1,6 +1,7 @@
 import { addWeeks, isWithinInterval, subWeeks } from "date-fns";
 
 import { reportDao } from "#dao/reportDao";
+import { userDao } from "#dao/userDao";
 import { NewReport, Report } from "#db/schema";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
@@ -96,6 +97,12 @@ class GenerativeReporter {
 
     logger.debug("Generative Reporter: inserting result");
     const insertData = await reportDao.create(newReport);
+
+    logger.debug("Generative Reporter: subtracting user credits");
+    const credits = (await userDao.getById(userId))?.credits;
+    await userDao.update(userId, {
+      credits: credits ? credits - 1 : 0,
+    });
 
     return {
       reportId: insertData[0].insertId,

@@ -11,6 +11,7 @@ export const users = mysqlTable("users", {
   fullName: varchar("full_name", { length: 256 }).notNull(),
   password: text("password").notNull(),
   email: varchar("email", { length: 256 }).notNull(),
+  credits: int("credits").default(0).notNull(),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({

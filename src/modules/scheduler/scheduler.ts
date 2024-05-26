@@ -41,7 +41,7 @@ class Scheduler {
 
           await redisConnection.connection.set(USED_TOKENS_KEY, 0);
         } catch (error: unknown) {
-          logger.error("Scheduler: failed to reste Gemini token tracker");
+          logger.error("Scheduler: failed to reset Gemini token tracker");
           logger.error(error);
 
           if (error instanceof Error) logger.error(error.stack);
@@ -52,7 +52,39 @@ class Scheduler {
       "America/New_York"
     );
 
-    this.jobs.push(fetchDataJob, clearGeminiLimitJob);
+    const resetCreditsJob = new CronJob(
+      "0 0 * * *",
+      async function () {
+        try {
+          logger.debug("Scheduler: reseting credits");
+
+          const users = await userDao.getAll();
+          if (!users || users.length === 0) {
+            logger.debug("Scheduler: pull job: canceling task: no users");
+            return;
+          }
+
+          for (let i = 0; i < users.length; i++) {
+            logger.debug("Scheduler: reseting credits for user " + users[i].id);
+            await userDao.update(users[i].id, {
+              credits: 10,
+            });
+          }
+
+          await redisConnection.connection.set(USED_TOKENS_KEY, 0);
+        } catch (error: unknown) {
+          logger.error("Scheduler: failed to reset credits");
+          logger.error(error);
+
+          if (error instanceof Error) logger.error(error.stack);
+        }
+      },
+      null, // onComplete
+      true, // start
+      "America/New_York"
+    );
+
+    this.jobs.push(fetchDataJob, clearGeminiLimitJob, resetCreditsJob);
   };
 }
 

@@ -23,6 +23,9 @@ export const userDao = {
 
     return result;
   },
+  update: async (id: number, update: Partial<NewUser>) => {
+    await mysqlDatabase.update(users).set(update).where(eq(users.id, id));
+  },
   create: async (newUser: NewUser) => {
     const result = await mysqlDatabase.insert(users).values(newUser);
 
