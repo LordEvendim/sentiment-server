@@ -2,6 +2,7 @@ import express, { Request, Response, Router } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
+import { generativeReporter } from "#modules/reporter";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -11,7 +12,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const userId = req.query.userId as number | undefined;
     if (!userId) return res.send("Error");
 
-    const data = {};
+    let data = {};
 
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
@@ -27,6 +28,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     //   since,
     //   lastDay
     // );
+    data = await generativeReporter.generateWeeklyReport(userId);
 
     res.send(data);
   } catch (error: unknown) {

@@ -1,5 +1,6 @@
 import { Response } from "express";
 
+import { NewReport, Report } from "#db/schema";
 import { generativeReporter, reporter } from "#modules/reporter";
 import { ReportData } from "#modules/reporter/types";
 import { TypedRequest } from "#types/express";
@@ -9,7 +10,7 @@ const createReporterController = () => {
   return {
     generateGeneralReport: async (
       req: TypedRequest<object>,
-      res: Response<string>
+      res: Response<NewReport>
     ) => {
       try {
         const { user } = req.session;
@@ -25,7 +26,7 @@ const createReporterController = () => {
     },
     getGeneralReport: async (
       req: TypedRequest<object, { pageId: string }>,
-      res: Response<string | undefined>
+      res: Response<Report | undefined>
     ) => {
       try {
         const { user } = req.session;
@@ -34,7 +35,7 @@ const createReporterController = () => {
 
         const report = await generativeReporter.getWeeklyPageReport(user.id);
 
-        return res.status(200).send(report?.data);
+        return res.status(200).send(report);
       } catch (error) {
         return handleControllerError(res, error);
       }

@@ -6,6 +6,7 @@ import { users } from "./users";
 export const reports = mysqlTable("reports", {
   reportId: int("report_id").primaryKey().autoincrement(),
   createdAd: bigint("crated_at", { mode: "number" }).notNull(),
+  period: int("period").notNull(),
   data: text("data").notNull(),
   ownerId: int("owner_id"),
 });

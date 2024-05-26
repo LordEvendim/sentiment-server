@@ -1,6 +1,7 @@
 import { addWeeks, isWithinInterval, subWeeks } from "date-fns";
 
 import { reportDao } from "#dao/reportDao";
+import { NewReport, Report } from "#db/schema";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
 import { logger } from "#modules/logger";
@@ -24,7 +25,9 @@ class GenerativeReporter {
     return report;
   };
 
-  generateWeeklyReport = async (userId: number) => {
+  generateWeeklyReport = async (
+    userId: number
+  ): Promise<Report | undefined> => {
     let input = "Give recommendations and insights \n\n";
 
     const data = await reporter.getLast4WeeksOverviewReportData(userId);
@@ -84,14 +87,20 @@ class GenerativeReporter {
     logger.debug("Generative Reporter: generating report");
     const response = await gemini.getTextResponse(input);
 
-    logger.debug("Generative Reporter: inserting result");
-    await reportDao.create({
+    const newReport = {
       createdAd: Date.now(),
       data: response,
       ownerId: userId,
-    });
+      period: 7,
+    } satisfies NewReport;
 
-    return response;
+    logger.debug("Generative Reporter: inserting result");
+    const insertData = await reportDao.create(newReport);
+
+    return {
+      reportId: insertData[0].insertId,
+      ...newReport,
+    };
   };
 }
 
