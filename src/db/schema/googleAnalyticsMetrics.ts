@@ -22,6 +22,7 @@ export const googleAnalyticsMetrics = mysqlTable(
   },
   (table) => ({
     pk: primaryKey({
+      name: "pk_google_analytics_metrics",
       columns: [
         table.metricId,
         table.createdAt,

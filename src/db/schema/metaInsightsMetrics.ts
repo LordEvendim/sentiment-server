@@ -22,6 +22,7 @@ export const metaInsightsMetrics = mysqlTable(
   },
   (table) => ({
     pk: primaryKey({
+      name: "pk_meta_insights_metrics",
       columns: [
         table.metricId,
         table.createdAt,

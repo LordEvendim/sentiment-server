@@ -31,6 +31,7 @@ export const metaCampaignMetrics = mysqlTable(
   },
   (table) => ({
     pk: primaryKey({
+      name: "pk_meta_campaign_metrics",
       columns: [
         table.campaignId,
         table.createdAt,

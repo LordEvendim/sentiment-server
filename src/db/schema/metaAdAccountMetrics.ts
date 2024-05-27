@@ -22,6 +22,7 @@ export const metaAdAccountMetrics = mysqlTable(
   },
   (table) => ({
     pk: primaryKey({
+      name: "pk_meta_ad_account_metrics",
       columns: [
         table.metricId,
         table.createdAt,
