@@ -244,12 +244,12 @@ export class MetaAds {
         name: datapoint.campaign_name,
         period: 1,
         sourceId: accountId,
-        clicks: parseInt(datapoint.clicks) ?? 0,
+        clicks: parseInt(datapoint.clicks) || 0,
         cost_per_unique_inline_link_click:
-          parseFloat(datapoint.cost_per_unique_inline_link_click) ?? 0,
-        impressions: parseInt(datapoint.impressions) ?? 0,
-        reach: parseInt(datapoint.reach) ?? 0,
-        spend: parseFloat(datapoint.spend) ?? 0,
+          parseFloat(datapoint.cost_per_unique_inline_link_click) || 0,
+        impressions: parseInt(datapoint.impressions) || 0,
+        reach: parseInt(datapoint.reach) || 0,
+        spend: parseFloat(datapoint.spend) || 0,
       }))
     );
 
