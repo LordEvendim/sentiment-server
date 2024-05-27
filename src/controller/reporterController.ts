@@ -33,7 +33,7 @@ const createReporterController = () => {
 
         if (!user) throw new Error("User not authenticated");
 
-        const report = await generativeReporter.getWeeklyPageReport(user.id);
+        const report = await generativeReporter.getWeeklyReport(user.id);
 
         return res.status(200).send(report);
       } catch (error) {

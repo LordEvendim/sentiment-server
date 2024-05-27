@@ -7,6 +7,7 @@ export type Queues = {
   pull: {
     userId: number;
   };
+  test: {};
 };
 
 export type QueueNames = keyof Queues;
@@ -41,6 +42,15 @@ export const queuesConfig: Record<
       noAck: false,
     },
   },
+  test: {
+    queue: {
+      durable: true,
+    },
+    queueSend: {
+      persistent: true,
+    },
+    consume: {
+      noAck: false,
+    },
+  },
 };
-
-export type ReportPeriods = "weekly" | "monthly";

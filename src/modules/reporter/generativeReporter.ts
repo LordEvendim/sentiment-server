@@ -20,7 +20,7 @@ class GenerativeReporter {
     this.generativeAi = generativeAi;
   }
 
-  getWeeklyPageReport = async (userId: number) => {
+  getWeeklyReport = async (userId: number) => {
     const report = await reportDao.getByUserId(userId);
 
     return report;

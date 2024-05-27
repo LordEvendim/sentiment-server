@@ -3,12 +3,9 @@ import amqp from "amqplib";
 import { logger } from "#modules/logger";
 
 import { QueueNames, queuesConfig } from "./queues";
-import { TaskData, tasks } from "./tasks";
+import { tasks } from "./tasks";
 
 class QueueConsumer {
-  shouldReject = true;
-  retriesLimit = 1;
-
   async start() {
     try {
       const connection = await amqp.connect(
@@ -38,16 +35,14 @@ class QueueConsumer {
           queueName,
           async (message) => {
             if (!message) return;
-            const data = JSON.parse(message.content.toString()) as TaskData;
+            // const data = JSON.parse(message.content.toString()) as TaskData;
 
             try {
               await tasks[queueName](message);
 
               channel.ack(message);
             } catch (error: unknown) {
-              data.retry < this.retriesLimit
-                ? channel.nack(message, undefined, true)
-                : channel.ack(message);
+              channel.nack(message, undefined, false);
             }
           },
           queuesConfig[queueName].consume

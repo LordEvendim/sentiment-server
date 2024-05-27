@@ -7,11 +7,11 @@ import { metaAds } from "#modules/meta/metaAds";
 import { generativeReporter } from "#modules/reporter";
 import { wait } from "#utils/wait";
 
-import { QueueNames, ReportPeriods } from "./queues";
+import { QueueNames } from "./queues";
 
-export type TaskData = {
-  retry: number;
-};
+export type ReportPeriods = "weekly" | "monthly";
+
+export type TaskData = {};
 
 export interface ReportTask extends TaskData {
   userId: number;
@@ -63,5 +63,10 @@ export const tasks: Record<
     // await googleAds.pullLastDayData(data.userId);
 
     await wait(1);
+  },
+  test: async (message) => {
+    console.log("test message");
+    await wait(0.1);
+    throw new Error("test error");
   },
 };

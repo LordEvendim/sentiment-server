@@ -40,7 +40,7 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
   },
 ];
 
-export const generalLast4WeeksReportMetricsConfig: MetricConfig[] = [
+export const generativeGeneralLast4WeeksReportMetricsConfig: MetricConfig[] = [
   {
     display: "metric",
     id: "spend",

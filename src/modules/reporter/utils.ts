@@ -53,6 +53,7 @@ export const appendReportWithData = (
     }
   }
 
+  // TODO: move aggregation logic to SQL
   // aggregate metrics
   for (let i = 0; i < metrics.length; i++) {
     const metricId = metrics[i].metricId;
