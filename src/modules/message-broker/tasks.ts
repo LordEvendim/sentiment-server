@@ -11,7 +11,7 @@ import { QueueNames } from "./queues";
 
 export type ReportPeriods = "weekly" | "monthly";
 
-export type TaskData = {};
+export type TaskData = object;
 
 export interface ReportTask extends TaskData {
   userId: number;
@@ -64,7 +64,7 @@ export const tasks: Record<
 
     await wait(1);
   },
-  test: async (message) => {
+  test: async () => {
     console.log("test message");
     await wait(0.1);
     throw new Error("test error");

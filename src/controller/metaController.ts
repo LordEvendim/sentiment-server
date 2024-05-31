@@ -27,7 +27,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
 
         const data = await metaAds.getTopCampaigns(
           userId,
-          subWeeks(Date.now(), 7)
+          subWeeks(Date.now(), 1)
         );
 
         return res.status(200).send(data);

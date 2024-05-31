@@ -14,7 +14,7 @@ class Scheduler {
     const fetchDataJob = new CronJob(
       "10 */12 * * *", // https://crontab.cronhub.io/
       async function () {
-        logger.debug(`Scheduler: running cron job: pull daily data`);
+        logger.debug(`Scheduler: pull daily data`);
 
         const users = await userDao.getAll();
 

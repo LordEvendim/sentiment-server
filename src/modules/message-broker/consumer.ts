@@ -22,30 +22,33 @@ class QueueConsumer {
         await connection.close();
       });
 
-      let queueName: QueueNames;
-
-      for (queueName in queuesConfig) {
+      for (const queueName in queuesConfig) {
         logger.debug(
           "Message Broker: setting up consumer for queue: " + queueName
         );
-        await channel.assertQueue(queueName, queuesConfig[queueName].queue);
+        await channel.assertQueue(
+          queueName as QueueNames,
+          queuesConfig[queueName as QueueNames].queue
+        );
 
         await channel.prefetch(1);
         await channel.consume(
-          queueName,
+          queueName as QueueNames,
           async (message) => {
-            if (!message) return;
-            // const data = JSON.parse(message.content.toString()) as TaskData;
+            if (!message) {
+              logger.warn("Message Broker: no message content");
+              return;
+            }
 
             try {
-              await tasks[queueName](message);
+              await tasks[queueName as QueueNames](message);
 
               channel.ack(message);
             } catch (error: unknown) {
               channel.nack(message, undefined, false);
             }
           },
-          queuesConfig[queueName].consume
+          queuesConfig[queueName as QueueNames].consume
         );
       }
     } catch (err) {

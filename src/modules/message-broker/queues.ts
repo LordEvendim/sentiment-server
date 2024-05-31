@@ -7,7 +7,7 @@ export type Queues = {
   pull: {
     userId: number;
   };
-  test: {};
+  test: object;
 };
 
 export type QueueNames = keyof Queues;

@@ -201,6 +201,11 @@ class MetaGateway {
       return result;
     } catch (error: unknown) {
       logger.error(error);
+
+      if (error instanceof Error) {
+        logger.error(error.stack);
+      }
+
       if (!(error instanceof AxiosError)) {
         logger.debug("Meta Gateway: no axios error");
         throw new UnknownError(error as object);

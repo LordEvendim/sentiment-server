@@ -100,26 +100,51 @@ export class MetaAds {
 
     const metricsNames = ["clicks", "impressions", "spend", "reach", "cpc"];
 
-    const result = await metaGateway.callBUC<AdAccountInsights>({
-      url: `${this.baseUrl}/${this.apiVersion}/act_${accountId}/insights`,
-      config: {
-        params: {
-          fields: metricsNames.join(","),
-          access_token: integration.accessToken,
-          since: format(since, "yyyy-MM-dd"),
-          until: format(until, "yyyy-MM-dd"),
-          time_increment: 1,
+    const resultData: AdAccountInsights["data"] = [];
+    let nextPage = undefined;
+    let isInitial = true;
+
+    while (nextPage || isInitial) {
+      isInitial = false;
+
+      logger.debug("Meta: subrequest for cursor: " + nextPage);
+
+      const result: {
+        data: {
+          data: AdAccountInsights["data"];
+          paging?: {
+            cursors: {
+              before: string;
+              after: string;
+            };
+            next?: string;
+          };
+        };
+      } = await metaGateway.callBUC<AdAccountInsights>({
+        url: `${this.baseUrl}/${this.apiVersion}/act_${accountId}/insights`,
+        config: {
+          params: {
+            fields: metricsNames.join(","),
+            access_token: integration.accessToken,
+            since: format(since, "yyyy-MM-dd"),
+            until: format(until, "yyyy-MM-dd"),
+            time_increment: 1,
+            ...(nextPage && { after: nextPage }),
+          },
         },
-      },
-      userId: userId,
-      businessId: accountId,
-    });
+        userId: userId,
+        businessId: accountId,
+      });
+
+      nextPage = result.data.paging?.cursors.after;
+      resultData.push(...result.data.data);
+    }
 
     const metrics: NewMetaAdAccountMetric[] = [];
     const pushedMetrics = new Set<string>();
 
-    for (let i = 0; i < result.data.data.length; i++) {
-      const dataPoint = result.data.data[i];
+    for (let i = 0; i < resultData.length; i++) {
+      const dataPoint = resultData[i];
 
       for (let i = 0; i < metricsNames.length; i++) {
         const metricName = metricsNames[i];

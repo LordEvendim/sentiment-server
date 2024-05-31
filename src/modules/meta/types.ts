@@ -107,6 +107,12 @@ export type AdAccountInsights = {
     date_stop: string;
     [metric: string]: string;
   }[];
+  paging: {
+    cursors: {
+      before: string;
+      after: string;
+    };
+  };
 };
 
 export interface TopMetaCampaign {
