@@ -49,6 +49,13 @@ export class MetaAds {
       lastDay
     );
 
+    await this.pullTopCampaigns(
+      userId,
+      integration.selectedAdAccount,
+      lastDay,
+      lastDay
+    );
+
     return data;
   };
 
