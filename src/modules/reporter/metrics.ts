@@ -38,6 +38,11 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
     id: "activeUsers",
     source: "google-analytics",
   },
+  {
+    display: "metric",
+    id: "cpc",
+    source: "meta-ads",
+  },
 ];
 
 export const generativeGeneralLast4WeeksReportMetricsConfig: MetricConfig[] = [

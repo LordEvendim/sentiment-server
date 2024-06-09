@@ -23,7 +23,7 @@ const reportDataProviders: Record<
 };
 
 class Reporter {
-  getGeneralDashboardData = async (userId: number) => {
+  getGeneralDashboardData = async (userId: number, since: number) => {
     const report: ReportData = [];
     // create an object with used data providers
     const usedDataProvdiers = new Set<ReportMetricSource>();
@@ -42,7 +42,8 @@ class Reporter {
         generalDashboardMetricsConfig.filter(
           (config) => config.source === dataProvierName
         ),
-        report
+        report,
+        new Date(since)
       );
     }
 

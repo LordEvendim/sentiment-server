@@ -1,3 +1,4 @@
+import { subDays, subYears } from "date-fns";
 import { Response } from "express";
 
 import { NewReport, Report } from "#db/schema";
@@ -41,15 +42,24 @@ const createReporterController = () => {
       }
     },
     getGeneralDashboardData: async (
-      req: TypedRequest<object, object>,
+      req: TypedRequest<object, object, { since: string }>,
       res: Response<ReportData | undefined>
     ) => {
       try {
         const { user } = req.session;
 
         if (!user) throw new Error("User not authenticated");
+        if (!req.query.since) throw new Error("Timeframe not specified");
 
-        const report = await reporter.getGeneralDashboardData(user.id);
+        const since =
+          parseInt(req.query.since) ?? subDays(Date.now(), 7 + 1).getTime();
+
+        if (since < subYears(Date.now(), 2).getTime())
+          throw new Error("Timeframe out of range");
+
+        console.log(new Date(since).toLocaleDateString());
+
+        const report = await reporter.getGeneralDashboardData(user.id, since);
 
         return res.status(200).send(report);
       } catch (error) {

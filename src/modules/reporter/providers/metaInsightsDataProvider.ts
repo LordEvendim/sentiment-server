@@ -18,7 +18,8 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: ReportData
+    report: ReportData,
+    since: Date
   ) => {
     try {
       const integration =
@@ -30,7 +31,7 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
       const metrics = await metaInsightsMetricDao.getByPageSince(
         integration.selectedPage,
         integration.id,
-        subDays(endOfYesterday(), 7)
+        since
       );
 
       appendReportWithData(report, metrics, metricsConfig, this.source);

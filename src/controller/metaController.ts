@@ -1,4 +1,4 @@
-import { endOfYesterday, subDays, subWeeks } from "date-fns";
+import { endOfYesterday, subDays, subYears } from "date-fns";
 import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -17,18 +17,22 @@ import { handleControllerError } from "#utils/errorHandling";
 const createMetaController = (metaInsights: MetaInsights) => {
   return {
     getTopCampaigns: async (
-      req: TypedRequest<object, object, object>,
+      req: TypedRequest<object, object, { since: string }>,
       res: Response
     ) => {
       try {
         const userId = req.session.user?.id;
 
         if (!userId) throw new Error("Invlid request");
+        if (!req.query.since) throw new Error("Timeframe not specified");
 
-        const data = await metaAds.getTopCampaigns(
-          userId,
-          subWeeks(Date.now(), 1)
-        );
+        const since =
+          parseInt(req.query.since) ?? subDays(Date.now(), 7 + 1).getTime();
+
+        if (since < subYears(Date.now(), 2).getTime())
+          throw new Error("Timeframe out of range");
+
+        const data = await metaAds.getTopCampaigns(userId, new Date(since));
 
         return res.status(200).send(data);
       } catch (error) {

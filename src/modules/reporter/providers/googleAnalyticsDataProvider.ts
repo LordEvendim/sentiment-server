@@ -18,7 +18,8 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: ReportData
+    report: ReportData,
+    since: Date
   ) => {
     try {
       const integration =
@@ -31,7 +32,7 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
       const metrics = await googleAnalyticsMetricDao.getByAccountSince(
         integration.selectedPage,
         integration.id,
-        subDays(endOfYesterday(), 7)
+        since
       );
 
       appendReportWithData(report, metrics, metricsConfig, this.source);

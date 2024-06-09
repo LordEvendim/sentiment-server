@@ -18,7 +18,8 @@ class MetaAdsDataProvider implements ReporterDataProvider {
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: ReportData
+    report: ReportData,
+    since: Date
   ) => {
     try {
       const metaIntegration =
@@ -32,7 +33,7 @@ class MetaAdsDataProvider implements ReporterDataProvider {
         await metaAdAccountMetricDao.getByPageSince(
           metaIntegration.selectedAdAccount,
           metaIntegration.id,
-          subDays(endOfYesterday(), 7)
+          since
         )
       ).map((metric) => ({ ...metric, value: parseFloat(metric.value) }));
 
