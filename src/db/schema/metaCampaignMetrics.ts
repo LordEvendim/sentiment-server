@@ -28,6 +28,7 @@ export const metaCampaignMetrics = mysqlTable(
       { scale: 4 }
     ),
     spend: double("spend", { scale: 4 }),
+    inline_link_clicks: int("inline_link_clicks"),
   },
   (table) => ({
     pk: primaryKey({

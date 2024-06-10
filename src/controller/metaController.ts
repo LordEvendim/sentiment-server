@@ -1,10 +1,9 @@
-import { endOfYesterday, subDays, subYears } from "date-fns";
+import { subDays, subYears } from "date-fns";
 import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import {
   MetaAdAccountDetails,
-  MetaInsightsMetric,
   MetaIntegration,
   MetaPageDetails,
 } from "#db/schema";
@@ -104,28 +103,6 @@ const createMetaController = (metaInsights: MetaInsights) => {
         const result = await metaInsights.selectAdAccount(userId, adAccountId);
 
         return res.status(200).send({ selectedAdAccount: result });
-      } catch (error) {
-        return handleControllerError(res, error);
-      }
-    },
-    getPageInsights: async (
-      req: TypedRequest<object, object, { pageId: number }>,
-      res: Response<Omit<MetaInsightsMetric, "id">[]>
-    ) => {
-      try {
-        const { pageId } = req.query;
-        const userId = req.session.user?.id;
-
-        if (!userId || !pageId) throw new Error("Invlid request");
-
-        const result = await metaInsights.getPageInsights(
-          userId,
-          pageId,
-          subDays(endOfYesterday(), 7),
-          endOfYesterday()
-        );
-
-        return res.status(200).send(result);
       } catch (error) {
         return handleControllerError(res, error);
       }

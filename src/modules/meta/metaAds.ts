@@ -24,6 +24,7 @@ interface CampgainData {
   clicks: string;
   spend: string;
   cost_per_unique_inline_link_click: string;
+  inline_link_clicks: string;
   date_start: string;
   date_stop: string;
 }
@@ -245,7 +246,7 @@ export class MetaAds {
           params: {
             level: "campaign",
             fields:
-              "campaign_id,campaign_name,impressions,reach,clicks,cost_per_unique_inline_link_click,spend",
+              "campaign_id,campaign_name,impressions,reach,clicks,cost_per_unique_inline_link_click,spend,inline_link_clicks",
             effective_status: '["ACTIVE"]',
             access_token: integration.accessToken,
             time_range: {
@@ -254,6 +255,8 @@ export class MetaAds {
             },
             time_increment: 1,
             ...(nextPage && { after: nextPage }),
+            use_account_attribution_setting: "true",
+            limit: 200,
           },
         },
         userId: userId,
@@ -282,6 +285,7 @@ export class MetaAds {
         impressions: parseInt(datapoint.impressions) || 0,
         reach: parseInt(datapoint.reach) || 0,
         spend: parseFloat(datapoint.spend) || 0,
+        inline_link_clicks: parseInt(datapoint.inline_link_clicks) || 0,
       }))
     );
 

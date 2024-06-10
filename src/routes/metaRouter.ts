@@ -7,7 +7,6 @@ const router: Router = express.Router();
 
 router.get("/accounts", isAuthenticated, metaController.getUserPages);
 router.get("/integration", isAuthenticated, metaController.getUserIntegration);
-router.get("/page/insights", isAuthenticated, metaController.getPageInsights);
 router.get("/campaigns/top", isAuthenticated, metaController.getTopCampaigns);
 
 router.post("/selected-page", isAuthenticated, metaController.selectPage);

@@ -43,6 +43,11 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
     id: "cpc",
     source: "meta-ads",
   },
+  {
+    display: "metric",
+    id: "clicks",
+    source: "meta-ads",
+  },
 ];
 
 export const generativeGeneralLast4WeeksReportMetricsConfig: MetricConfig[] = [

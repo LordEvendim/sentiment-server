@@ -23,9 +23,10 @@ export const metaCampaignMetricDao = {
         AVG(${metaCampaignMetrics.cost_per_unique_inline_link_click}) as cost_per_unique_inline_link_click, 
         SUM(${metaCampaignMetrics.impressions}) as impressions,
         SUM(${metaCampaignMetrics.spend}) as spend,
-        SUM(${metaCampaignMetrics.reach}) as reach
+        SUM(${metaCampaignMetrics.reach}) as reach,
+        SUM(${metaCampaignMetrics.inline_link_clicks}) as inline_link_clicks
       from ${metaCampaignMetrics}
-      where ${metaCampaignMetrics.sourceId} = ${accountId} and ${metaCampaignMetrics.integrationId} = ${integrationId} and ${metaCampaignMetrics.createdAt} > ${since}
+      where ${metaCampaignMetrics.sourceId} = ${accountId} and ${metaCampaignMetrics.integrationId} = ${integrationId} and ${metaCampaignMetrics.createdAt} >= ${since}
       group by ${metaCampaignMetrics.campaignId}
       order by SUM(${metaCampaignMetrics.clicks}) desc
       `
@@ -62,6 +63,7 @@ export const metaCampaignMetricDao = {
           impressions: sql`values(impressions)`,
           reach: sql`values(reach)`,
           spend: sql`values(spend)`,
+          inline_link_clicks: sql`values(inline_link_clicks)`,
         },
       });
 
