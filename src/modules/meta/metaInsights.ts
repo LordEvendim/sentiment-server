@@ -1,5 +1,5 @@
 import axios from "axios";
-import { format, startOfYesterday, subWeeks } from "date-fns";
+import { format, startOfYesterday, subDays, subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 import { metaAdAccountDao } from "#dao/metaAdAccountDao";
@@ -35,7 +35,7 @@ export class MetaInsights {
     if (!integration) throw new Error("Meta: integration not connected");
     if (!integration.selectedPage) throw new Error("Meta: page not selected");
 
-    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
 
     const data = await this.getPageInsights(
       userId,
@@ -54,7 +54,7 @@ export class MetaInsights {
     if (!integration) throw new Error("Meta: integration not connected");
     if (!integration.selectedPage) throw new Error("Meta: page not selected");
 
-    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
     const data = await this.getPageInsights(

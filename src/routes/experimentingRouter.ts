@@ -42,8 +42,6 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     //   lastDay
     // );
 
-    console.log(lastDay.toLocaleDateString());
-
     const data = await metaAds.pullTopCampaigns(
       userId,
       integration.selectedAdAccount,

@@ -57,7 +57,7 @@ export class GoogleAnalytics {
     if (!integration) throw new Error("Google: integration not connected");
     if (!integration.selectedPage) throw new Error("Google: page not selected");
 
-    const lastDay = toZonedTime(Date.now(), "America/New_York");
+    const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
     const data = await this.pullData(
@@ -290,13 +290,13 @@ export class GoogleAnalytics {
         const rowDate = result.data.rows[r].dimensionValues[0].value;
         const formattedRowDate = parse(`${rowDate}Z`, "yyyyMMddX", new Date());
 
-        for (let j = 0; j < result.data.rows[0].metricValues.length; j++) {
+        for (let j = 0; j < result.data.rows[r].metricValues.length; j++) {
           pushedMetrics.add(
             metrics[i + j] + format(formattedRowDate, "yyyy-MM-dd")
           );
           metricsOuput.push({
             metricId: metrics[i + j],
-            value: parseFloat(result.data.rows[0].metricValues[i].value),
+            value: parseFloat(result.data.rows[r].metricValues[j].value),
             createdAt: formattedRowDate,
             integrationId: integration.id,
             period: 1,
