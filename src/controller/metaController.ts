@@ -1,4 +1,4 @@
-import { subDays, subYears } from "date-fns";
+import { parse, subYears } from "date-fns";
 import { Response } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
@@ -25,8 +25,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
         if (!userId) throw new Error("Invlid request");
         if (!req.query.since) throw new Error("Timeframe not specified");
 
-        const since =
-          parseInt(req.query.since) ?? subDays(Date.now(), 7 + 1).getTime();
+        const since = parse(req.query.since, "yyyyMMdd", Date.now()).getTime();
 
         if (since < subYears(Date.now(), 2).getTime())
           throw new Error("Timeframe out of range");

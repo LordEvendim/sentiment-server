@@ -1,4 +1,4 @@
-import { subDays, subYears } from "date-fns";
+import { parse, subYears } from "date-fns";
 import { Response } from "express";
 
 import { NewReport, Report } from "#db/schema";
@@ -51,8 +51,7 @@ const createReporterController = () => {
         if (!user) throw new Error("User not authenticated");
         if (!req.query.since) throw new Error("Timeframe not specified");
 
-        const since =
-          parseInt(req.query.since) ?? subDays(Date.now(), 7 + 1).getTime();
+        const since = parse(req.query.since, "yyyyMMdd", Date.now()).getTime();
 
         if (since < subYears(Date.now(), 2).getTime())
           throw new Error("Timeframe out of range");
