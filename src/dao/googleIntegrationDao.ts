@@ -63,6 +63,13 @@ export const googleIntegrationDao = {
 
     return result;
   },
+  deleteByUserId: async (userId: number) => {
+    const result = await mysqlDatabase
+      .delete(googleIntegrations)
+      .where(eq(googleIntegrations.ownerId, userId));
+
+    return result;
+  },
 };
 
 export type GoogleIntegrationDao = typeof googleIntegrationDao;

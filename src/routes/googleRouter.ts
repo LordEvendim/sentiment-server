@@ -24,4 +24,6 @@ router.post(
   googleController.createAccessToken
 );
 
+router.delete("/logout", isAuthenticated, googleController.logout);
+
 export { router as googleRouter };

@@ -125,6 +125,19 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         return handleControllerError(res, error);
       }
     },
+    logout: async (req: TypedRequest, res: Response) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+
+        await googleAuth.revoke(userId);
+
+        return res.status(200).send({ message: "OK" });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
   };
 };
 

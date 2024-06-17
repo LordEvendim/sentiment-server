@@ -52,7 +52,11 @@ export class GoogleAuth {
     return tokens.access_token;
   };
 
-  revoke = async () => {};
+  revoke = async (userId: number) => {
+    logger.debug(`Google: revoking user integration ${userId}`);
+
+    await googleIntegrationDao.deleteByUserId(userId);
+  };
 }
 
 export const googleAuth = new GoogleAuth();
