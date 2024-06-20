@@ -1,4 +1,3 @@
-import axios from "axios";
 import { eachDayOfInterval, format, parse, subDays, subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
@@ -12,13 +11,13 @@ import {
 } from "#db/schema";
 import { logger } from "#modules/logger";
 
+import GoogleAuthLab from "./googleAuthLab";
 import {
   googleAnalyticsMetricsDetails,
   googleAnalyticsMetricsNames,
 } from "./metrics";
 import {
   GoogleAccount,
-  GoogleAnalyticsReportInput,
   GoogleAnalyticsReportOutput,
   GoogleProperty,
 } from "./types";
@@ -83,6 +82,7 @@ export class GoogleAnalytics {
 
     return {
       id: integration.id,
+      accessTokenExpiryDate: integration.accessTokenExpiryDate,
       accessToken: integration.accessToken,
       selectedPage: integration.selectedPage,
       selectedAdAccount: integration.selectedAdAccount,
@@ -100,14 +100,17 @@ export class GoogleAnalytics {
 
     if (!integration?.accessToken) throw new Error("Google is not connected");
 
-    const result = await axios.get<{ accounts: GoogleAccount[] }>(
-      `${this.adminApiUrl}/accounts`,
-      {
-        headers: {
-          Authorization: `Bearer ${integration.accessToken}`,
-        },
-      }
-    );
+    const authLib = new GoogleAuthLab(userId);
+
+    /**
+     * this would load the tokens from the database refresh if needed
+     */
+    await authLib.loadTokens();
+
+    const result = await authLib.request<{ accounts: GoogleAccount[] }>({
+      method: "GET",
+      url: `${this.adminApiUrl}/accounts`,
+    });
 
     const properties: GoogleAnalyticsPage[] = [];
 
@@ -137,20 +140,20 @@ export class GoogleAnalytics {
     accountDisplayName: string
   ) => {
     logger.debug(`Google: connecting account properties of ${accountName}`);
-    const accessToken =
-      await googleIntegrationDao.getAccessTokenByUserId(userId);
+    // const accessToken =
+    // await googleIntegrationDao.getAccessTokenByUserId(userId);
 
-    const result = await axios.get<{ properties: GoogleProperty[] }>(
-      `${this.adminApiUrl}/properties`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: {
-          filter: `ancestor:${accountName}`,
-        },
-      }
-    );
+    const authLib = new GoogleAuthLab(userId);
+
+    await authLib.loadTokens();
+
+    const result = await authLib.request<{ properties: GoogleProperty[] }>({
+      method: "GET",
+      url: `${this.adminApiUrl}/properties`,
+      params: {
+        filter: `ancestor:${accountName}`,
+      },
+    });
 
     const transformedProperties = result.data.properties.map((property) => ({
       id: parseInt(property.name.split("/")[1]),
@@ -195,10 +198,15 @@ export class GoogleAnalytics {
       value: string;
     }[] = [];
 
+    const authLib = new GoogleAuthLab(userId);
+
+    await authLib.loadTokens();
+
     for (let i = 0; i < metrics.length; i += metricsBatchSize) {
-      const result = await axios.post<GoogleAnalyticsReportOutput>(
-        `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
-        {
+      const result = await authLib.request<GoogleAnalyticsReportOutput>({
+        method: "POST",
+        url: `${this.dataApiUrl}/properties/${selectedAnalyticsPage.id}:runReport`,
+        data: {
           dateRanges: [{ startDate: "7daysAgo", endDate: "yesterday" }],
           dimensions: [
             {
@@ -210,13 +218,8 @@ export class GoogleAnalytics {
             .map((metric) => ({
               name: metric,
             })),
-        } satisfies GoogleAnalyticsReportInput,
-        {
-          headers: {
-            Authorization: `Bearer ${integration.accessToken}`,
-          },
-        }
-      );
+        },
+      });
 
       // Handle multiple rows for dimenssions
       if (result.data.rows) {
@@ -253,10 +256,15 @@ export class GoogleAnalytics {
     const metricsOuput: NewGoogleAnalyticsMetric[] = [];
     const pushedMetrics = new Set<string>();
 
+    const authLib = new GoogleAuthLab(userId);
+
+    await authLib.loadTokens();
+
     for (let i = 0; i < metrics.length; i += metricsBatchSize) {
-      const result = await axios.post<GoogleAnalyticsReportOutput>(
-        `${this.dataApiUrl}/properties/${propertyId}:runReport`,
-        {
+      const result = await authLib.request<GoogleAnalyticsReportOutput>({
+        method: "POST",
+        url: `${this.dataApiUrl}/properties/${propertyId}:runReport`,
+        data: {
           dateRanges: [
             {
               startDate: format(since, "yyyy-MM-dd"),
@@ -273,13 +281,8 @@ export class GoogleAnalytics {
             .map((metric) => ({
               name: metric,
             })),
-        } satisfies GoogleAnalyticsReportInput,
-        {
-          headers: {
-            Authorization: `Bearer ${integration.accessToken}`,
-          },
-        }
-      );
+        },
+      });
 
       if (!result.data.rows) result.data.rows = [];
 

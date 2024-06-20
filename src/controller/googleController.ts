@@ -1,8 +1,9 @@
 import { Response } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
-import { GoogleAnalytics, googleAnalytics, googleAuth } from "#modules/google";
+import { GoogleAnalytics, googleAnalytics } from "#modules/google";
 import { googleAds } from "#modules/google/googleAds";
+import GoogleAuthLab from "#modules/google/googleAuthLab";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -65,7 +66,7 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
       res: Response
     ) => {
       try {
-        const url = googleAuth.getAuthorizationUrl();
+        const url = await GoogleAuthLab.getAuthorizedUrl();
 
         return res.status(200).send(url);
       } catch (error) {
@@ -84,9 +85,18 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
 
         if (!code) throw new Error("Code is not defined");
 
-        const accessToken = await googleAuth.createAccessToken(code, userId);
+        const googleAuth = new GoogleAuthLab(userId);
 
-        return res.status(200).send(accessToken);
+        const tokens = await googleAuth.generateOAuthTokens(code);
+
+        const access = tokens.access_token;
+
+        if (access) {
+          await googleAnalytics.connectUserAccounts(userId);
+          await googleAds.connectUserAccounts(userId);
+        }
+
+        return res.status(200).send(access);
       } catch (error) {
         return handleControllerError(res, error);
       }

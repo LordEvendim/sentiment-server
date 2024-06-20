@@ -1,4 +1,3 @@
-import axios from "axios";
 import { subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
@@ -6,6 +5,8 @@ import { googleAdAccountDao } from "#dao/googleAdAccountDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { NewGoogleAdAccount } from "#db/schema";
 import { logger } from "#modules/logger";
+
+import GoogleAuthLab from "./googleAuthLab";
 
 export class GoogleAds {
   baseUrl = "https://googleads.googleapis.com/v16";
@@ -61,7 +62,8 @@ export class GoogleAds {
     since: Date,
     until: Date
   ) => {
-    logger.debug(`Google: getting weekly Google Ads Data for ${userId}`);
+    logger.debug(`Google: pulling AdGroup data for ${userId}`);
+    logger.debug("since", since, until);
     const integration =
       await googleIntegrationDao.getIntegrationWithSelectedByUserId(userId);
 
@@ -69,24 +71,25 @@ export class GoogleAds {
 
     if (!integration.accessToken) throw new Error("Google Ads is not connectd");
 
-    // pull data from the api
-    const result = await axios.post(
-      `${this.baseUrl}/customers/${propertyId}/googleAds:search`,
-      undefined,
-      {
-        headers: {
-          Host: "googleads.googleapis.com",
-          Authorization: `Bearer ${integration.accessToken}`,
-          "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
-          // "login-customer-id": "", MANAGER ACCOUNT ID
-        },
-        params: {
-          query:
-            "SELECT ad_group_criterion.keyword.text, ad_group_criterion.status FROM ad_group_criterion WHERE ad_group_criterion.type = 'KEYWORD' AND ad_group_criterion.status = 'ENABLED'",
-        },
-      }
-    );
+    const authLib = new GoogleAuthLab(userId);
 
+    /**
+     * this would load the tokens from the database refresh if needed
+     */
+    await authLib.loadTokens();
+
+    const result = await authLib.request({
+      url: `${this.baseUrl}/customers/${propertyId}/googleAds:search`,
+      method: "POST",
+      headers: {
+        Host: "googleads.googleapis.com",
+        "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+      },
+      params: {
+        query:
+          "SELECT ad_group_criterion.keyword.text, ad_group_criterion.status FROM ad_group_criterion WHERE ad_group_criterion.type = 'KEYWORD' AND ad_group_criterion.status = 'ENABLED'",
+      },
+    });
     return result;
   };
 
@@ -101,12 +104,20 @@ export class GoogleAds {
 
     if (!integration) throw new Error("Google is not connected");
 
-    const result = await axios.get<{
+    const authLib = new GoogleAuthLab(userId);
+
+    /**
+     * this would load the tokens from the database refresh if needed
+     */
+    await authLib.loadTokens();
+
+    const result = await authLib.request<{
       resourceNames: string[];
-    }>(`${this.baseUrl}/customers:listAccessibleCustomers`, {
+    }>({
+      url: `${this.baseUrl}/customers:listAccessibleCustomers`,
+      method: "GET",
       headers: {
         Host: "googleads.googleapis.com",
-        Authorization: `Bearer ${integration.accessToken}`,
         "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
       },
     });

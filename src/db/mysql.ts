@@ -5,12 +5,14 @@ import { logger } from "#modules/logger";
 
 import * as schema from "./schema";
 
-const devConfig = {
-  host: "localhost",
-  port: 3306,
-  database: "mydb",
-  user: "root",
-  password: "example",
+export const devConfig = {
+  host: process.env.MYSQL_DEV_HOST ?? "localhost",
+  port: process.env.MYSQL_DEV_PORT
+    ? parseInt(process.env.MYSQL_DEV_PORT)
+    : 3306,
+  database: process.env.MYSQL_DEV_DATABASE ?? "mydb",
+  user: process.env.MYSQL_DEV_USER ?? "root",
+  password: process.env.MYSQL_DEV_PASSWORD ?? "example",
 } satisfies mysql.ConnectionOptions;
 
 const prodConfig = {

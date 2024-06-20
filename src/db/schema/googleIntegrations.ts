@@ -11,6 +11,7 @@ export const googleIntegrations = mysqlTable("google_integrations", {
   accessToken: varchar("access_token", { length: 512 }),
   refreshToken: varchar("refresh_token", { length: 512 }),
   tokenCreatedAt: bigint("token_created_at", { mode: "number" }),
+  accessTokenExpiryDate: bigint("acess_token_expiry_date", { mode: "number" }),
   selectedPage: bigint("selected_page", { mode: "number" }),
   selectedAdAccount: bigint("selected_ad_account", { mode: "number" }),
 });

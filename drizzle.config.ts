@@ -1,4 +1,5 @@
 import type { Config } from "drizzle-kit";
+import { devConfig } from "./src/db/mysql";
 
 export default {
   schema: "./src/db/schema/*",
@@ -9,10 +10,5 @@ export default {
       ? {
           uri: process.env.MYSQL_URL!,
         }
-      : {
-          host: "localhost",
-          user: "root",
-          password: "example",
-          database: "mydb",
-        },
+      : devConfig,
 } satisfies Config;

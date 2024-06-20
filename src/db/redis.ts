@@ -2,7 +2,7 @@ import { Redis, RedisOptions } from "ioredis";
 
 import { logger } from "#modules/logger";
 
-const devConfig = {} satisfies RedisOptions;
+const devConfig = process.env.REDIS_DEV_URL ?? ({} satisfies RedisOptions);
 
 const prodConfig = process.env.REDIS_PRIVATE_URL! + "?family=0";
 

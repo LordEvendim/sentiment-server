@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { Credentials } from "google-auth-library";
 
 import { mysqlDatabase } from "#db/mysql";
 import { googleIntegrations, NewGoogleIntegration } from "#db/schema";
@@ -62,6 +63,26 @@ export const googleIntegrationDao = {
       });
 
     return result;
+  },
+  saveTokens: async function (userId: number, tokens: Credentials) {
+    return await googleIntegrationDao.create({
+      ownerId: userId,
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      accessTokenExpiryDate: tokens.expiry_date,
+      tokenCreatedAt: Date.now(),
+    });
+  },
+  loadTokens: async function (userId: number) {
+    const result = await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!result || !result.accessToken || !result.refreshToken) return null;
+
+    return {
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      expiry_date: result.accessTokenExpiryDate,
+    } as const;
   },
   deleteByUserId: async (userId: number) => {
     const result = await mysqlDatabase
