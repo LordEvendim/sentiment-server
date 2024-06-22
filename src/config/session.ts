@@ -1,4 +1,5 @@
 import RedisStore from "connect-redis";
+import { randomUUID } from "crypto";
 import { SessionOptions } from "express-session";
 import { redisConnection } from "src/db/redis";
 
@@ -21,4 +22,5 @@ export const sessionConfig = {
     maxAge: 1000 * 60 * 60 * 24 * 365 * 7,
     domain: process.env.NODE_ENV === "prod" ? "clickclarity.ai" : "localhost",
   },
+  genid: (req) => `${req.body?.username}-${randomUUID()}`,
 } satisfies SessionOptions;

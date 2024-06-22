@@ -2,6 +2,7 @@ class Discord {
   private requestAccessChannelWebhook =
     process.env.DISCORD_REQUEST_ACCESS_WEBHOOK;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sendError = async (content: string) => {
     if (!this.requestAccessChannelWebhook)
       throw new Error("Request access channel webhook is not defined");

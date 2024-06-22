@@ -16,6 +16,13 @@ export const userDao = {
 
     return result;
   },
+  getByEmail: async (email: string): Promise<User | undefined> => {
+    const result = await mysqlDatabase.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    return result;
+  },
   getByUsername: async (username: string): Promise<User | undefined> => {
     const result = await mysqlDatabase.query.users.findFirst({
       where: eq(users.username, username),

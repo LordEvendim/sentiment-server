@@ -1,7 +1,7 @@
 import { Response } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
-import { GoogleAnalytics, googleAnalytics } from "#modules/google";
+import { GoogleAnalytics, googleAnalytics, googleAuth } from "#modules/google";
 import { googleAds } from "#modules/google/googleAds";
 import GoogleAuthLab from "#modules/google/googleAuthLab";
 import { TypedRequest } from "#types/express";

@@ -5,9 +5,26 @@ import { googleAnalytics } from "#modules/google";
 import { googleAds } from "#modules/google/googleAds";
 import { metaInsights } from "#modules/meta";
 import { metaAds } from "#modules/meta/metaAds";
+import { userModule } from "#modules/user/user";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
+
+router.post("/update-session", isAdmin, async (req: Request, res: Response) => {
+  try {
+    const userId = req.body.userId;
+
+    if (!userId) throw new Error("Invlid request");
+
+    await userModule.updateSession(req.body.userId);
+
+    res.send({
+      message: "OK",
+    });
+  } catch (error: unknown) {
+    handleControllerError(res, error);
+  }
+});
 
 router.post("/pull-initial", isAdmin, async (req: Request, res: Response) => {
   try {

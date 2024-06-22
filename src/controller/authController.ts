@@ -71,9 +71,14 @@ const createAuthController = (auth: AuthProvider) => {
         return handleControllerError(res, error);
       }
     },
-    logout: (req: Request, res: Response) => {
+    logout: async (req: Request, res: Response) => {
       try {
-        req.session.user = undefined;
+        await new Promise<void>((resolve, reject) => {
+          req.session.destroy((err) => {
+            if (err) return reject();
+            resolve();
+          });
+        });
 
         return res.status(200).clearCookie("sessionId").send();
       } catch (error) {
