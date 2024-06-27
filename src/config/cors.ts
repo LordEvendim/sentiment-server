@@ -13,5 +13,5 @@ const corsProduction: CorsOptions = {
 };
 
 export default cors(
-  process.env.NODE_ENV === "prod" ? corsProduction : corsDevelopment
+  process.env.NODE_ENV === "dev" ? corsDevelopment : corsProduction
 );

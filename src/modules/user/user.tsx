@@ -28,9 +28,9 @@ export class UserModule {
     await passwordResetTokenDao.createToken(user.id, tokenHash);
 
     const url = `${
-      process.env.NODE_ENV === "prod"
-        ? "https://app.clickclarity.ai"
-        : "https://localhost:5173"
+      process.env.NODE_ENV === "dev"
+        ? "https://localhost:5173"
+        : `https://${process.env.DOMAIN}`
     }/password-reset?token=${resetToken}&userId=${user.id}`;
 
     const renderedEmail = render(<PasswordReset link={url} />);

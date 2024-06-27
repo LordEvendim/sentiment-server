@@ -21,5 +21,5 @@ class RedisConnectionManager {
 }
 
 export const redisConnection = new RedisConnectionManager(
-  process.env.NODE_ENV === "prod" ? prodConfig : devConfig
+  process.env.NODE_ENV === "dev" ? devConfig : prodConfig
 );

@@ -9,9 +9,9 @@ class QueueConsumer {
   async start() {
     try {
       const connection = await amqp.connect(
-        process.env.NODE_ENV === "prod"
-          ? process.env.RABBITMQ_URL!
-          : `amqp://${process.env.RABBITMQ_DEV_HOST ?? "localhost"}:5672`
+        process.env.NODE_ENV === "dev"
+          ? `amqp://${process.env.RABBITMQ_DEV_HOST ?? "localhost"}:5672`
+          : process.env.RABBITMQ_URL!
       );
       logger.info("Message Broker: consumer connected with RabbitMQ");
 

@@ -22,14 +22,16 @@
     "docker:build": "docker compose build",
     "docker:build:dev": "docker compose -f docker-compose.dev.yml build",
     "docker:build:dev:node": "docker compose -f docker-compose.dev.yml -f docker-compose.dev.node.yml build",
-    "docker:run:dev": "docker compose -f docker-compose.dev.yml up -d --wait",
-    "docker:run:dev:node": "docker compose -f docker-compose.dev.yml -f docker-compose.dev.node.yml up -d --wait",
+    "docker:run:dev": "docker compose -f docker-compose.dev.yml up -d --wait --remove-orphans",
+    "docker:run:dev:node": "docker compose -f docker-compose.dev.yml -f docker-compose.dev.node.yml up -d --wait --remove-orphans",
     "\n========== Drizzle ==========": "",
     "drizzle:studio": "drizzle-kit studio",
-    "drizzle:push": "yarn drizzle:push:dev && yarn drizzle:push:prod",
+    "drizzle:push": "yarn drizzle:push:dev && yarn drizzle:push:prod && yarn drizzle:push:staging",
     "drizzle:push:dev": "drizzle-kit push:mysql",
     "drizzle:push:prod": "cmd /V /C \"set NODE_ENV=prod&& drizzle-kit push:mysql\"",
-    "drizzle:push:prod:lin": "NODE_ENV=prod drizzle-kit push:mysql"
+    "drizzle:push:staging": "cmd /V /C \"set NODE_ENV=staging&& drizzle-kit push:mysql\"",
+    "drizzle:push:prod:lin": "NODE_ENV=prod drizzle-kit push:mysql",
+    "drizzle:push:staging:lin": "NODE_ENV=staging drizzle-kit push:mysql"
   },
   "dependencies": {
     "@google-analytics/admin": "^7.2.0",

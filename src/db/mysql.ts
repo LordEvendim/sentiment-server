@@ -20,7 +20,7 @@ const prodConfig = {
 } satisfies mysql.ConnectionOptions;
 
 const connection = mysql.createPool(
-  process.env.NODE_ENV === "prod" ? prodConfig : devConfig
+  process.env.NODE_ENV === "dev" ? devConfig : prodConfig
 );
 
 logger.info("MySQL: connected");
