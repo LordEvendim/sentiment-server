@@ -86,6 +86,8 @@ export default class GoogleAuthLab {
     const authorizeUrl = client.generateAuthUrl({
       access_type: "offline",
       scope: scopes,
+      include_granted_scopes: true,
+      prompt: "consent",
     });
 
     return authorizeUrl;
@@ -96,6 +98,8 @@ export default class GoogleAuthLab {
    */
   async generateOAuthTokens(code: string) {
     const { tokens } = await this.oAuth2Client.getToken(code);
+
+    console.log(tokens);
 
     this.oAuth2Client.setCredentials(tokens);
 
