@@ -28,7 +28,7 @@ export class GoogleAuth {
       access_type: "offline",
       scope: scopes,
       include_granted_scopes: true,
-      prompt: "select_account",
+      prompt: "consent",
     });
   }
 
