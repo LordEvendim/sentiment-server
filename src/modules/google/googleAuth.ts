@@ -40,6 +40,7 @@ export class GoogleAuth {
     logger.debug(`Google: creating access token for ${userId}`);
     const { tokens } = await this.oauthClient.getToken(code);
 
+    await googleIntegrationDao.deleteByUserId(userId);
     await googleIntegrationDao.create({
       ownerId: userId,
       accessToken: tokens.access_token,

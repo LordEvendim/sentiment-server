@@ -66,6 +66,13 @@ export const metaIntegrationDao = {
 
     return result;
   },
+  deleteByUserId: async (userId: number) => {
+    const result = await mysqlDatabase
+      .delete(metaIntegrations)
+      .where(eq(metaIntegrations.ownerId, userId));
+
+    return result;
+  },
 };
 
 export type MetaIntegrationDao = typeof metaIntegrationDao;

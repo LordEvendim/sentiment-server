@@ -114,6 +114,8 @@ export class GoogleAnalytics {
 
     const properties: GoogleAnalyticsPage[] = [];
 
+    if (!result.data.accounts) return;
+
     for (const account of result.data.accounts) {
       properties.push(
         ...(
@@ -140,8 +142,6 @@ export class GoogleAnalytics {
     accountDisplayName: string
   ) => {
     logger.debug(`Google: connecting account properties of ${accountName}`);
-    // const accessToken =
-    // await googleIntegrationDao.getAccessTokenByUserId(userId);
 
     const authLib = new GoogleAuthLab(userId);
 

@@ -37,6 +37,7 @@ class MetaAuth {
       }
     );
 
+    await metaIntegrationDao.deleteByUserId(userId);
     await metaIntegrationDao.create({
       ownerId: userId,
       metaId: metaId,

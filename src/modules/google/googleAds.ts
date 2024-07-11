@@ -103,6 +103,7 @@ export class GoogleAds {
       await googleIntegrationDao.getIntegrationByUserId(userId);
 
     if (!integration) throw new Error("Google is not connected");
+    if (!integration.accessToken) throw new Error("Google Ads is not connectd");
 
     const authLib = new GoogleAuthLab(userId);
 
@@ -111,25 +112,36 @@ export class GoogleAds {
      */
     await authLib.loadTokens();
 
-    const result = await authLib.request<{
-      resourceNames: string[];
-    }>({
-      url: `${this.baseUrl}/customers:listAccessibleCustomers`,
-      method: "GET",
-      headers: {
-        Host: "googleads.googleapis.com",
-        "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
-      },
-    });
+    try {
+      const result = await authLib.request<{
+        resourceNames: string[];
+      }>({
+        url: `${this.baseUrl}/customers:listAccessibleCustomers`,
+        method: "GET",
+        headers: {
+          Host: "googleads.googleapis.com",
+          "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+        },
+      });
 
-    const transformedAccounts = result.data.resourceNames.map((accountId) => ({
-      id: parseInt(accountId.split("/")[1]),
-      integrationId: integration.id,
-    })) satisfies NewGoogleAdAccount[];
+      if (!result.data.resourceNames) return;
 
-    await googleAdAccountDao.createMany(transformedAccounts);
+      const transformedAccounts = result.data.resourceNames.map(
+        (accountId) => ({
+          id: parseInt(accountId.split("/")[1]),
+          integrationId: integration.id,
+        })
+      ) satisfies NewGoogleAdAccount[];
 
-    return transformedAccounts;
+      await googleAdAccountDao.createMany(transformedAccounts);
+
+      return transformedAccounts;
+    } catch (error: unknown) {
+      logger.error("Google Ads: failed to connect google ads accounts");
+      logger.error(error);
+
+      return [];
+    }
   };
 
   selectAccount = async (userId: number, accountId: number) => {
