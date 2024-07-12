@@ -99,10 +99,9 @@ export default class GoogleAuthLab {
   async generateOAuthTokens(code: string) {
     const { tokens } = await this.oAuth2Client.getToken(code);
 
-    console.log(tokens);
-
     this.oAuth2Client.setCredentials(tokens);
 
+    await googleIntegrationDao.deleteByUserId(this.userId);
     await googleIntegrationDao.saveTokens(this.userId, tokens);
 
     return tokens;

@@ -48,6 +48,7 @@ export interface ReporterDataProvider {
   generativeReport(
     userId: number,
     metrics: MetricConfig[],
-    report: GenerativeReportData
+    report: GenerativeReportData,
+    since: Date
   ): Promise<void>;
 }

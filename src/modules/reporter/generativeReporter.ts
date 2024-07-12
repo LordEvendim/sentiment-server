@@ -1,14 +1,19 @@
-import { addWeeks, isWithinInterval, subWeeks } from "date-fns";
+import { addWeeks, isWithinInterval, parse, subWeeks } from "date-fns";
 
+import { metricReportDao } from "#dao/metricReportDao";
 import { reportDao } from "#dao/reportDao";
 import { userDao } from "#dao/userDao";
 import { NewReport, Report } from "#db/schema";
+import { NewMetricReport } from "#db/schema/MetricReports";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
 import { logger } from "#modules/logger";
 import { MetaInsights, metaInsights } from "#modules/meta";
 
+import { metricReportConfigs } from "./metrics";
+import { prompts } from "./prompts";
 import { reporter } from "./reporter";
+import { calculateTimeframeStart, DashboardTimeframe } from "./timeframes";
 import { ReportMetricSource } from "./types";
 
 class GenerativeReporter {
@@ -20,18 +25,83 @@ class GenerativeReporter {
     this.generativeAi = generativeAi;
   }
 
-  getWeeklyReport = async (userId: number) => {
-    const report = await reportDao.getByUserId(userId);
+  getMetricReport = async (
+    userId: number,
+    name: string,
+    timeframe: DashboardTimeframe,
+    until: string
+  ) => {
+    const untilDate = parse(until, "yyyyMMdd", Date.now());
+
+    const lastReport =
+      await metricReportDao.getLatestByUserIdTimeframeAndTimeframe(
+        userId,
+        timeframe,
+        name
+      );
+
+    if (!lastReport || lastReport.until < untilDate)
+      return await this.generateMetricReport(userId, name, timeframe, until);
+
+    return lastReport;
+  };
+
+  generateMetricReport = async (
+    userId: number,
+    name: string,
+    timeframe: DashboardTimeframe,
+    until: string
+  ) => {
+    const untilDate = parse(until, "yyyyMMdd", Date.now());
+    const sinceDate = calculateTimeframeStart(untilDate, timeframe);
+
+    // data
+    const data = await reporter.getData(
+      userId,
+      metricReportConfigs[name] ?? metricReportConfigs["clicks"]!,
+      sinceDate
+    );
+
+    // generate
+    const insights = await gemini.getFlashTextResponse(
+      `${prompts.getMetricReportPrompt(name)} \n` +
+        JSON.stringify(data, null, 2)
+    );
+
+    // save
+    const newReport = {
+      name,
+      createdAt: new Date(Date.now()),
+      data: insights,
+      ownerId: userId,
+      timeframe,
+      until: untilDate,
+    } satisfies NewMetricReport;
+    await metricReportDao.create(newReport);
+
+    return newReport;
+  };
+
+  getReport = async (userId: number, timeframe: string) => {
+    const report = await reportDao.getLatestByUserIdAndTimeframe(
+      userId,
+      timeframe
+    );
 
     return report;
   };
 
-  generateWeeklyReport = async (
-    userId: number
+  generateReport = async (
+    userId: number,
+    timeframe: DashboardTimeframe,
+    since: string,
+    until: string
   ): Promise<Report | undefined> => {
-    let input = "Give recommendations and insights \n\n";
+    let input = `${prompts.OVERVIEW_PROMPT} \n\n`;
+    const sinceDate = parse(since, "yyyyMMdd", Date.now());
+    const untilDate = parse(until, "yyyyMMdd", Date.now());
 
-    const data = await reporter.getLast4WeeksOverviewReportData(userId);
+    const data = await reporter.getOverviewData(userId);
 
     const usedSources = new Set<ReportMetricSource>();
     for (let i = 0; i < data.length; i++) {
@@ -89,10 +159,12 @@ class GenerativeReporter {
     const response = await gemini.getTextResponse(input);
 
     const newReport = {
-      createdAd: Date.now(),
+      createdAt: untilDate,
       data: response,
       ownerId: userId,
-      period: 7,
+      timeframe: timeframe,
+      since: sinceDate,
+      until: untilDate,
     } satisfies NewReport;
 
     logger.debug("Generative Reporter: inserting result");

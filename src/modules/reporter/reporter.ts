@@ -1,3 +1,5 @@
+import { endOfYesterday, subDays } from "date-fns";
+
 import { logger } from "#modules/logger";
 
 import { generalDashboardMetricsConfig } from "./metrics";
@@ -7,6 +9,7 @@ import { metaAdsDataProvider } from "./providers/metaAdsDataProvider";
 import { metaInsightsDataProvider } from "./providers/metaInsightsDataProvider";
 import {
   GenerativeReportData,
+  MetricConfig,
   ReportData,
   ReporterDataProvider,
   ReportMetricSource,
@@ -49,7 +52,7 @@ class Reporter {
 
     return report;
   };
-  getLast4WeeksOverviewReportData = async (userId: number) => {
+  getOverviewData = async (userId: number) => {
     const report: GenerativeReportData = [];
     // create an object with used data providers
     const usedDataProvdiers = new Set<ReportMetricSource>();
@@ -68,7 +71,30 @@ class Reporter {
         generalDashboardMetricsConfig.filter(
           (config) => config.source === dataProvierName
         ),
-        report
+        report,
+        subDays(endOfYesterday(), 7 * 4)
+      );
+    }
+
+    return report;
+  };
+  getData = async (userId: number, config: MetricConfig[], since: Date) => {
+    const report: GenerativeReportData = [];
+    const usedDataProvdiers = new Set<ReportMetricSource>();
+    for (let i = 0; i < config.length; i++) {
+      const source = config[i].source;
+
+      usedDataProvdiers.add(source);
+    }
+
+    for (const dataProvierName of usedDataProvdiers.values()) {
+      logger.debug(`Reporter: getting data from: ${dataProvierName}`);
+
+      await reportDataProviders[dataProvierName]?.generativeReport(
+        userId,
+        config.filter((config) => config.source === dataProvierName),
+        report,
+        since
       );
     }
 

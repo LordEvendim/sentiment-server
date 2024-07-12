@@ -1,10 +1,12 @@
 import { ConsumeMessage } from "amqplib";
+import { format, subDays } from "date-fns";
 
 import { googleAnalytics } from "#modules/google";
 import { logger } from "#modules/logger";
 import { metaInsights } from "#modules/meta";
 import { metaAds } from "#modules/meta/metaAds";
 import { generativeReporter } from "#modules/reporter";
+import { calculateTimeframeStart } from "#modules/reporter/timeframes";
 import { wait } from "#utils/wait";
 
 import { QueueNames } from "./queues";
@@ -32,8 +34,17 @@ export const tasks: Record<
 > = {
   report: async (message) => {
     const data = JSON.parse(message.content.toString()) as ReportTask;
+    const until = subDays(new Date(Date.now()), 1);
 
-    await generativeReporter.generateWeeklyReport(data.userId);
+    await generativeReporter.generateReport(
+      data.userId,
+      "last-7-days",
+      format(
+        calculateTimeframeStart(new Date(Date.now()), "last-7-days"),
+        "yyyyMMdd"
+      ),
+      format(until, "yyyyMMdd")
+    );
   },
   pull: async (message) => {
     const data = JSON.parse(message.content.toString()) as FetchTask;

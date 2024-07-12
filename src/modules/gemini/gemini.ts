@@ -5,9 +5,12 @@ import { logger } from "#modules/logger";
 
 export const USED_TOKENS_KEY = "gemini:used-tokens";
 
+type GenerativeModel = ReturnType<VertexAI["getGenerativeModel"]>;
+
 class Gemini {
   vertexAI: VertexAI;
-  generativeModel: ReturnType<VertexAI["getGenerativeModel"]>;
+  generativeModel: GenerativeModel;
+  flashModel: GenerativeModel;
   dailyTokenLimit: number = 200_000;
 
   constructor() {
@@ -16,13 +19,31 @@ class Gemini {
       location: process.env.VERTEX_LOCATION ?? "us-central1",
     });
     this.generativeModel = this.vertexAI.getGenerativeModel({
-      model: process.env.VERTEX_GENERATIVE_MODEL ?? "gemini-1.0-pro",
+      model: "gemini-1.0-pro",
+    });
+    this.flashModel = this.vertexAI.getGenerativeModel({
+      model: "gemini-1.5-flash-001",
     });
   }
 
+  getSampleFlashResponse = async () => {
+    const input = "How can I learn more about generative AI?";
+    const result = await this.callModel(input, this.flashModel);
+
+    return result;
+  };
+
+  getFlashTextResponse = async (input: string) => {
+    logger.debug(`Gemini: getting flash text response`);
+
+    const result = await this.callModel(input, this.flashModel);
+
+    return result;
+  };
+
   getSampleResponse = async () => {
     const input = "How can I learn more about generative AI?";
-    const result = await this.callGemini(input);
+    const result = await this.callModel(input, this.generativeModel);
 
     return result;
   };
@@ -30,7 +51,7 @@ class Gemini {
   getTextResponse = async (input: string) => {
     logger.debug(`Gemini: getting text response`);
 
-    const result = await this.callGemini(input);
+    const result = await this.callModel(input, this.generativeModel);
 
     return result;
   };
@@ -43,7 +64,7 @@ class Gemini {
       usedCount.totalTokens
     );
 
-    logger.info(usedCount);
+    logger.info(usedCount.totalTokens);
 
     return usedCount.totalTokens;
   };
@@ -54,10 +75,10 @@ class Gemini {
     });
   };
 
-  callGemini = async (input: string) => {
+  callModel = async (input: string, model: GenerativeModel) => {
     await this.checkRateLimit();
 
-    const response = await this.generativeModel.generateContent(input);
+    const response = await model.generateContent(input);
 
     let result = "";
 

@@ -1,5 +1,3 @@
-import { endOfYesterday, subDays } from "date-fns";
-
 import { googleAnalyticsMetricDao } from "#dao/googleAnalyticsMetricDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 
@@ -43,11 +41,14 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
   generativeReport = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: GenerativeReportData
+    report: GenerativeReportData,
+    since: Date
   ) => {
     try {
       const integration =
         await googleIntegrationDao.getIntegrationByUserId(userId);
+
+      const metricsNames = metricsConfig.map((config) => config.id);
 
       if (!integration) throw new Error("Google is not integrated");
       if (!integration.selectedPage)
@@ -56,16 +57,18 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
       const metrics = await googleAnalyticsMetricDao.getByAccountSince(
         integration.selectedPage,
         integration.id,
-        subDays(endOfYesterday(), 7 * 4)
+        since
       );
 
       report.push(
-        ...metrics.map((metric) => ({
-          metricId: metric.metricId,
-          source: this.source,
-          value: metric.value,
-          createdAt: metric.createdAt,
-        }))
+        ...metrics
+          .filter((config) => metricsNames.includes(config.metricId))
+          .map((metric) => ({
+            metricId: metric.metricId,
+            source: this.source,
+            value: metric.value,
+            createdAt: metric.createdAt,
+          }))
       );
     } catch (err) {
       /* empty */

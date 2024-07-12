@@ -79,3 +79,27 @@ export const generativeGeneralLast4WeeksReportMetricsConfig: MetricConfig[] = [
     source: "google-analytics",
   },
 ];
+
+export const metricReportConfigs: Record<string, MetricConfig[]> = {
+  clicks: [
+    {
+      display: "metric",
+      id: "clicks",
+      source: "meta-ads",
+    },
+  ],
+  ctr: [
+    {
+      display: "metric",
+      id: "cpc",
+      source: "meta-ads",
+    },
+  ],
+  spend: [
+    {
+      display: "metric",
+      id: "spend",
+      source: "meta-ads",
+    },
+  ],
+};

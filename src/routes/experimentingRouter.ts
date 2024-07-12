@@ -2,6 +2,7 @@ import express, { Request, Response, Router } from "express";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
+import { gemini } from "#modules/gemini";
 import GoogleAuthLab from "#modules/google/googleAuthLab";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -21,7 +22,9 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     if (!integration.selectedAdAccount)
       throw new Error("Meta: ad account not selected");
 
-    const data = {};
+    // const data = {};
+
+    const data = await gemini.getSampleFlashResponse();
 
     res.send(data);
   } catch (error: unknown) {

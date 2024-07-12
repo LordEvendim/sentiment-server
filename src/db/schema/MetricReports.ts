@@ -10,22 +10,22 @@ import {
 
 import { users } from "./users";
 
-export const reports = mysqlTable("reports", {
+export const metricReports = mysqlTable("metric_reports", {
   reportId: int("report_id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 50 }).notNull(),
   createdAt: datetime("created_at").notNull(),
   timeframe: varchar("timeframe", { length: 30 }).notNull(),
-  since: date("since").notNull(),
   until: date("until").notNull(),
   data: text("data").notNull(),
   ownerId: int("owner_id").notNull(),
 });
 
-export const reportsRelations = relations(reports, ({ one }) => ({
+export const reportsRelations = relations(metricReports, ({ one }) => ({
   owner: one(users, {
-    fields: [reports.ownerId],
+    fields: [metricReports.ownerId],
     references: [users.id],
   }),
 }));
 
-export type Report = typeof reports.$inferSelect;
-export type NewReport = typeof reports.$inferInsert;
+export type MetricReport = typeof metricReports.$inferSelect;
+export type NewMetricReport = typeof metricReports.$inferInsert;

@@ -1,5 +1,3 @@
-import { endOfYesterday, subDays } from "date-fns";
-
 import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 
@@ -45,11 +43,14 @@ class MetaAdsDataProvider implements ReporterDataProvider {
   generativeReport = async (
     userId: number,
     metricsConfig: MetricConfig[],
-    report: GenerativeReportData
+    report: GenerativeReportData,
+    since: Date
   ) => {
     try {
       const metaIntegration =
         await metaIntegrationDao.getIntegrationByUserId(userId);
+
+      const metricsNames = metricsConfig.map((config) => config.id);
 
       if (!metaIntegration) throw new Error("Meta is not integrated");
       if (!metaIntegration.selectedAdAccount)
@@ -59,17 +60,19 @@ class MetaAdsDataProvider implements ReporterDataProvider {
         await metaAdAccountMetricDao.getByPageSince(
           metaIntegration.selectedAdAccount,
           metaIntegration.id,
-          subDays(endOfYesterday(), 7 * 4)
+          since
         )
       ).map((metric) => ({ ...metric, value: parseFloat(metric.value) }));
 
       report.push(
-        ...metrics.map((metric) => ({
-          metricId: metric.metricId,
-          source: this.source,
-          value: metric.value,
-          createdAt: metric.createdAt,
-        }))
+        ...metrics
+          .filter((config) => metricsNames.includes(config.metricId))
+          .map((metric) => ({
+            metricId: metric.metricId,
+            source: this.source,
+            value: metric.value,
+            createdAt: metric.createdAt,
+          }))
       );
     } catch (err) {
       /* empty */

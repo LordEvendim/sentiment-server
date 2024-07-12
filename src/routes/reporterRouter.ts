@@ -6,16 +6,13 @@ import { isAuthenticated } from "#middleware/isAuthenticated";
 const router: Router = express.Router();
 
 router.post(
-  "/general/weekly",
+  "/overview",
   isAuthenticated,
   reporterController.generateGeneralReport
 );
 
-router.get(
-  "/general/weekly",
-  isAuthenticated,
-  reporterController.getGeneralReport
-);
+router.get("/overview", isAuthenticated, reporterController.getGeneralReport);
+router.get("/metric", isAuthenticated, reporterController.getMetricReport);
 
 router.get(
   "/dashboard/general",
