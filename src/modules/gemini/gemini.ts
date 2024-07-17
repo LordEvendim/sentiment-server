@@ -64,7 +64,7 @@ class Gemini {
       usedCount.totalTokens
     );
 
-    logger.info(usedCount.totalTokens);
+    logger.info("Gemini: used tokens -> " + usedCount.totalTokens);
 
     return usedCount.totalTokens;
   };

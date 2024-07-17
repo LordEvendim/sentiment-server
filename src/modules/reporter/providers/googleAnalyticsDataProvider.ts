@@ -19,11 +19,11 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
         await googleIntegrationDao.getIntegrationByUserId(userId);
 
       if (!integration) throw new Error("Google is not integrated");
-      if (!integration.selectedAdAccount)
-        throw new Error("Google ads account not selected");
+      if (!integration.selectedPage)
+        throw new Error("Google analytics account not selected");
 
       const metrics = await googleAnalyticsMetricDao.getByAccountAndMetricId(
-        integration.selectedAdAccount,
+        integration.selectedPage,
         integration.id,
         metricId,
         since
