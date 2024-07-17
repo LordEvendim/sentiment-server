@@ -4,6 +4,24 @@ import { mysqlDatabase } from "#db/mysql";
 import { metaInsightsMetrics, NewMetaInsightsMetric } from "#db/schema";
 
 export const metaInsightsMetricDao = {
+  getByPageAndMetricId: async (
+    pageId: number,
+    integrationId: number,
+    metricId: string,
+    since: Date
+  ) => {
+    const result = await mysqlDatabase.query.metaInsightsMetrics.findMany({
+      where: and(
+        eq(metaInsightsMetrics.sourceId, pageId),
+        eq(metaInsightsMetrics.integrationId, integrationId),
+        eq(metaInsightsMetrics.metricId, metricId),
+        gte(metaInsightsMetrics.createdAt, since)
+      ),
+    });
+
+    return result;
+  },
+
   getByPageSince: async (
     pageId: number,
     integrationId: number,

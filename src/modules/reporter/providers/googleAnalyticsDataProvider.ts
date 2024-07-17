@@ -13,6 +13,31 @@ import { appendReportWithData } from "../utils";
 class GoogleAnalyticsDataProvider implements ReporterDataProvider {
   source: ReportMetricSource = "google-analytics";
 
+  metric = async (userId: number, metricId: string, since: Date) => {
+    try {
+      const integration =
+        await googleIntegrationDao.getIntegrationByUserId(userId);
+
+      if (!integration) throw new Error("Google is not integrated");
+      if (!integration.selectedAdAccount)
+        throw new Error("Google ads account not selected");
+
+      const metrics = await googleAnalyticsMetricDao.getByAccountAndMetricId(
+        integration.selectedAdAccount,
+        integration.id,
+        metricId,
+        since
+      );
+
+      return metrics.map(
+        (metric) =>
+          [metric.value, metric.createdAt.getTime()] as [number, number]
+      );
+    } catch (err) {
+      return [];
+    }
+  };
+
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],

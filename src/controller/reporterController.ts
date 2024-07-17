@@ -5,12 +5,55 @@ import { NewReport, Report } from "#db/schema";
 import { NewMetricReport } from "#db/schema/MetricReports";
 import { generativeReporter, reporter } from "#modules/reporter";
 import { DashboardTimeframe } from "#modules/reporter/timeframes";
-import { ReportData } from "#modules/reporter/types";
+import { ReportData, ReportMetricSource } from "#modules/reporter/types";
 import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
 const createReporterController = () => {
   return {
+    getChartData: async (
+      req: TypedRequest<
+        object,
+        object,
+        {
+          metricId: string;
+          source: ReportMetricSource;
+          since: string;
+        }
+      >,
+      res: Response<{
+        metricId: string;
+        source: ReportMetricSource;
+        since: string;
+        data: [number, number][];
+      }>
+    ) => {
+      try {
+        const { user } = req.session;
+        const { metricId, source, since } = req.query;
+
+        if (!user) throw new Error("User not authenticated");
+        if (!metricId) throw new Error("MetricId not specified");
+        if (!source) throw new Error("metric source not specified");
+        if (!since) throw new Error("Since not specified");
+
+        const result = await reporter.getChartData(
+          user.id,
+          metricId,
+          source,
+          since
+        );
+
+        return res.status(200).send({
+          data: result,
+          metricId: metricId,
+          since: since,
+          source: source,
+        });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
     getMetricReport: async (
       req: TypedRequest<
         object,

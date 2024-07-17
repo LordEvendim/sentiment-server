@@ -13,6 +13,34 @@ import { appendReportWithData } from "../utils";
 class MetaAdsDataProvider implements ReporterDataProvider {
   source: ReportMetricSource = "meta-ads";
 
+  metric = async (userId: number, metricId: string, since: Date) => {
+    try {
+      const integration =
+        await metaIntegrationDao.getIntegrationByUserId(userId);
+
+      if (!integration) throw new Error("Google is not integrated");
+      if (!integration.selectedAdAccount)
+        throw new Error("Google ads account not selected");
+
+      const metrics = await metaAdAccountMetricDao.getByPageAndMetricId(
+        integration.selectedAdAccount,
+        integration.id,
+        metricId,
+        since
+      );
+
+      return metrics.map(
+        (metric) =>
+          [parseFloat(metric.value), metric.createdAt.getTime()] as [
+            number,
+            number,
+          ]
+      );
+    } catch (err) {
+      return [];
+    }
+  };
+
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],

@@ -13,6 +13,31 @@ import { appendReportWithData } from "../utils";
 class MetaInsightsDataProvider implements ReporterDataProvider {
   source: ReportMetricSource = "meta-insights";
 
+  metric = async (userId: number, metricId: string, since: Date) => {
+    try {
+      const integration =
+        await metaIntegrationDao.getIntegrationByUserId(userId);
+
+      if (!integration) throw new Error("Meta is not integrated");
+      if (!integration.selectedAdAccount)
+        throw new Error("Meta page account not selected");
+
+      const metrics = await metaInsightsMetricDao.getByPageAndMetricId(
+        integration.selectedAdAccount,
+        integration.id,
+        metricId,
+        since
+      );
+
+      return metrics.map(
+        (metric) =>
+          [metric.value, metric.createdAt.getTime()] as [number, number]
+      );
+    } catch (err) {
+      return [];
+    }
+  };
+
   report = async (
     userId: number,
     metricsConfig: MetricConfig[],

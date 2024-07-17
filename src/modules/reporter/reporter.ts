@@ -1,4 +1,4 @@
-import { endOfYesterday, subDays } from "date-fns";
+import { endOfYesterday, parse, subDays } from "date-fns";
 
 import { logger } from "#modules/logger";
 
@@ -26,6 +26,22 @@ const reportDataProviders: Record<
 };
 
 class Reporter {
+  getChartData = async (
+    userId: number,
+    metricId: string,
+    source: ReportMetricSource,
+    since: string
+  ) => {
+    const sinceDate = parse(since, "yyyyMMdd", Date.now());
+
+    const data = await reportDataProviders[source]!.metric(
+      userId,
+      metricId,
+      sinceDate
+    );
+
+    return data;
+  };
   getGeneralDashboardData = async (userId: number, since: number) => {
     const report: ReportData = [];
     // create an object with used data providers

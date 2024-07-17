@@ -19,6 +19,23 @@ export const googleAnalyticsMetricDao = {
 
     return result;
   },
+  getByAccountAndMetricId: async (
+    accountId: number,
+    integrationId: number,
+    metricId: string,
+    since: Date
+  ) => {
+    const result = await mysqlDatabase.query.googleAnalyticsMetrics.findMany({
+      where: and(
+        eq(googleAnalyticsMetrics.sourceId, accountId),
+        eq(googleAnalyticsMetrics.integrationId, integrationId),
+        eq(googleAnalyticsMetrics.metricId, metricId),
+        gte(googleAnalyticsMetrics.createdAt, since)
+      ),
+    });
+
+    return result;
+  },
   createMany: async (newGoogleAnalyticsMetrics: NewGoogleAnalyticsMetric[]) => {
     const result = await mysqlDatabase
       .insert(googleAnalyticsMetrics)

@@ -7,6 +7,23 @@ import {
 } from "#db/schema/metaAdAccountMetrics";
 
 export const metaAdAccountMetricDao = {
+  getByPageAndMetricId: async (
+    accountId: number,
+    integrationId: number,
+    metricId: string,
+    since: Date
+  ) => {
+    const result = await mysqlDatabase.query.metaAdAccountMetrics.findMany({
+      where: and(
+        eq(metaAdAccountMetrics.sourceId, accountId),
+        eq(metaAdAccountMetrics.integrationId, integrationId),
+        eq(metaAdAccountMetrics.metricId, metricId),
+        gte(metaAdAccountMetrics.createdAt, since)
+      ),
+    });
+
+    return result;
+  },
   getByPageSince: async (
     accountId: number,
     integrationId: number,

@@ -14,6 +14,7 @@ router.post(
 router.get("/overview", isAuthenticated, reporterController.getGeneralReport);
 router.get("/metric", isAuthenticated, reporterController.getMetricReport);
 
+router.get("/chart", isAuthenticated, reporterController.getChartData);
 router.get(
   "/dashboard/general",
   isAuthenticated,
