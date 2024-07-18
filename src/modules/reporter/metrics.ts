@@ -40,6 +40,11 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
   },
   {
     display: "metric",
+    id: "sessions",
+    source: "google-analytics",
+  },
+  {
+    display: "metric",
     id: "cpc",
     source: "meta-ads",
   },

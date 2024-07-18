@@ -19,11 +19,11 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
         await metaIntegrationDao.getIntegrationByUserId(userId);
 
       if (!integration) throw new Error("Meta is not integrated");
-      if (!integration.selectedAdAccount)
+      if (!integration.selectedPage)
         throw new Error("Meta page account not selected");
 
       const metrics = await metaInsightsMetricDao.getByPageAndMetricId(
-        integration.selectedAdAccount,
+        integration.selectedPage,
         integration.id,
         metricId,
         since
