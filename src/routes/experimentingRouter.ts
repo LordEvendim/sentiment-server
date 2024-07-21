@@ -1,8 +1,9 @@
+import { subDays } from "date-fns";
 import express, { Request, Response, Router } from "express";
 
-import { metaIntegrationDao } from "#dao/metaIntegrationDao";
+import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
-import { gemini } from "#modules/gemini";
+import { googleAds } from "#modules/google/googleAds";
 import GoogleAuthLab from "#modules/google/googleAuthLab";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -13,18 +14,21 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const userId = req.query.userId as number | undefined;
     if (!userId) return res.send("Error");
 
-    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
 
     if (!integration?.selectedAdAccount)
-      throw new Error("Ad account not selected");
+      throw new Error("Ads account is not selected");
 
-    if (!integration) throw new Error("Meta: integration not connected");
-    if (!integration.selectedAdAccount)
-      throw new Error("Meta: ad account not selected");
+    const until = new Date(Date.now());
+    const since = subDays(until, 7);
 
-    // const data = {};
-
-    const data = await gemini.getSampleFlashResponse();
+    const data = await googleAds.pullAccountMetrics(
+      userId,
+      integration.selectedAdAccount,
+      since,
+      until
+    );
 
     res.send(data);
   } catch (error: unknown) {

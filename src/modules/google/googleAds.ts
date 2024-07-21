@@ -1,5 +1,6 @@
-import { subWeeks } from "date-fns";
+import { format, subWeeks } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { enums, GoogleAdsApi } from "google-ads-api";
 
 import { googleAdAccountDao } from "#dao/googleAdAccountDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
@@ -46,7 +47,14 @@ export class GoogleAds {
     const lastDay = toZonedTime(Date.now(), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const data = await this.pullAdGroupsData(
+    const data = await this.pullAccountMetrics(
+      userId,
+      integration.selectedAdAccount,
+      since,
+      lastDay
+    );
+
+    await this.pullAdGroupsData(
       userId,
       integration.selectedAdAccount,
       since,
@@ -91,6 +99,102 @@ export class GoogleAds {
       },
     });
     return result;
+  };
+
+  pullCampaigns = async (
+    userId: number,
+    propertyId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google Ads: Google is not integrated");
+    if (!integration.refreshToken)
+      throw new Error("Google Ads: Refresh token not present");
+
+    const client = new GoogleAdsApi({
+      client_id: process.env.GOOGLE_ANALYTICS_CLIENT_ID!,
+      client_secret: process.env.GOOGLE_ANALYTICS_CLIENT_SECRET!,
+      developer_token: `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+    });
+
+    const customer = client.Customer({
+      customer_id: propertyId.toString(),
+      refresh_token: integration.refreshToken,
+    });
+
+    const campaigns = await customer.report({
+      entity: "campaign",
+      attributes: [
+        "campaign.id",
+        "campaign.name",
+        "campaign.bidding_strategy_type",
+        "campaign_budget.amount_micros",
+      ],
+      metrics: [
+        "metrics.cost_micros",
+        "metrics.clicks",
+        "metrics.impressions",
+        "metrics.all_conversions",
+      ],
+      constraints: {
+        "campaign.status": enums.CampaignStatus.ENABLED,
+      },
+      from_date: format(since, "yyyy-MM-dd"),
+      to_date: format(until, "yyyy-MM-dd"),
+    });
+
+    return campaigns;
+  };
+
+  pullAccountMetrics = async (
+    userId: number,
+    propertyId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google Ads: Google is not integrated");
+    if (!integration.refreshToken)
+      throw new Error("Google Ads: Refresh token not present");
+
+    const client = new GoogleAdsApi({
+      client_id: process.env.GOOGLE_ANALYTICS_CLIENT_ID!,
+      client_secret: process.env.GOOGLE_ANALYTICS_CLIENT_SECRET!,
+      developer_token: `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+    });
+
+    const customer = client.Customer({
+      customer_id: propertyId.toString(),
+      refresh_token: integration.refreshToken,
+    });
+
+    const campaigns = await customer.report({
+      entity: "customer",
+      metrics: [
+        "metrics.cost_micros",
+        "metrics.clicks",
+        "metrics.impressions",
+        "metrics.all_conversions",
+      ],
+      segments: ["segments.date"],
+      from_date: format(since, "yyyy-MM-dd"),
+      to_date: format(until, "yyyy-MM-dd"),
+    });
+
+    return campaigns.map((segment) => ({
+      ...segment,
+      metrics: {
+        ...segment.metrics,
+        cost_micros: ((segment.metrics?.cost_micros ?? 0) / 1_000_000).toFixed(
+          2
+        ),
+      },
+    }));
   };
 
   getUserAccounts = async (userId: number) => {
