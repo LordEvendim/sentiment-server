@@ -2,6 +2,7 @@ import { ConsumeMessage } from "amqplib";
 import { format, subDays } from "date-fns";
 
 import { googleAnalytics } from "#modules/google";
+import { googleAds } from "#modules/google/googleAds";
 import { logger } from "#modules/logger";
 import { metaInsights } from "#modules/meta";
 import { metaAds } from "#modules/meta/metaAds";
@@ -71,7 +72,12 @@ export const tasks: Record<
       logger.error(error);
     }
 
-    // await googleAds.pullLastDayData(data.userId);
+    try {
+      await googleAds.pullLastDayData(data.userId);
+    } catch (error) {
+      logger.error("Cron pull: Google Ads of: " + data.userId);
+      logger.error(error);
+    }
 
     await wait(1);
   },

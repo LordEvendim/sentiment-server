@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   bigint,
   date,
+  double,
   int,
   mysqlTable,
   primaryKey,
@@ -13,10 +14,10 @@ import { googleAdAccounts } from "./googleAdAccounts";
 export const googleAdAccountMetrics = mysqlTable(
   "google_ad_account_metrics",
   {
-    metricId: varchar("metric_id", { length: 256 }).notNull(), // metricId is used to get metrics details, metrics, etc.
+    metricId: varchar("metric_id", { length: 256 }).notNull(),
     sourceId: bigint("source_id", { mode: "number" }).notNull(),
     createdAt: date("created_at").notNull(),
-    value: int("value").notNull(),
+    value: double("value", { scale: 4 }).notNull(),
     period: int("period").notNull(), // in days: 0 -> lifetime
     integrationId: bigint("integration_id", { mode: "number" }).notNull(),
   },
@@ -33,7 +34,7 @@ export const googleAdAccountMetrics = mysqlTable(
   })
 );
 
-export const googleAnalyticsMetricsRelations = relations(
+export const googleAdAccountMetricsRelations = relations(
   googleAdAccountMetrics,
   ({ one }) => ({
     source: one(googleAdAccounts, {
@@ -46,6 +47,6 @@ export const googleAnalyticsMetricsRelations = relations(
   })
 );
 
-export type GoogleAnalyticsMetric = typeof googleAdAccountMetrics.$inferSelect;
-export type NewGoogleAnalyticsMetric =
+export type GoogleAdAccountMetric = typeof googleAdAccountMetrics.$inferSelect;
+export type NewGoogleAdAccountMetric =
   typeof googleAdAccountMetrics.$inferInsert;

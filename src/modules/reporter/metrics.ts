@@ -9,9 +9,19 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
   },
   {
     display: "metric",
-    id: "spend",
+    id: "cost_micros",
     source: "google-ads",
     aggregatedMetricId: "spend",
+  },
+  {
+    display: "metric",
+    id: "cost_micros",
+    source: "google-ads",
+  },
+  {
+    display: "metric",
+    id: "clicks",
+    source: "google-ads",
   },
   {
     display: "chart",

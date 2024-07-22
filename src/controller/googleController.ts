@@ -1,3 +1,4 @@
+import { parse, subYears } from "date-fns";
 import { Response } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
@@ -9,6 +10,28 @@ import { handleControllerError } from "#utils/errorHandling";
 
 const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
   return {
+    getTopCampaigns: async (
+      req: TypedRequest<object, object, { since: string }>,
+      res: Response
+    ) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+        if (!req.query.since) throw new Error("Timeframe not specified");
+
+        const since = parse(req.query.since, "yyyyMMdd", Date.now()).getTime();
+
+        if (since < subYears(Date.now(), 2).getTime())
+          throw new Error("Timeframe out of range");
+
+        const data = await googleAds.getTopCampaigns(userId, new Date(since));
+
+        return res.status(200).send(data);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
     getUserPages: async (
       req: TypedRequest<object, object, object>,
       res: Response<{

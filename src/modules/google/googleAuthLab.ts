@@ -154,6 +154,7 @@ export default class GoogleAuthLab {
        * if the errir is this one we should remove the tokens from the db and the user would need to reauthenticate
        */
       if (error.message === "Could not refresh access token.") {
+        logger.error("Google Auth: could not refresh access token");
         await googleIntegrationDao.deleteByUserId(this.userId);
         return null;
       }

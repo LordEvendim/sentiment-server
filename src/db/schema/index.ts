@@ -1,4 +1,6 @@
+export * from "./googleAdAccountMetrics";
 export * from "./googleAdAccounts";
+export * from "./googleAdsCampaignMetrics";
 export * from "./googleAnalyticsMetrics";
 export * from "./googleAnalyticsPages";
 export * from "./googleIntegrations";

@@ -23,7 +23,7 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const until = new Date(Date.now());
     const since = subDays(until, 7);
 
-    const data = await googleAds.pullAccountMetrics(
+    const data = await googleAds.pullCampaigns(
       userId,
       integration.selectedAdAccount,
       since,
