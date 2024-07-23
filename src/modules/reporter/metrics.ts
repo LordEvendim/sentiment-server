@@ -5,13 +5,6 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
     display: "metric",
     id: "spend",
     source: "meta-ads",
-    aggregatedMetricId: "spend",
-  },
-  {
-    display: "metric",
-    id: "cost_micros",
-    source: "google-ads",
-    aggregatedMetricId: "spend",
   },
   {
     display: "metric",
@@ -24,11 +17,6 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
     source: "google-ads",
   },
   {
-    display: "chart",
-    id: "spend",
-    source: "meta-ads",
-  },
-  {
     display: "metric",
     id: "page_impressions",
     source: "meta-insights",
@@ -37,6 +25,11 @@ export const generalDashboardMetricsConfig: MetricConfig[] = [
     display: "metric",
     id: "impressions",
     source: "meta-ads",
+  },
+  {
+    display: "metric",
+    id: "impressions",
+    source: "google-ads",
   },
   {
     display: "metric",

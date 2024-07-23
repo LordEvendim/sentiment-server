@@ -16,6 +16,11 @@ export type MetricDatapoint = {
   date: Date;
 };
 
+export interface SelectedMetric {
+  metricId: string;
+  source: ReportMetricSource;
+}
+
 export type ReportData = (
   | {
       display: "metric";

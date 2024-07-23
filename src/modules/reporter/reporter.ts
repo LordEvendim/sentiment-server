@@ -13,6 +13,7 @@ import {
   ReportData,
   ReporterDataProvider,
   ReportMetricSource,
+  SelectedMetric,
 } from "./types";
 
 const reportDataProviders: Record<
@@ -28,17 +29,17 @@ const reportDataProviders: Record<
 class Reporter {
   getChartData = async (
     userId: number,
-    metricId: string,
-    source: ReportMetricSource,
+    metrics: SelectedMetric[],
     since: string
   ) => {
     const sinceDate = parse(since, "yyyyMMdd", Date.now());
+    const data: Partial<Record<ReportMetricSource, [number, number][]>> = {};
 
-    const data = await reportDataProviders[source]!.metric(
-      userId,
-      metricId,
-      sinceDate
-    );
+    for (let i = 0; i < metrics.length; i++) {
+      data[metrics[i].source] = await reportDataProviders[
+        metrics[i].source
+      ]!.metric(userId, metrics[i].metricId, sinceDate);
+    }
 
     return data;
   };
