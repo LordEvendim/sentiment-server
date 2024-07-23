@@ -279,6 +279,8 @@ export class GoogleAds {
       selectedAdAccount: accountId,
     });
 
+    this.pullLastFourWeeks(userId);
+
     return accountId;
   };
 
