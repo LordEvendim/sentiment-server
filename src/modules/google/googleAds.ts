@@ -144,7 +144,8 @@ export class GoogleAds {
       }
     );
 
-    await googleAdsCampaignMetricDao.createMany(transformedCampaigns);
+    if (transformedCampaigns.length > 0)
+      await googleAdsCampaignMetricDao.createMany(transformedCampaigns);
 
     return campaigns;
   };
@@ -215,7 +216,7 @@ export class GoogleAds {
       }
     }
 
-    await googleAdAccountMetricDao.createMany(metrics);
+    if (metrics.length > 0) await googleAdAccountMetricDao.createMany(metrics);
 
     return metrics;
   };
@@ -279,7 +280,7 @@ export class GoogleAds {
       selectedAdAccount: accountId,
     });
 
-    this.pullLastFourWeeks(userId);
+    this.pullLastFourWeeks(userId).catch((e) => logger.error(e));
 
     return accountId;
   };

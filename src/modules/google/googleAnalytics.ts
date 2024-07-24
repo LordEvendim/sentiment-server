@@ -172,7 +172,7 @@ export class GoogleAnalytics {
       selectedPage: pageId,
     });
 
-    this.pullLastFourWeeks(userId);
+    this.pullLastFourWeeks(userId).catch((e) => logger.error(e));
 
     return pageId;
   };

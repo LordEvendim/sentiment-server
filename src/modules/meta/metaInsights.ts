@@ -327,7 +327,7 @@ export class MetaInsights {
       selectedPage: pageId,
     });
 
-    this.pullLastFourWeeks(userId);
+    this.pullLastFourWeeks(userId).catch((e) => logger.error(e));
 
     return pageId;
   };
@@ -340,7 +340,7 @@ export class MetaInsights {
       selectedAdAccount: accountId,
     });
 
-    metaAds.pullLastFourWeeks(userId);
+    metaAds.pullLastFourWeeks(userId).catch((e) => logger.error(e));
 
     return accountId;
   };

@@ -12,7 +12,18 @@ export const logger = createLogger({
   format: combine(timestamp(), format.json()),
   transports: [
     new transports.Console({
-      format: combine(timestamp(), format.colorize(), myFormat),
+      format: combine(
+        timestamp(),
+        format.colorize(),
+        format.printf((info) => {
+          if (typeof info.message === "object") {
+            info.message = JSON.stringify(info.message, null, 3);
+          }
+
+          return info.message;
+        }),
+        myFormat
+      ),
       level: "debug",
     }),
     new transports.File({
