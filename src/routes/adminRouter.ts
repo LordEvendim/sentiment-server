@@ -3,6 +3,7 @@ import express, { Request, Response, Router } from "express";
 import { isAdmin } from "#middleware/isAdmin";
 import { googleAnalytics } from "#modules/google";
 import { googleAds } from "#modules/google/googleAds";
+import { logger } from "#modules/logger";
 import { metaInsights } from "#modules/meta";
 import { metaAds } from "#modules/meta/metaAds";
 import { userModule } from "#modules/user/user";
@@ -34,25 +35,25 @@ router.post("/pull-initial", isAdmin, async (req: Request, res: Response) => {
     try {
       await metaAds.pullLastFourWeeks(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     try {
       await metaInsights.pullLastFourWeeks(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     try {
       await googleAnalytics.pullLastFourWeeks(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     try {
       await googleAds.pullLastFourWeeks(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     res.send({
@@ -71,25 +72,25 @@ router.post("/pull-day", isAdmin, async (req: Request, res: Response) => {
     try {
       await metaAds.pullLastDayData(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     try {
       await metaInsights.pullLastDayData(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     try {
       await googleAnalytics.pullLastDayData(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     try {
       await googleAds.pullLastDayData(userId);
     } catch (e) {
-      /* empty */
+      logger.error(e);
     }
 
     res.send({

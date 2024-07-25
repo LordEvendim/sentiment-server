@@ -25,7 +25,32 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         if (since < subYears(Date.now(), 2).getTime())
           throw new Error("Timeframe out of range");
 
-        const data = await googleAds.getTopCampaigns(userId, new Date(since));
+        const data = await googleAnalytics.getSourcesData(
+          userId,
+          new Date(since)
+        );
+
+        return res.status(200).send(data);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    getSourcesData: async (
+      req: TypedRequest<object, object, { since: string }>,
+      res: Response
+    ) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+        if (!req.query.since) throw new Error("Timeframe not specified");
+
+        const since = parse(req.query.since, "yyyyMMdd", Date.now()).getTime();
+
+        if (since < subYears(Date.now(), 2).getTime())
+          throw new Error("Timeframe out of range");
+
+        const data = await googleAnalytics.getSourcesData(userId, new Date(since));
 
         return res.status(200).send(data);
       } catch (error) {

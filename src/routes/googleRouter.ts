@@ -12,6 +12,7 @@ router.get(
   googleController.getUserIntegration
 );
 router.get("/campaigns/top", isAuthenticated, googleController.getTopCampaigns);
+router.get("/sources", isAuthenticated, googleController.getSourcesData);
 
 router.post("/selected-page", isAuthenticated, googleController.selectPage);
 router.post(

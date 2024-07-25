@@ -3,12 +3,14 @@ import { toZonedTime } from "date-fns-tz";
 
 import { googleAnalyticsMetricDao } from "#dao/googleAnalyticsMetricDao";
 import { googleAnalyticsPageDao } from "#dao/googleAnalyticsPageDao";
+import { googleAnalyticsSourceDao } from "#dao/googleAnalyticsSourcesDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import {
   GoogleAnalyticsPage,
   GoogleIntegration,
   NewGoogleAnalyticsMetric,
 } from "#db/schema";
+import { NewGoogleAnalyticsSources } from "#db/schema/googleAnalyticsSources";
 import { logger } from "#modules/logger";
 
 import GoogleAuthLab from "./googleAuthLab";
@@ -38,14 +40,14 @@ export class GoogleAnalytics {
 
     const lastDay = subDays(toZonedTime(Date.now(), "America/New_York"), 1);
 
-    const data = await this.pullData(
+    await this.pullData(userId, integration.selectedPage, lastDay, lastDay);
+
+    await this.pullSourcesData(
       userId,
       integration.selectedPage,
       lastDay,
       lastDay
     );
-
-    return data;
   };
 
   pullLastFourWeeks = async (userId: number) => {
@@ -59,14 +61,14 @@ export class GoogleAnalytics {
     const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const data = await this.pullData(
+    await this.pullData(userId, integration.selectedPage, since, lastDay);
+
+    await this.pullSourcesData(
       userId,
       integration.selectedPage,
       since,
       lastDay
     );
-
-    return data;
   };
 
   getUserIntegration = async (
@@ -91,6 +93,25 @@ export class GoogleAnalytics {
 
   getUserAccounts = async (userId: number) => {
     return await googleAnalyticsPageDao.getUserPages(userId);
+  };
+
+  getSourcesData = async (userId: number, since: Date) => {
+    logger.debug(`Google Ads: pulling top campaign for ${userId}`);
+
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("User is not connected with Google");
+    if (!integration.selectedPage)
+      throw new Error("Google Analytics: Analytics page is not connected");
+
+    const data = await googleAnalyticsSourceDao.getByAccountSinceGroupBySource(
+      integration.selectedPage,
+      integration.id,
+      since
+    );
+
+    return data;
   };
 
   connectUserAccounts = async (userId: number) => {
@@ -291,7 +312,7 @@ export class GoogleAnalytics {
 
       for (let r = 0; r < rows; r++) {
         const rowDate = result.data.rows[r].dimensionValues[0].value;
-        const formattedRowDate = parse(`${rowDate}Z`, "yyyyMMddX", new Date());
+        const formattedRowDate = parse(rowDate, "yyyyMMdd", new Date());
 
         for (let j = 0; j < result.data.rows[r].metricValues.length; j++) {
           pushedMetrics.add(
@@ -334,6 +355,70 @@ export class GoogleAnalytics {
     await googleAnalyticsMetricDao.createMany(metricsOuput);
 
     return metricsOuput;
+  };
+
+  pullSourcesData = async (
+    userId: number,
+    propertyId: number,
+    since: Date,
+    until: Date
+  ) => {
+    logger.debug(`Google: getting Google Analytics Data for ${userId}`);
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google: integration not connected");
+    if (!integration.accessToken)
+      throw new Error("Google: access token not specified");
+
+    const authLib = new GoogleAuthLab(userId);
+    await authLib.loadTokens();
+
+    const result = await authLib.request<GoogleAnalyticsReportOutput>({
+      method: "POST",
+      url: `${this.dataApiUrl}/properties/${propertyId}:runReport`,
+      data: {
+        dateRanges: [
+          {
+            startDate: format(since, "yyyy-MM-dd"),
+            endDate: format(until, "yyyy-MM-dd"),
+          },
+        ],
+        dimensions: [
+          {
+            name: "date",
+          },
+          {
+            name: "source",
+          },
+        ],
+        metrics: ["sessions"].map((metric) => ({
+          name: metric,
+        })),
+      },
+    });
+
+    if (!result.data.rows) return [];
+
+    const transformedSources = result.data.rows?.map(
+      (datapoint) =>
+        ({
+          createdAt: parse(
+            datapoint.dimensionValues[0].value,
+            "yyyyMMdd",
+            new Date()
+          ),
+          integrationId: integration.id,
+          sessions: parseInt(datapoint.metricValues[0].value),
+          source: datapoint.dimensionValues[1].value,
+          sourceId: propertyId,
+        }) satisfies NewGoogleAnalyticsSources
+    );
+
+    if (transformedSources.length > 0)
+      await googleAnalyticsSourceDao.createMany(transformedSources);
+
+    return transformedSources;
   };
 }
 
