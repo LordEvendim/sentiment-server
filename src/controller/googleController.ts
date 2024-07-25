@@ -25,10 +25,7 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         if (since < subYears(Date.now(), 2).getTime())
           throw new Error("Timeframe out of range");
 
-        const data = await googleAnalytics.getSourcesData(
-          userId,
-          new Date(since)
-        );
+        const data = await googleAds.getTopCampaigns(userId, new Date(since));
 
         return res.status(200).send(data);
       } catch (error) {
@@ -50,7 +47,10 @@ const createGoogleController = (googleAnalytics: GoogleAnalytics) => {
         if (since < subYears(Date.now(), 2).getTime())
           throw new Error("Timeframe out of range");
 
-        const data = await googleAnalytics.getSourcesData(userId, new Date(since));
+        const data = await googleAnalytics.getSourcesData(
+          userId,
+          new Date(since)
+        );
 
         return res.status(200).send(data);
       } catch (error) {
