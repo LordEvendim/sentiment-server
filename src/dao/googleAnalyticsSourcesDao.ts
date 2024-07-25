@@ -17,16 +17,12 @@ export const googleAnalyticsSourceDao = {
       FROM google_analytics_sources AS t
       INNER JOIN
         (SELECT source, SUM(sessions) as sessions FROM mydb.google_analytics_sources
-        WHERE source_id = ${accountId} AND integration_id = ${integrationId} AND created_at >= ${Math.floor(
-          since.getTime() / 1_000_000
-        )}
+        WHERE source_id = ${accountId} AND integration_id = ${integrationId} AND created_at >= ${since}
         GROUP BY source
         ORDER BY sessions desc
         LIMIT 5) AS t2
       ON t.source = t2.source
-      WHERE source_id = ${accountId} AND integration_id = ${integrationId} AND created_at >= ${Math.floor(
-        since.getTime() / 1_000_000
-      )}
+      WHERE source_id = ${accountId} AND integration_id = ${integrationId} AND created_at >= ${since}
       ORDER BY t.created_at ASC, t.sessions ASC
       `);
 
