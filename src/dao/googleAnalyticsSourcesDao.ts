@@ -16,7 +16,7 @@ export const googleAnalyticsSourceDao = {
       SELECT t.created_at, t.source, t.sessions
       FROM google_analytics_sources AS t
       INNER JOIN
-        (SELECT source, SUM(sessions) as sessions FROM mydb.google_analytics_sources
+        (SELECT source, SUM(sessions) as sessions FROM google_analytics_sources
         WHERE source_id = ${accountId} AND integration_id = ${integrationId} AND created_at >= ${since}
         GROUP BY source
         ORDER BY sessions desc
