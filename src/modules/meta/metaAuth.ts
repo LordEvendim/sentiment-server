@@ -82,6 +82,12 @@ class MetaAuth {
 
     return result.data.data;
   };
+
+  revoke = async (userId: number) => {
+    logger.debug(`Meta: deleting user integration ${userId}`);
+
+    await metaIntegrationDao.deleteByUserId(userId);
+  };
 }
 
 export const metaAuth = new MetaAuth();

@@ -17,4 +17,6 @@ router.post(
 );
 router.post("/access-token", isAuthenticated, metaController.createAccessToken);
 
+router.delete("/logout", isAuthenticated, metaController.logout);
+
 export { router as metaRouter };

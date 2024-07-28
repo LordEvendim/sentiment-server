@@ -154,6 +154,19 @@ const createMetaController = (metaInsights: MetaInsights) => {
         return handleControllerError(res, error);
       }
     },
+    logout: async (req: TypedRequest, res: Response) => {
+      try {
+        const userId = req.session.user?.id;
+
+        if (!userId) throw new Error("Invlid request");
+
+        await metaAuth.revoke(userId);
+
+        return res.status(200).send({ message: "OK" });
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
   };
 };
 

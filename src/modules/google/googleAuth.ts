@@ -55,7 +55,7 @@ export class GoogleAuth {
   };
 
   revoke = async (userId: number) => {
-    logger.debug(`Google: revoking user integration ${userId}`);
+    logger.debug(`Google: deleting user integration ${userId}`);
 
     await googleIntegrationDao.deleteByUserId(userId);
   };
