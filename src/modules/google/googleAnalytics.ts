@@ -389,7 +389,7 @@ export class GoogleAnalytics {
             name: "date",
           },
           {
-            name: "source",
+            name: "sessionSource",
           },
         ],
         metrics: ["sessions"].map((metric) => ({
