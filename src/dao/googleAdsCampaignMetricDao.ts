@@ -23,7 +23,7 @@ export const googleAdsCampaignMetricDao = {
         SUM(${googleAdsCampaignMetrics.impressions}) as impressions,
         SUM(${googleAdsCampaignMetrics.spend}) as spend,
         SUM(${googleAdsCampaignMetrics.uniqueUsers}) as unique_users,
-        SUM(${googleAdsCampaignMetrics.targetCpa}) as target_cpa,
+        SUM(${googleAdsCampaignMetrics.targetCpa}) as target_cpa
       from ${googleAdsCampaignMetrics}
       where ${googleAdsCampaignMetrics.sourceId} = ${accountId} and ${googleAdsCampaignMetrics.integrationId} = ${integrationId} and ${googleAdsCampaignMetrics.createdAt} >= ${since}
       group by ${googleAdsCampaignMetrics.campaignId}
