@@ -106,7 +106,14 @@ export class MetaAds {
     if (!integration) throw new Error("User is not connected with Meta");
     if (!integration.accessToken) throw new Error("Meta is not connected");
 
-    const metricsNames = ["clicks", "impressions", "spend", "reach", "cpc"];
+    const metricsNames = [
+      "clicks",
+      "impressions",
+      "spend",
+      "reach",
+      "cpc",
+      "conversions",
+    ];
 
     const resultData: AdAccountInsights["data"] = [];
     let nextPage = undefined;

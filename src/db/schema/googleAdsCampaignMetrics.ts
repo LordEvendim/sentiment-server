@@ -19,15 +19,18 @@ export const googleAdsCampaignMetrics = mysqlTable(
     integrationId: bigint("integration_id", { mode: "number" }).notNull(),
     createdAt: date("created_at").notNull(),
     name: varchar("name", { length: 256 }).notNull(),
+    period: int("period").notNull(),
     biddingStrategyType: varchar("bidding_strategy_type", {
       length: 30,
-    }).notNull(),
+    }),
     budget: double("budget", { scale: 4 }),
-    period: int("period").notNull(),
     clicks: int("clicks"),
     impressions: int("impressions"),
     spend: double("spend", { scale: 4 }),
     uniqueUsers: int("unique_users"),
+    ctr: double("ctr", { scale: 4 }),
+    status: varchar("status", { length: 12 }),
+    targetCpa: double("target_cpa", { scale: 4 }),
   },
   (table) => ({
     pk: primaryKey({

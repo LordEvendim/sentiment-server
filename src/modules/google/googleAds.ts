@@ -13,7 +13,6 @@ import {
 } from "#db/schema";
 import { logger } from "#modules/logger";
 
-import { BIDDING_STRATEGIES } from "./enum";
 import GoogleAuthLab from "./googleAuthLab";
 
 export class GoogleAds {
@@ -107,12 +106,15 @@ export class GoogleAds {
         "campaign.name",
         "campaign.bidding_strategy_type",
         "campaign_budget.amount_micros",
+        "campaign.status",
+        "campaign.target_cpa.target_cpa_micros",
       ],
       metrics: [
         "metrics.clicks",
         "metrics.impressions",
         "metrics.cost_micros",
         "metrics.unique_users",
+        "metrics.ctr",
       ],
       constraints: {
         "campaign.status": enums.CampaignStatus.ENABLED,
@@ -126,7 +128,7 @@ export class GoogleAds {
       (datapoint) => {
         return {
           biddingStrategyType:
-            BIDDING_STRATEGIES[
+            enums.BiddingStrategyType[
               datapoint.campaign!.bidding_strategy_type as number
             ],
           campaignId: datapoint.campaign!.id!.toString(),
@@ -135,11 +137,16 @@ export class GoogleAds {
           name: datapoint.campaign!.name!,
           period: 1,
           sourceId: integration.selectedAdAccount!,
-          budget: datapoint.campaign_budget!.amount_micros! / 1_000_000,
+          budget: (datapoint.campaign_budget?.amount_micros ?? 0) / 1_000_000,
           clicks: datapoint.metrics?.clicks,
           impressions: datapoint.metrics?.impressions,
-          spend: datapoint.metrics!.cost_micros! / 1_000_000,
-          uniqueUsers: datapoint.metrics!.unique_users,
+          spend: (datapoint.metrics?.cost_micros ?? 0) / 1_000_000,
+          uniqueUsers: datapoint.metrics?.unique_users,
+          status: enums.CampaignStatus[datapoint.campaign?.status as number],
+          ctr: datapoint.metrics?.ctr,
+          targetCpa:
+            (datapoint.campaign?.target_cpa?.target_cpa_micros ?? 0) /
+            1_000_000,
         };
       }
     );
@@ -147,7 +154,7 @@ export class GoogleAds {
     if (transformedCampaigns.length > 0)
       await googleAdsCampaignMetricDao.createMany(transformedCampaigns);
 
-    return campaigns;
+    return transformedCampaigns;
   };
 
   pullAccountMetrics = async (
@@ -184,6 +191,7 @@ export class GoogleAds {
         "metrics.impressions",
         "metrics.all_conversions",
         "metrics.average_cpc",
+        "metrics.conversions",
       ],
       segments: ["segments.date"],
       from_date: format(since, "yyyy-MM-dd"),
@@ -201,9 +209,15 @@ export class GoogleAds {
       );
 
       for (const [key, value] of Object.entries(datapoint.metrics)) {
-        const metricValue = ["cost_micros"].includes(key)
-          ? value / 1_000_000
-          : value;
+        let metricValue = value;
+
+        if (["cost_micros"].includes(key)) {
+          metricValue = value / 1_000_000;
+        }
+
+        if (["conversions", "all_conversions"].includes(key)) {
+          metricValue = Math.round(value);
+        }
 
         metrics.push({
           createdAt: date,

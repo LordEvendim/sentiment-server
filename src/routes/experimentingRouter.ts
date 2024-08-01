@@ -4,7 +4,7 @@ import express, { Request, Response, Router } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
-import { googleAnalytics } from "#modules/google";
+import { googleAds } from "#modules/google/googleAds";
 import GoogleAuthLab from "#modules/google/googleAuthLab";
 import { handleControllerError } from "#utils/errorHandling";
 
@@ -18,18 +18,25 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const integration =
       await googleIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!integration?.selectedPage)
+    if (!integration?.selectedAdAccount)
       throw new Error("Ads account is not selected");
 
     const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const data = await googleAnalytics.pullSourcesData(
+    const data = await googleAds.pullCampaigns(
       userId,
-      integration.selectedPage,
+      integration.selectedAdAccount,
       since,
       lastDay
     );
+
+    // const data = await metaAds.getAdAccountInsights(
+    //   userId,
+    //   integration.selectedAdAccount,
+    //   since,
+    //   lastDay
+    // );
 
     res.send(data);
   } catch (error: unknown) {

@@ -18,10 +18,12 @@ export const googleAdsCampaignMetricDao = {
       select
         ANY_VALUE(${googleAdsCampaignMetrics.campaignId}) as id, 
         ANY_VALUE(${googleAdsCampaignMetrics.name}) as name, 
+        ANY_VALUE(${googleAdsCampaignMetrics.status}) as status,
         SUM(${googleAdsCampaignMetrics.clicks}) as clicks, 
         SUM(${googleAdsCampaignMetrics.impressions}) as impressions,
         SUM(${googleAdsCampaignMetrics.spend}) as spend,
-        SUM(${googleAdsCampaignMetrics.uniqueUsers}) as unique_users
+        SUM(${googleAdsCampaignMetrics.uniqueUsers}) as unique_users,
+        SUM(${googleAdsCampaignMetrics.targetCpa}) as target_cpa,
       from ${googleAdsCampaignMetrics}
       where ${googleAdsCampaignMetrics.sourceId} = ${accountId} and ${googleAdsCampaignMetrics.integrationId} = ${integrationId} and ${googleAdsCampaignMetrics.createdAt} >= ${since}
       group by ${googleAdsCampaignMetrics.campaignId}
