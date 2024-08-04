@@ -22,12 +22,13 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
       if (!integration.selectedAdAccount)
         throw new Error("Google ad account not selected");
 
-      const metrics = await googleAdAccountMetricDao.getByPageAndMetricId(
-        integration.selectedAdAccount,
-        integration.id,
-        metricId,
-        since
-      );
+      const metrics =
+        await googleAdAccountMetricDao.getByPageAndMetricIdOrderByCreatedAt(
+          integration.selectedAdAccount,
+          integration.id,
+          metricId,
+          since
+        );
 
       return metrics.map(
         (metric) =>

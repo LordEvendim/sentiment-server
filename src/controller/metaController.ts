@@ -57,7 +57,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
         if (!userId) throw new Error("Invlid request");
 
         const userPages = await metaInsights.getUserPages(userId);
-        const userAdAccounts = await metaInsights.getUserAdAccounts(userId);
+        const userAdAccounts = await metaAds.getUserAdAccounts(userId);
 
         const metaIntegration =
           await metaIntegrationDao.getIntegrationByUserId(userId);
@@ -99,7 +99,7 @@ const createMetaController = (metaInsights: MetaInsights) => {
 
         if (!userId || !adAccountId) throw new Error("Invlid request");
 
-        const result = await metaInsights.selectAdAccount(userId, adAccountId);
+        const result = await metaAds.selectAdAccount(userId, adAccountId);
 
         return res.status(200).send({ selectedAdAccount: result });
       } catch (error) {

@@ -1,10 +1,10 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, sql } from "drizzle-orm";
 
 import { mysqlDatabase } from "#db/mysql";
 import { metaInsightsMetrics, NewMetaInsightsMetric } from "#db/schema";
 
 export const metaInsightsMetricDao = {
-  getByPageAndMetricId: async (
+  getByPageAndMetricIdOrderByCreatedAt: async (
     pageId: number,
     integrationId: number,
     metricId: string,
@@ -17,6 +17,7 @@ export const metaInsightsMetricDao = {
         eq(metaInsightsMetrics.metricId, metricId),
         gte(metaInsightsMetrics.createdAt, since)
       ),
+      orderBy: asc(metaInsightsMetrics.createdAt),
     });
 
     return result;

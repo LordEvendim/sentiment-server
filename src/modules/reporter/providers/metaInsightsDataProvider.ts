@@ -22,12 +22,13 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
       if (!integration.selectedPage)
         throw new Error("Meta page account not selected");
 
-      const metrics = await metaInsightsMetricDao.getByPageAndMetricId(
-        integration.selectedPage,
-        integration.id,
-        metricId,
-        since
-      );
+      const metrics =
+        await metaInsightsMetricDao.getByPageAndMetricIdOrderByCreatedAt(
+          integration.selectedPage,
+          integration.id,
+          metricId,
+          since
+        );
 
       return metrics.map(
         (metric) =>

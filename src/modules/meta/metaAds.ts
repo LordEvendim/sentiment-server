@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   addWeeks,
   eachDayOfInterval,
@@ -7,30 +8,19 @@ import {
 } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
+import { metaAdAccountDao } from "#dao/metaAdAccountDao";
 import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
 import { metaCampaignMetricDao } from "#dao/metaCampaignMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 import { NewMetaAdAccountMetric } from "#db/schema/metaAdAccountMetrics";
 import { logger } from "#modules/logger";
 
+import { metaAuth } from "./metaAuth";
 import { metaGateway } from "./metaGateway";
-import { AdAccountInsights } from "./types";
-
-interface CampgainData {
-  campaign_id: string;
-  campaign_name: string;
-  impressions: string;
-  reach: string;
-  clicks: string;
-  spend: string;
-  cost_per_unique_inline_link_click: string;
-  inline_link_clicks: string;
-  date_start: string;
-  date_stop: string;
-}
+import { AdAccountInsights, CampgainData } from "./types";
 
 export class MetaAds {
-  apiVersion = "v18.0";
+  apiVersion = "v20.0";
   baseUrl = "https://graph.facebook.com";
 
   pullLastDayData = async (userId: number) => {
@@ -315,6 +305,119 @@ export class MetaAds {
     );
 
     return data;
+  };
+
+  selectAdAccount = async (userId: number, accountId: number) => {
+    logger.debug(
+      `Meta: selecting Meta Ad account for ${userId} to ${accountId}`
+    );
+    await metaIntegrationDao.updateByUserId(userId, {
+      selectedAdAccount: accountId,
+    });
+
+    metaAds.pullLastFourWeeks(userId).catch((e) => logger.error(e));
+
+    return accountId;
+  };
+
+  getUserAdAccounts = async (userId: number) => {
+    const accounts = await metaAdAccountDao.getUserAdAccounts(userId);
+
+    return accounts?.map((account) => ({
+      id: account.id,
+      parentAccountName: account.parentAccountName,
+    }));
+  };
+
+  connectUserAdAccounts = async (userId: number) => {
+    logger.debug(`Meta: connecting Meta Ad Accounts for ${userId}`);
+    const businesses = await metaAuth.getUserBusinesses(userId);
+
+    const metaIntegration =
+      await metaIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!metaIntegration) throw new Error("Meta is not integrated");
+
+    const adAccounts = [];
+
+    for (let i = 0; i < businesses.length; i++) {
+      const businessAdAccounts = await this.getBusinessAdAccounts(
+        userId,
+        businesses[i].id
+      );
+      const businessClientAdAccounts = await this.getBusinessClientAdAccounts(
+        userId,
+        businesses[i].id
+      );
+
+      adAccounts.push(
+        ...businessAdAccounts.map((account) => ({
+          parentAccountName: businesses[i].name,
+          ...account,
+        })),
+        ...businessClientAdAccounts.map((account) => ({
+          parentAccountName: businesses[i].name,
+          ...account,
+        }))
+      );
+    }
+
+    await metaAdAccountDao.createMany(
+      adAccounts.map((account) => ({
+        ...account,
+        integrationId: metaIntegration.id,
+        id: parseInt(account.account_id),
+      }))
+    );
+
+    return adAccounts;
+  };
+
+  getBusinessAdAccounts = async (userId: number, businessId: string) => {
+    logger.debug(
+      `Meta: getting Meta business owned ad accounts of ${businessId} of ${userId}`
+    );
+
+    const userAccessToken =
+      await metaIntegrationDao.getAccessTokenByUserId(userId);
+
+    if (!userAccessToken) throw new Error("User is not connected with Meta");
+
+    const result = await axios.get<{
+      data: {
+        account_id: string;
+        id: string;
+      }[];
+    }>(`${this.baseUrl}/${this.apiVersion}/${businessId}/owned_ad_accounts`, {
+      params: {
+        access_token: userAccessToken,
+      },
+    });
+
+    return result.data.data;
+  };
+
+  getBusinessClientAdAccounts = async (userId: number, businessId: string) => {
+    logger.debug(
+      `Meta: getting Meta business client ad accounts of ${businessId} of ${userId}`
+    );
+    const userAccessToken =
+      await metaIntegrationDao.getAccessTokenByUserId(userId);
+
+    if (!userAccessToken) throw new Error("User is not connected with Meta");
+
+    const result = await axios.get<{
+      data: {
+        account_id: string;
+        id: string;
+      }[];
+    }>(`${this.baseUrl}/${this.apiVersion}/${businessId}/client_ad_accounts`, {
+      params: {
+        access_token: userAccessToken,
+      },
+    });
+
+    return result.data.data;
   };
 }
 

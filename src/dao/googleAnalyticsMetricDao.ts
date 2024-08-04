@@ -1,4 +1,4 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, sql } from "drizzle-orm";
 
 import { mysqlDatabase } from "#db/mysql";
 import { googleAnalyticsMetrics, NewGoogleAnalyticsMetric } from "#db/schema";
@@ -19,7 +19,7 @@ export const googleAnalyticsMetricDao = {
 
     return result;
   },
-  getByAccountAndMetricId: async (
+  getByAccountAndMetricIdOrderByCreatedAt: async (
     accountId: number,
     integrationId: number,
     metricId: string,
@@ -32,6 +32,7 @@ export const googleAnalyticsMetricDao = {
         eq(googleAnalyticsMetrics.metricId, metricId),
         gte(googleAnalyticsMetrics.createdAt, since)
       ),
+      orderBy: asc(googleAnalyticsMetrics.createdAt),
     });
 
     return result;

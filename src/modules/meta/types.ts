@@ -124,3 +124,16 @@ export interface TopMetaCampaign {
   spend: number;
   reach: number;
 }
+
+export interface CampgainData {
+  campaign_id: string;
+  campaign_name: string;
+  impressions: string;
+  reach: string;
+  clicks: string;
+  spend: string;
+  cost_per_unique_inline_link_click: string;
+  inline_link_clicks: string;
+  date_start: string;
+  date_stop: string;
+}

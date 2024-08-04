@@ -1,15 +1,14 @@
 import axios from "axios";
 
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
-import { metaPageDao } from "#dao/metaPageDao";
-import { NewMetaPage } from "#db/schema";
 import { logger } from "#modules/logger";
 
+import { metaAds } from "./metaAds";
 import { metaInsights } from "./metaInsights";
-import { GetLongLivedToken, GetUserPages } from "./types";
+import { GetLongLivedToken } from "./types";
 
 class MetaAuth {
-  apiVersion = "v18.0";
+  apiVersion = "v20.0";
   baseUrl = "https://graph.facebook.com";
   appSecret: string;
   appId: string;
@@ -45,40 +44,32 @@ class MetaAuth {
     });
 
     // TODO: move to connect function like in ad accounts
-    await this.getLongLivedPageTokens(userId);
-    await metaInsights.connectUserAdAccounts(userId);
+    await metaInsights.connectPages(userId);
+    await metaAds.connectUserAdAccounts(userId);
 
     return result.data.access_token;
   };
 
-  getLongLivedPageTokens = async (userId: number) => {
-    logger.debug("Meta: creating long lived page tokens for " + userId);
-
+  getUserBusinesses = async (userId: number) => {
+    logger.debug(`Meta: getting user Meta businesses ${userId}`);
     const metaIntegration =
       await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!metaIntegration) throw new Error("User has not integrated Meta");
+    if (!metaIntegration) throw new Error("User is not connected wiht Meta");
 
-    const userAccessToken = metaIntegration.accessToken;
-    const metaId = metaIntegration.metaId;
-
-    const result = await axios.get<GetUserPages>(
-      `${this.baseUrl}/${this.apiVersion}/${metaId}/accounts`,
+    const result = await axios.get<{
+      data: {
+        id: string;
+        name: string;
+      }[];
+    }>(
+      `${this.baseUrl}/${this.apiVersion}/${metaIntegration.metaId}/businesses`,
       {
         params: {
-          access_token: userAccessToken,
+          access_token: metaIntegration.accessToken,
         },
       }
     );
-
-    const transformedPages: NewMetaPage[] = result.data.data.map((page) => ({
-      pageId: parseInt(page.id),
-      accessToken: page.access_token,
-      integrationId: metaIntegration.id,
-      name: page.name,
-    }));
-
-    await metaPageDao.createMany(transformedPages);
 
     return result.data.data;
   };

@@ -22,12 +22,13 @@ class GoogleAnalyticsDataProvider implements ReporterDataProvider {
       if (!integration.selectedPage)
         throw new Error("Google analytics account not selected");
 
-      const metrics = await googleAnalyticsMetricDao.getByAccountAndMetricId(
-        integration.selectedPage,
-        integration.id,
-        metricId,
-        since
-      );
+      const metrics =
+        await googleAnalyticsMetricDao.getByAccountAndMetricIdOrderByCreatedAt(
+          integration.selectedPage,
+          integration.id,
+          metricId,
+          since
+        );
 
       return metrics.map(
         (metric) =>
