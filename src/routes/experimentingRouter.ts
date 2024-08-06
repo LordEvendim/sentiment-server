@@ -4,8 +4,11 @@ import express, { Request, Response, Router } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
+import { gemini } from "#modules/gemini";
 import { googleAds } from "#modules/google/googleAds";
 import GoogleAuthLab from "#modules/google/googleAuthLab";
+import { metaAds } from "#modules/meta/metaAds";
+import { reporter } from "#modules/reporter";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -24,21 +27,44 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const data = await googleAds.pullCampaigns(
+    const prompt =
+      "Prompt: Regarding CPC performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Output Instructions: format the output in this example manner: This week, CPC on Google Ads campaigns increased by -15%, and Meta campaigns Click were down -9%; in particular, campaign name {X} had the most decline from the other ads -24%).";
+
+    const googleCampaigns = await googleAds.getTopCampaigns(userId, since);
+    const metaCampaigns = await metaAds.getTopCampaigns(userId, since);
+    const cpc = await reporter.getData(
       userId,
-      integration.selectedAdAccount,
-      since,
-      lastDay
+      [
+        {
+          display: "metric",
+          id: "cpc",
+          source: "meta-ads",
+        },
+        {
+          display: "metric",
+          id: "cpc",
+          source: "google-ads",
+        },
+      ],
+      since
     );
 
-    // const data = await metaAds.getAdAccountInsights(
-    //   userId,
-    //   integration.selectedAdAccount,
-    //   since,
-    //   lastDay
-    // );
+    const result = await gemini.getFlashTextResponse(
+      prompt +
+        "Given data:" +
+        "Google Ads campaigns:" +
+        JSON.stringify(googleCampaigns) +
+        "Meta Ads campaigns:" +
+        JSON.stringify(metaCampaigns) +
+        "cpc values:" +
+        JSON.stringify(cpc)
+    );
 
-    res.send(data);
+    console.log(googleCampaigns, null, 2);
+    console.log(metaCampaigns, null, 2);
+    console.log(cpc, null, 2);
+
+    res.send(result);
   } catch (error: unknown) {
     handleControllerError(res, error);
   }

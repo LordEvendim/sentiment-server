@@ -4,6 +4,7 @@ import { enums, GoogleAdsApi } from "google-ads-api";
 
 import { googleAdAccountDao } from "#dao/googleAdAccountDao";
 import { googleAdAccountMetricDao } from "#dao/googleAdAccountMetricDao";
+import { googleAdsAdGroupDao } from "#dao/googleAdsAdGroupDao";
 import { googleAdsCampaignMetricDao } from "#dao/googleAdsCampaignMetricDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import {
@@ -11,6 +12,7 @@ import {
   NewGoogleAdAccountMetric,
   NewGoogleAdsCampaignMetric,
 } from "#db/schema";
+import { NewGoogleAdsAdGroup } from "#db/schema/googleAdsAdGroups";
 import { logger } from "#modules/logger";
 
 import GoogleAuthLab from "./googleAuthLab";
@@ -157,6 +159,78 @@ export class GoogleAds {
     return transformedCampaigns;
   };
 
+  pullAdGroups = async (
+    userId: number,
+    propertyId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google Ads: Google is not integrated");
+    if (!integration.refreshToken)
+      throw new Error("Google Ads: Refresh token not present");
+    if (!integration.selectedAdAccount)
+      throw new Error("Google Ads: Ad Account not selected");
+
+    const client = new GoogleAdsApi({
+      client_id: process.env.GOOGLE_ANALYTICS_CLIENT_ID!,
+      client_secret: process.env.GOOGLE_ANALYTICS_CLIENT_SECRET!,
+      developer_token: `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+    });
+
+    const customer = client.Customer({
+      customer_id: propertyId.toString(),
+      refresh_token: integration.refreshToken,
+    });
+
+    const adGroups = await customer.report({
+      entity: "ad_group",
+      attributes: [
+        "ad_group.id",
+        "ad_group.name",
+        "ad_group.status",
+        "campaign.id",
+      ],
+      metrics: [
+        "metrics.clicks",
+        "metrics.impressions",
+        "metrics.cost_micros",
+        "metrics.ctr",
+      ],
+      constraints: {
+        "ad_group.status": enums.AdGroupStatus.ENABLED,
+      },
+      segments: ["segments.date"],
+      from_date: format(since, "yyyy-MM-dd"),
+      to_date: format(until, "yyyy-MM-dd"),
+    });
+
+    const transformedAdGroups: NewGoogleAdsAdGroup[] = adGroups.map(
+      (datapoint) => {
+        return {
+          createdAt: parse(datapoint.segments!.date!, "yyyy-MM-dd", Date.now()),
+          integrationId: integration.id,
+          sourceId: integration.selectedAdAccount!,
+          adGroupId: datapoint.ad_group!.id!.toString(),
+          name: datapoint.ad_group!.name!,
+          status: enums.AdGroupStatus[datapoint.ad_group?.status as number],
+          campaignId: datapoint.campaign!.id!.toString(),
+          clicks: datapoint.metrics?.clicks,
+          impressions: datapoint.metrics?.impressions,
+          spend: (datapoint.metrics?.cost_micros ?? 0) / 1_000_000,
+          ctr: datapoint.metrics?.ctr,
+        } satisfies NewGoogleAdsAdGroup;
+      }
+    );
+
+    if (transformedAdGroups.length > 0)
+      await googleAdsAdGroupDao.createMany(transformedAdGroups);
+
+    return adGroups;
+  };
+
   pullAccountMetrics = async (
     userId: number,
     propertyId: number,
@@ -248,10 +322,6 @@ export class GoogleAds {
     if (!integration.accessToken) throw new Error("Google Ads is not connectd");
 
     const authLib = new GoogleAuthLab(userId);
-
-    /**
-     * this would load the tokens from the database refresh if needed
-     */
     await authLib.loadTokens();
 
     try {
@@ -316,6 +386,51 @@ export class GoogleAds {
     );
 
     return data;
+  };
+
+  pullCustomerName = async (userId: number, customerId: number) => {
+    logger.debug(`Google Ads: pulling customer name for ${customerId}`);
+
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration)
+      throw new Error("Google Ads: User is not connected with Google");
+
+    const authLib = new GoogleAuthLab(userId);
+    await authLib.loadTokens();
+
+    const baseUrl = "https://googleads.googleapis.com/v16";
+
+    const result = await authLib.request<{
+      results:
+        | {
+            customerClient: {
+              resourceName: string;
+              clientCustomer: string;
+              level: string; // int
+              timeZone: string;
+              manager: boolean;
+              descriptiveName: string;
+              currencyCode: string;
+              id: string; // int
+            };
+          }[]
+        | undefined;
+    }>({
+      url: `${baseUrl}/customers/${customerId}/googleAds:search`,
+      method: "POST",
+      headers: {
+        Host: "googleads.googleapis.com",
+        "developer-token": `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+      },
+      data: {
+        query:
+          "SELECT customer_client.descriptive_name, customer_client.client_customer, customer_client.level, customer_client.manager, customer_client.descriptive_name, customer_client.currency_code, customer_client.time_zone, customer_client.id FROM customer_client WHERE customer_client.level <= 1",
+      },
+    });
+
+    return result.data.results?.[0].customerClient;
   };
 }
 
