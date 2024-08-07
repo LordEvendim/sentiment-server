@@ -117,6 +117,42 @@ class Reporter {
 
     return report;
   };
+  getDataSumGroupBySources = async (
+    userId: number,
+    config: MetricConfig[],
+    since: Date
+  ) => {
+    const report: GenerativeReportData = [];
+    const usedDataProvdiers = new Set<ReportMetricSource>();
+    for (let i = 0; i < config.length; i++) {
+      const source = config[i].source;
+
+      usedDataProvdiers.add(source);
+    }
+
+    for (const dataProvierName of usedDataProvdiers.values()) {
+      logger.debug(`Reporter: getting data from: ${dataProvierName}`);
+
+      await reportDataProviders[dataProvierName]?.generativeReport(
+        userId,
+        config.filter((config) => config.source === dataProvierName),
+        report,
+        since
+      );
+    }
+
+    const result: Record<string, number> = {};
+
+    for (const datapoint of report) {
+      if (result[datapoint.source] === undefined) {
+        result[datapoint.source] = datapoint.value;
+      } else {
+        result[datapoint.source] += datapoint.value;
+      }
+    }
+
+    return result;
+  };
 }
 
 export const reporter = new Reporter();

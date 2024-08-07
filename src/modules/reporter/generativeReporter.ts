@@ -7,8 +7,10 @@ import { NewReport, Report } from "#db/schema";
 import { NewMetricReport } from "#db/schema/MetricReports";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
+import { googleAds } from "#modules/google/googleAds";
 import { logger } from "#modules/logger";
 import { MetaInsights, metaInsights } from "#modules/meta";
+import { metaAds } from "#modules/meta/metaAds";
 
 import { metricReportConfigs } from "./metrics";
 import { prompts } from "./prompts";
@@ -54,19 +56,60 @@ class GenerativeReporter {
   ) => {
     const untilDate = parse(until, "yyyyMMdd", Date.now());
     const sinceDate = calculateTimeframeStart(untilDate, timeframe);
+    const compareSinceDate = calculateTimeframeStart(sinceDate, timeframe);
+    const reportConfig =
+      metricReportConfigs[name] ?? metricReportConfigs["clicks"];
 
     // data
-    const data = await reporter.getData(
+    const data = await reporter.getDataSumGroupBySources(
       userId,
-      metricReportConfigs[name] ?? metricReportConfigs["clicks"]!,
+      reportConfig.metrics,
       sinceDate
     );
+    const compareData = await reporter.getDataSumGroupBySources(
+      userId,
+      reportConfig.metrics,
+      compareSinceDate
+    );
+
+    const googleCampaigns = await googleAds.getTopCampaigns(userId, sinceDate);
+    const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
+
+    const prompt = `
+      ${reportConfig.prompt}
+    
+      Last time period:
+      ${Object.entries(compareData)
+        .map(
+          ([source, value]) =>
+            `${source.replace("-", " ")}: ${(
+              value - (data[source] ?? 0)
+            ).toFixed(0)}`
+        )
+        .join("\n")}
+      Current time period:
+      ${Object.entries(data)
+        .map(
+          ([source, value]) =>
+            `${source.replace("-", " ")}: ${value.toFixed(0)}`
+        )
+        .join("\n")}
+    
+      Campaigns:
+      Meta:
+      ${metaCampaigns
+        .map((campaign) => `${campaign.name}: ${campaign.spend.toFixed(0)}`)
+        .join("\n")}
+      Google:
+      ${googleCampaigns
+        .map(
+          (campaign) => `${campaign.name}: ${campaign.spend?.toFixed(0) ?? 0}`
+        )
+        .join("\n")}
+      `;
 
     // generate
-    const insights = await gemini.getFlashTextResponse(
-      `${prompts.getMetricReportPrompt(name)} \n` +
-        JSON.stringify(data, null, 2)
-    );
+    const insights = await gemini.getFlashTextResponse(prompt);
 
     // save
     const newReport = {
