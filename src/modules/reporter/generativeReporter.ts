@@ -61,52 +61,124 @@ class GenerativeReporter {
       metricReportConfigs[name] ?? metricReportConfigs["clicks"];
 
     // data
-    const data = await reporter.getDataSumGroupBySources(
-      userId,
-      reportConfig.metrics,
-      sinceDate
-    );
-    const compareData = await reporter.getDataSumGroupBySources(
-      userId,
-      reportConfig.metrics,
-      compareSinceDate
-    );
+    let prompt = "";
 
-    const googleCampaigns = await googleAds.getTopCampaigns(userId, sinceDate);
-    const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
+    if (reportConfig.type === "cumulative") {
+      const data = await reporter.getDataSumGroupBySources(
+        userId,
+        reportConfig.metrics,
+        sinceDate
+      );
+      const compareData = await reporter.getDataSumGroupBySources(
+        userId,
+        reportConfig.metrics,
+        compareSinceDate
+      );
 
-    const prompt = `
-      ${reportConfig.prompt}
-    
-      Last time period:
-      ${Object.entries(compareData)
-        .map(
-          ([source, value]) =>
-            `${source.replace("-", " ")}: ${(
-              value - (data[source] ?? 0)
-            ).toFixed(0)}`
-        )
-        .join("\n")}
-      Current time period:
-      ${Object.entries(data)
-        .map(
-          ([source, value]) =>
-            `${source.replace("-", " ")}: ${value.toFixed(0)}`
-        )
-        .join("\n")}
-    
-      Campaigns:
-      Meta:
-      ${metaCampaigns
-        .map((campaign) => `${campaign.name}: ${campaign.spend.toFixed(0)}`)
-        .join("\n")}
-      Google:
-      ${googleCampaigns
-        .map(
-          (campaign) => `${campaign.name}: ${campaign.spend?.toFixed(0) ?? 0}`
-        )
-        .join("\n")}
-      `;
+      const googleCampaigns = await googleAds.getTopCampaigns(
+        userId,
+        sinceDate
+      );
+      const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
+
+      prompt = `
+        ${reportConfig.prompt}
+      
+        Last time period:
+        ${Object.entries(compareData)
+          .map(
+            ([source, value]) =>
+              `${source.replace("-", " ")}: ${(
+                value - (data[source] ?? 0)
+              ).toFixed(0)}`
+          )
+          .join("\n")}
+        Current time period:
+        ${Object.entries(data)
+          .map(
+            ([source, value]) =>
+              `${source.replace("-", " ")}: ${value.toFixed(0)}`
+          )
+          .join("\n")}
+      
+        Campaigns:
+        Meta:
+        ${metaCampaigns
+          .map((campaign) => `${campaign.name}: ${campaign.spend.toFixed(0)}`)
+          .join("\n")}
+        Google:
+        ${googleCampaigns
+          .map(
+            (campaign) => `${campaign.name}: ${campaign.spend?.toFixed(0) ?? 0}`
+          )
+          .join("\n")}
+        `;
+    } else {
+      const dataDivisor = await reporter.getDataSumGroupBySources(
+        userId,
+        reportConfig.divisorMetrics,
+        sinceDate
+      );
+      const compareDataDivisor = await reporter.getDataSumGroupBySources(
+        userId,
+        reportConfig.divisorMetrics,
+        compareSinceDate
+      );
+      const dataDivident = await reporter.getDataSumGroupBySources(
+        userId,
+        reportConfig.dividentMetrics,
+        sinceDate
+      );
+      const compareDataDivident = await reporter.getDataSumGroupBySources(
+        userId,
+        reportConfig.dividentMetrics,
+        compareSinceDate
+      );
+
+      const googleCampaigns = await googleAds.getTopCampaigns(
+        userId,
+        sinceDate
+      );
+      const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
+
+      prompt = `
+        ${reportConfig.prompt}
+      
+        Last time period:
+        ${Object.entries(compareDataDivisor)
+          .map(
+            ([source, value]) =>
+              `${source.replace("-", " ")}: ${(
+                (compareDataDivident[source] - dataDivident[source]) /
+                (value - dataDivisor[source])
+              ).toFixed(2)}`
+          )
+          .join("\n")}
+        Current time period:
+        ${Object.entries(dataDivisor)
+          .map(
+            ([source, value]) =>
+              `${source.replace("-", " ")}: ${(
+                dataDivident[source] / value
+              ).toFixed(2)}`
+          )
+          .join("\n")}
+      
+        Campaigns:
+        Meta:
+        ${metaCampaigns
+          .map((campaign) => `${campaign.name}: ${campaign.spend.toFixed(0)}`)
+          .join("\n")}
+        Google:
+        ${googleCampaigns
+          .map(
+            (campaign) => `${campaign.name}: ${campaign.spend?.toFixed(0) ?? 0}`
+          )
+          .join("\n")}
+        `;
+
+      console.log(prompt);
+    }
 
     // generate
     const insights = await gemini.getFlashTextResponse(prompt);

@@ -91,9 +91,20 @@ export const generativeGeneralLast4WeeksReportMetricsConfig: MetricConfig[] = [
 
 export const metricReportConfigs: Record<
   string,
-  { prompt: string; metrics: MetricConfig[] }
+  | {
+      type: "cumulative";
+      prompt: string;
+      metrics: MetricConfig[];
+    }
+  | {
+      type: "average";
+      prompt: string;
+      dividentMetrics: MetricConfig[];
+      divisorMetrics: MetricConfig[];
+    }
 > = {
   impressions: {
+    type: "cumulative",
     prompt: `Prompt: Analyze which channels and campaigns saw the highest swings in terms of advertising impressions. Write answer using a maximum of 5 or 6 sentences.
       Output Instructions: Format the output similarly to this example: Google Ads had the highest number of impressions (and outlined the top three campaigns greatest to least).`,
     metrics: [
@@ -110,6 +121,7 @@ export const metricReportConfigs: Record<
     ],
   },
   clicks: {
+    type: "cumulative",
     prompt: prompts.getMetricReportPrompt("clicks"),
     metrics: [
       {
@@ -125,17 +137,36 @@ export const metricReportConfigs: Record<
     ],
   },
   cpc: {
+    type: "average",
     prompt: `Prompt: Regarding CPC performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
       Output Instructions: format the output in this example manner: This week, CPC on Google Ads campaigns increased by -15%, and Meta campaigns Click were down -9%; in particular, campaign name {X} had the most decline from the other ads -24%).`,
-    metrics: [
+    dividentMetrics: [
       {
         display: "metric",
-        id: "cpc",
+        id: "spend",
         source: "meta-ads",
+      },
+      {
+        display: "metric",
+        id: "cost_micros",
+        source: "google-ads",
+      },
+    ],
+    divisorMetrics: [
+      {
+        display: "metric",
+        id: "clicks",
+        source: "meta-ads",
+      },
+      {
+        display: "metric",
+        id: "clicks",
+        source: "google-ads",
       },
     ],
   },
   spend: {
+    type: "cumulative",
     prompt: `Prompt: Analyze which channels and campaigns saw the highest swings in terms of advertising costs. Write answer using a maximum of 5 or 6 sentences.
       Output Instructions: Format the output similarly to this example: Google Ads had the highest spending costs (and outlined the top three campaigns greatest to least).`,
     metrics: [
