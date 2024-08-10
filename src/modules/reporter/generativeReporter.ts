@@ -81,6 +81,17 @@ class GenerativeReporter {
       );
       const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
 
+      const googleCampaignsCompare = await googleAds.getCampaigns(
+        userId,
+        compareSinceDate,
+        sinceDate
+      );
+      const metaCampaignsCompare = await metaAds.getCampaigns(
+        userId,
+        compareSinceDate,
+        sinceDate
+      );
+
       prompt = `
         ${reportConfig.prompt}
       
@@ -102,14 +113,55 @@ class GenerativeReporter {
           .join("\n")}
       
         Campaigns:
+        Last time period:
+        Meta:
+        ${metaCampaignsCompare
+          .map(
+            (campaign) =>
+              `${campaign.name}: ${parseInt(
+                campaign[
+                  reportConfig.campaignMetrics
+                    .meta as keyof (typeof metaCampaignsCompare)[0]
+                ] as string
+              ).toFixed(0)}`
+          )
+          .join("\n")}
+        Google:
+        ${googleCampaignsCompare
+          .map(
+            (campaign) =>
+              `${campaign.name}: ${parseInt(
+                campaign[
+                  reportConfig.campaignMetrics
+                    .google as keyof (typeof googleCampaignsCompare)[0]
+                ] as string
+              ).toFixed(0)}`
+          )
+          .join("\n")}
+
+        Current time period:
         Meta:
         ${metaCampaigns
-          .map((campaign) => `${campaign.name}: ${campaign.spend.toFixed(0)}`)
+          .map(
+            (campaign) =>
+              `${campaign.name}: ${parseInt(
+                campaign[
+                  reportConfig.campaignMetrics
+                    .meta as keyof (typeof metaCampaigns)[0]
+                ] as string
+              ).toFixed(0)}`
+          )
           .join("\n")}
         Google:
         ${googleCampaigns
           .map(
-            (campaign) => `${campaign.name}: ${campaign.spend?.toFixed(0) ?? 0}`
+            (campaign) =>
+              `${campaign.name}: ${parseInt(
+                campaign[
+                  reportConfig.campaignMetrics
+                    .google as keyof (typeof googleCampaigns)[0]
+                ] as string
+              ).toFixed(0)}`
           )
           .join("\n")}
         `;
@@ -141,6 +193,17 @@ class GenerativeReporter {
       );
       const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
 
+      const googleCampaignsCompare = await googleAds.getCampaigns(
+        userId,
+        compareSinceDate,
+        sinceDate
+      );
+      const metaCampaignsCompare = await metaAds.getCampaigns(
+        userId,
+        compareSinceDate,
+        sinceDate
+      );
+
       prompt = `
         ${reportConfig.prompt}
       
@@ -165,15 +228,76 @@ class GenerativeReporter {
           .join("\n")}
       
         Campaigns:
+                Last time period:
+        Meta:
+        ${metaCampaignsCompare
+          .map((campaign) => {
+            const divident =
+              (campaign[
+                reportConfig.campaignMetrics.divident
+                  .meta as keyof (typeof metaCampaigns)[0]
+              ] as number) ?? 0;
+            const divisor =
+              (campaign[
+                reportConfig.campaignMetrics.divisor
+                  .meta as keyof (typeof metaCampaigns)[0]
+              ] as number) ?? 0;
+
+            return `${campaign.name}: ${(divident / divisor).toFixed(2)}`;
+          })
+          .join("\n")}
+        Google:
+        ${googleCampaignsCompare
+          .map((campaign) => {
+            const divident =
+              (campaign[
+                reportConfig.campaignMetrics.divident
+                  .google as keyof (typeof googleCampaigns)[0]
+              ] as number) ?? 0;
+            const divisor =
+              (campaign[
+                reportConfig.campaignMetrics.divisor
+                  .google as keyof (typeof googleCampaigns)[0]
+              ] as number) ?? 0;
+
+            return `${campaign.name}: ${(divident / divisor).toFixed(2)}`;
+          })
+          .join("\n")}
+
+        Current time period:
         Meta:
         ${metaCampaigns
-          .map((campaign) => `${campaign.name}: ${campaign.spend.toFixed(0)}`)
+          .map((campaign) => {
+            const divident =
+              (campaign[
+                reportConfig.campaignMetrics.divident
+                  .meta as keyof (typeof metaCampaigns)[0]
+              ] as number) ?? 0;
+            const divisor =
+              (campaign[
+                reportConfig.campaignMetrics.divisor
+                  .meta as keyof (typeof metaCampaigns)[0]
+              ] as number) ?? 0;
+
+            return `${campaign.name}: ${(divident / divisor).toFixed(2)}`;
+          })
           .join("\n")}
         Google:
         ${googleCampaigns
-          .map(
-            (campaign) => `${campaign.name}: ${campaign.spend?.toFixed(0) ?? 0}`
-          )
+          .map((campaign) => {
+            const divident =
+              (campaign[
+                reportConfig.campaignMetrics.divident
+                  .google as keyof (typeof googleCampaigns)[0]
+              ] as number) ?? 0;
+            const divisor =
+              (campaign[
+                reportConfig.campaignMetrics.divisor
+                  .google as keyof (typeof googleCampaigns)[0]
+              ] as number) ?? 0;
+
+            return `${campaign.name}: ${(divident / divisor).toFixed(2)}`;
+          })
           .join("\n")}
         `;
 

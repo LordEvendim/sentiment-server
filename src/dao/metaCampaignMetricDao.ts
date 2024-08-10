@@ -1,7 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 
 import { mysqlDatabase } from "#db/mysql";
-import {} from "#db/schema";
 import {
   metaCampaignMetrics,
   NewMetaCampaignMetric,
@@ -27,6 +26,32 @@ export const metaCampaignMetricDao = {
         SUM(${metaCampaignMetrics.inline_link_clicks}) as inline_link_clicks
       from ${metaCampaignMetrics}
       where ${metaCampaignMetrics.sourceId} = ${accountId} and ${metaCampaignMetrics.integrationId} = ${integrationId} and ${metaCampaignMetrics.createdAt} >= ${since}
+      group by ${metaCampaignMetrics.campaignId}
+      order by SUM(${metaCampaignMetrics.clicks}) desc
+      `
+    );
+
+    return (result[0] ?? []) as unknown as TopMetaCampaign[];
+  },
+  getCampaignsSinceUntil: async (
+    accountId: number,
+    integrationId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const result = await mysqlDatabase.execute(
+      sql`
+      select ${metaCampaignMetrics.campaignId}, 
+        ANY_VALUE(${metaCampaignMetrics.campaignId}) as id, 
+        ANY_VALUE(${metaCampaignMetrics.name}) as name, 
+        SUM(${metaCampaignMetrics.clicks}) as clicks, 
+        AVG(${metaCampaignMetrics.cost_per_unique_inline_link_click}) as cost_per_unique_inline_link_click, 
+        SUM(${metaCampaignMetrics.impressions}) as impressions,
+        SUM(${metaCampaignMetrics.spend}) as spend,
+        SUM(${metaCampaignMetrics.reach}) as reach,
+        SUM(${metaCampaignMetrics.inline_link_clicks}) as inline_link_clicks
+      from ${metaCampaignMetrics}
+      where ${metaCampaignMetrics.sourceId} = ${accountId} and ${metaCampaignMetrics.integrationId} = ${integrationId} and ${metaCampaignMetrics.createdAt} >= ${since} and ${metaCampaignMetrics.createdAt} < ${until} 
       group by ${metaCampaignMetrics.campaignId}
       order by SUM(${metaCampaignMetrics.clicks}) desc
       `

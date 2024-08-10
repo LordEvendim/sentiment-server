@@ -32,6 +32,31 @@ export const googleAdsCampaignMetricDao = {
 
     return (result[0] ?? []) as unknown as GoogleAdsCampaignMetric[];
   },
+  getCampaignsSinceUntil: async (
+    accountId: number,
+    integrationId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const result = await mysqlDatabase.execute(
+      sql`
+      select
+        ANY_VALUE(${googleAdsCampaignMetrics.campaignId}) as id, 
+        ANY_VALUE(${googleAdsCampaignMetrics.name}) as name, 
+        ANY_VALUE(${googleAdsCampaignMetrics.status}) as status,
+        SUM(${googleAdsCampaignMetrics.clicks}) as clicks, 
+        SUM(${googleAdsCampaignMetrics.impressions}) as impressions,
+        SUM(${googleAdsCampaignMetrics.spend}) as spend,
+        SUM(${googleAdsCampaignMetrics.uniqueUsers}) as unique_users,
+        SUM(${googleAdsCampaignMetrics.targetCpa}) as target_cpa
+      from ${googleAdsCampaignMetrics}
+      where ${googleAdsCampaignMetrics.sourceId} = ${accountId} and ${googleAdsCampaignMetrics.integrationId} = ${integrationId} and ${googleAdsCampaignMetrics.createdAt} >= ${since} and ${googleAdsCampaignMetrics.createdAt} < ${until}
+      group by ${googleAdsCampaignMetrics.campaignId}
+      `
+    );
+
+    return (result[0] ?? []) as unknown as GoogleAdsCampaignMetric[];
+  },
   getByAccountSince: async (
     accountId: number,
     integrationId: number,

@@ -307,6 +307,25 @@ export class MetaAds {
     return data;
   };
 
+  getCampaigns = async (userId: number, since: Date, until: Date) => {
+    logger.debug(`Meta: pulling campaign for ${userId}`);
+
+    const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("User is not connected with Meta");
+    if (!integration.selectedAdAccount)
+      throw new Error("Meta is not connected");
+
+    const data = await metaCampaignMetricDao.getCampaignsSinceUntil(
+      integration.selectedAdAccount,
+      integration.id,
+      since,
+      until
+    );
+
+    return data;
+  };
+
   selectAdAccount = async (userId: number, accountId: number) => {
     logger.debug(
       `Meta: selecting Meta Ad account for ${userId} to ${accountId}`

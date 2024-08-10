@@ -95,12 +95,26 @@ export const metricReportConfigs: Record<
       type: "cumulative";
       prompt: string;
       metrics: MetricConfig[];
+      campaignMetrics: {
+        google: string;
+        meta: string;
+      };
     }
   | {
       type: "average";
       prompt: string;
       dividentMetrics: MetricConfig[];
       divisorMetrics: MetricConfig[];
+      campaignMetrics: {
+        divident: {
+          google: string;
+          meta: string;
+        };
+        divisor: {
+          google: string;
+          meta: string;
+        };
+      };
     }
 > = {
   impressions: {
@@ -119,6 +133,10 @@ export const metricReportConfigs: Record<
         source: "google-ads",
       },
     ],
+    campaignMetrics: {
+      google: "impressions",
+      meta: "impressions",
+    },
   },
   clicks: {
     type: "cumulative",
@@ -135,11 +153,15 @@ export const metricReportConfigs: Record<
         source: "google-ads",
       },
     ],
+    campaignMetrics: {
+      google: "clicks",
+      meta: "clicks",
+    },
   },
   cpc: {
     type: "average",
     prompt: `Prompt: Regarding CPC performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
-      Output Instructions: format the output in this example manner: This week, CPC on Google Ads campaigns increased by -15%, and Meta campaigns Click were down -9%; in particular, campaign name {X} had the most decline from the other ads -24%).`,
+      Output Instructions: format the output in this example manner: This week, CPC on Google Ads campaigns increased by 15%, and Meta campaigns Click were down 9%; in particular, campaign name {X} had the most decline from the other ads 24%).`,
     dividentMetrics: [
       {
         display: "metric",
@@ -164,6 +186,16 @@ export const metricReportConfigs: Record<
         source: "google-ads",
       },
     ],
+    campaignMetrics: {
+      divident: {
+        google: "spend",
+        meta: "spend",
+      },
+      divisor: {
+        google: "clicks",
+        meta: "clicks",
+      },
+    },
   },
   spend: {
     type: "cumulative",
@@ -181,5 +213,9 @@ export const metricReportConfigs: Record<
         source: "google-ads",
       },
     ],
+    campaignMetrics: {
+      google: "spend",
+      meta: "spend",
+    },
   },
 };

@@ -388,6 +388,26 @@ export class GoogleAds {
     return data;
   };
 
+  getCampaigns = async (userId: number, since: Date, until: Date) => {
+    logger.debug(`Google Ads: pulling campaign for ${userId}`);
+
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("User is not connected with Meta");
+    if (!integration.selectedAdAccount)
+      throw new Error("Google Ads: Ad account is not connected");
+
+    const data = await googleAdsCampaignMetricDao.getCampaignsSinceUntil(
+      integration.selectedAdAccount,
+      integration.id,
+      since,
+      until
+    );
+
+    return data;
+  };
+
   pullCustomerName = async (userId: number, customerId: number) => {
     logger.debug(`Google Ads: pulling customer name for ${customerId}`);
 
