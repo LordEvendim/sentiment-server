@@ -95,9 +95,9 @@ export const metricReportConfigs: Record<
       type: "cumulative";
       prompt: string;
       metrics: MetricConfig[];
-      campaignMetrics: {
-        google: string;
-        meta: string;
+      campaignMetrics?: {
+        google?: string;
+        meta?: string;
       };
     }
   | {
@@ -218,4 +218,118 @@ export const metricReportConfigs: Record<
       meta: "spend",
     },
   },
+  ctr: {
+    type: "average",
+    prompt: `Prompt: Regarding CTR performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
+      Output Instructions: format the output in this example manner: This week, CTR on Google Ads campaigns increased by 15%, and Meta campaigns Click were down 9%; in particular, campaign name {X} had the most decline from the other ads 24%).`,
+    dividentMetrics: [
+      {
+        display: "metric",
+        id: "clicks",
+        source: "meta-ads",
+      },
+      {
+        display: "metric",
+        id: "clicks",
+        source: "google-ads",
+      },
+    ],
+    divisorMetrics: [
+      {
+        display: "metric",
+        id: "impressions",
+        source: "meta-ads",
+      },
+      {
+        display: "metric",
+        id: "impressions",
+        source: "google-ads",
+      },
+    ],
+    campaignMetrics: {
+      divident: {
+        google: "clicks",
+        meta: "clicks",
+      },
+      divisor: {
+        google: "impressions",
+        meta: "impressions",
+      },
+    },
+  },
+  sessions: {
+    type: "cumulative",
+    prompt: `Prompt: Analyze the changes in website sessions. Write answer using a maximum of 5 or 6 sentences.
+      Output Instructions: Format the output similarly to this example: Website sessions increased by 15% in the last period compared to the current period. This decrease is not significant compared to current levels.`,
+    metrics: [
+      {
+        display: "metric",
+        id: "sessions",
+        source: "google-analytics",
+      },
+    ],
+  },
+  conversions: {
+    type: "cumulative",
+    prompt: `Prompt: Analyze the changes in conversions. Write answer using a maximum of 5 or 6 sentences.
+      Output Instructions: Format the output similarly to this example: conversions increased by 15% in the last period compared to the current period. This decrease is not significant compared to current levels.`,
+    metrics: [
+      {
+        display: "metric",
+        id: "all_conversions",
+        source: "google-ads",
+      },
+    ],
+  },
+  conversionRate: {
+    type: "average",
+    prompt: `Prompt: Regarding conversion rate performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
+      Output Instructions: format the output in this example manner: This week, CTR on Google Ads campaigns increased by 15%, and Meta campaigns Click were down 9%; in particular, campaign name {X} had the most decline from the other ads 24%).`,
+    dividentMetrics: [
+      {
+        display: "metric",
+        id: "clicks",
+        source: "meta-ads",
+      },
+      {
+        display: "metric",
+        id: "clicks",
+        source: "google-ads",
+      },
+    ],
+    divisorMetrics: [
+      {
+        display: "metric",
+        id: "impressions",
+        source: "meta-ads",
+      },
+      {
+        display: "metric",
+        id: "impressions",
+        source: "google-ads",
+      },
+    ],
+    campaignMetrics: {
+      divident: {
+        google: "clicks",
+        meta: "clicks",
+      },
+      divisor: {
+        google: "interactions",
+        meta: "impressions",
+      },
+    },
+  },
 };
+
+// [x] Spend
+// [x] Impressions
+// [x] Clicks
+// [x] CPC
+// [x] Conversions
+// [x] Website Sessions
+// [x] CTR
+// [x] Conversion Rate
+
+// [-] CPA
+// [-] Bounce Rate

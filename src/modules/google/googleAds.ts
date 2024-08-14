@@ -266,6 +266,7 @@ export class GoogleAds {
         "metrics.all_conversions",
         "metrics.average_cpc",
         "metrics.conversions",
+        "metrics.interactions",
       ],
       segments: ["segments.date"],
       from_date: format(since, "yyyy-MM-dd"),

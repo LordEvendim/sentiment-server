@@ -23,9 +23,9 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
 
     const result = await generativeReporter.generateMetricReport(
       userId,
-      "spend",
+      "conversionRate",
       "last-14-days",
-      "20240808"
+      "20240814"
     );
 
     res.send(result);

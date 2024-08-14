@@ -112,59 +112,81 @@ class GenerativeReporter {
           )
           .join("\n")}
       
-        Campaigns:
-        Last time period:
-        Meta:
-        ${metaCampaignsCompare
-          .map(
-            (campaign) =>
-              `${campaign.name}: ${parseInt(
-                campaign[
-                  reportConfig.campaignMetrics
-                    .meta as keyof (typeof metaCampaignsCompare)[0]
-                ] as string
-              ).toFixed(0)}`
-          )
-          .join("\n")}
-        Google:
-        ${googleCampaignsCompare
-          .map(
-            (campaign) =>
-              `${campaign.name}: ${parseInt(
-                campaign[
-                  reportConfig.campaignMetrics
-                    .google as keyof (typeof googleCampaignsCompare)[0]
-                ] as string
-              ).toFixed(0)}`
-          )
-          .join("\n")}
+        ${
+          reportConfig.campaignMetrics &&
+          `Campaigns:
+          Last time period:
+          Meta:
+          ${
+            reportConfig.campaignMetrics &&
+            reportConfig.campaignMetrics.google &&
+            metaCampaignsCompare
+              .map(
+                (campaign) =>
+                  `${campaign.name}: ${parseInt(
+                    campaign[
+                      reportConfig.campaignMetrics!
+                        .meta as keyof (typeof metaCampaignsCompare)[0]
+                    ] as string
+                  ).toFixed(0)}`
+              )
+              .join("\n")
+          }
+          Google:
+          ${
+            reportConfig.campaignMetrics &&
+            reportConfig.campaignMetrics.google &&
+            googleCampaignsCompare
+              .map(
+                (campaign) =>
+                  `${campaign.name}: ${parseInt(
+                    campaign[
+                      reportConfig.campaignMetrics!
+                        .google as keyof (typeof googleCampaignsCompare)[0]
+                    ] as string
+                  ).toFixed(0)}`
+              )
+              .join("\n")
+          }
 
-        Current time period:
-        Meta:
-        ${metaCampaigns
-          .map(
-            (campaign) =>
-              `${campaign.name}: ${parseInt(
-                campaign[
-                  reportConfig.campaignMetrics
-                    .meta as keyof (typeof metaCampaigns)[0]
-                ] as string
-              ).toFixed(0)}`
-          )
-          .join("\n")}
-        Google:
-        ${googleCampaigns
-          .map(
-            (campaign) =>
-              `${campaign.name}: ${parseInt(
-                campaign[
-                  reportConfig.campaignMetrics
-                    .google as keyof (typeof googleCampaigns)[0]
-                ] as string
-              ).toFixed(0)}`
-          )
-          .join("\n")}
-        `;
+          Current time period:
+          ${
+            reportConfig.campaignMetrics &&
+            reportConfig.campaignMetrics.meta &&
+            `
+            Meta:
+            ${metaCampaigns
+              .map(
+                (campaign) =>
+                  `${campaign.name}: ${parseInt(
+                    campaign[
+                      reportConfig.campaignMetrics!
+                        .meta as keyof (typeof metaCampaigns)[0]
+                    ] as string
+                  ).toFixed(0)}`
+              )
+              .join("\n")}
+            `
+          }
+          ${
+            reportConfig.campaignMetrics &&
+            reportConfig.campaignMetrics.google &&
+            `
+            Google:
+            ${googleCampaigns
+              .map(
+                (campaign) =>
+                  `${campaign.name}: ${parseInt(
+                    campaign[
+                      reportConfig.campaignMetrics!
+                        .google as keyof (typeof googleCampaigns)[0]
+                    ] as string
+                  ).toFixed(0)}`
+              )
+              .join("\n")}
+            `
+          }`
+        }`;
     } else {
       const dataDivisor = await reporter.getDataSumGroupBySources(
         userId,
@@ -228,7 +250,7 @@ class GenerativeReporter {
           .join("\n")}
       
         Campaigns:
-                Last time period:
+        Last time period:
         Meta:
         ${metaCampaignsCompare
           .map((campaign) => {
@@ -300,8 +322,6 @@ class GenerativeReporter {
           })
           .join("\n")}
         `;
-
-      console.log(prompt);
     }
 
     // generate
