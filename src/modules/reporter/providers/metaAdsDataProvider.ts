@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 import { metaAdAccountMetricDao } from "#dao/metaAdAccountMetricDao";
 import { metaIntegrationDao } from "#dao/metaIntegrationDao";
 
@@ -32,9 +34,9 @@ class MetaAdsDataProvider implements ReporterDataProvider {
 
       return metrics.map(
         (metric) =>
-          [parseFloat(metric.value), metric.createdAt.getTime()] as [
+          [parseFloat(metric.value), format(metric.createdAt, "yyyyMMdd")] as [
             number,
-            number,
+            string,
           ]
       );
     } catch (err) {

@@ -2,7 +2,6 @@ import express, { Request, Response, Router } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
-import { generativeReporter } from "#modules/reporter";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -18,17 +17,12 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     if (!integration?.selectedAdAccount)
       throw new Error("Ads account is not selected");
 
+    const data = {};
+
     // const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     // const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const result = await generativeReporter.generateMetricReport(
-      userId,
-      "conversionRate",
-      "last-14-days",
-      "20240814"
-    );
-
-    res.send(result);
+    res.send(data);
   } catch (error: unknown) {
     handleControllerError(res, error);
   }

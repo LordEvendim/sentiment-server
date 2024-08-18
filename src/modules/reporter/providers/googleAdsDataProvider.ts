@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 import { googleAdAccountMetricDao } from "#dao/googleAdAccountMetricDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 
@@ -32,7 +34,10 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
 
       return metrics.map(
         (metric) =>
-          [metric.value, metric.createdAt.getTime()] as [number, number]
+          [metric.value, format(metric.createdAt, "yyyyMMdd")] as [
+            number,
+            string,
+          ]
       );
     } catch (err) {
       return [];

@@ -60,5 +60,5 @@ export interface ReporterDataProvider {
     userId: number,
     metricId: string,
     since: Date
-  ): Promise<[number, number][]>;
+  ): Promise<[number, string][]>;
 }

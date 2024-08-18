@@ -26,7 +26,7 @@ const createReporterController = () => {
       >,
       res: Response<{
         since: string;
-        data: Partial<Record<ReportMetricSource, [number, number][]>>;
+        data: Partial<Record<ReportMetricSource, [number, string][]>>;
       }>
     ) => {
       try {

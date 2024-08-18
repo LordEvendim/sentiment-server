@@ -33,7 +33,7 @@ class Reporter {
     since: string
   ) => {
     const sinceDate = parse(since, "yyyyMMdd", Date.now());
-    const data: Partial<Record<ReportMetricSource, [number, number][]>> = {};
+    const data: Partial<Record<ReportMetricSource, [number, string][]>> = {};
 
     for (let i = 0; i < metrics.length; i++) {
       data[metrics[i].source] = await reportDataProviders[
