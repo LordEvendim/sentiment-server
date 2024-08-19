@@ -22,5 +22,7 @@ export const sessionConfig = {
     maxAge: 1000 * 60 * 60 * 24 * 365 * 7,
     domain: process.env.COOKIE_DOMAIN ?? "localhost",
   },
-  genid: (req) => `${req.body?.username}-${randomUUID()}`,
+  genid: (req) => {
+    return `${req.body?.username}-${randomUUID()}`;
+  },
 } satisfies SessionOptions;

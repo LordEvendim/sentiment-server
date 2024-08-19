@@ -71,7 +71,7 @@ export class UserModule {
 
     if (!user) throw new Error("User doesn't exist");
 
-    await sessionTokenDao.updateSessionsByUsername(user.username, user);
+    await sessionTokenDao.updateSessionsByUsername(user);
   };
 }
 

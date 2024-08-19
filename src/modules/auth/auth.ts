@@ -28,6 +28,7 @@ export class Auth implements AuthProvider {
       email: user.email,
       fullName: user.fullName,
       username: user.username,
+      role: user.role,
     };
   };
 
