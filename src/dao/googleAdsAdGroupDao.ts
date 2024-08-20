@@ -1,6 +1,7 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 
 import { mysqlDatabase } from "#db/mysql";
+import { googleAdsCampaignMetrics } from "#db/schema";
 import {
   GoogleAdsAdGroup,
   googleAdsAdGroups,
@@ -8,7 +9,7 @@ import {
 } from "#db/schema/googleAdsAdGroups";
 
 export const googleAdsAdGroupDao = {
-  getTopCampaigns: async (
+  getAdGroupsSummarySince: async (
     accountId: number,
     integrationId: number,
     since: Date
@@ -17,12 +18,15 @@ export const googleAdsAdGroupDao = {
       sql`
       select
         ANY_VALUE(${googleAdsAdGroups.adGroupId}) as adGroupId,
+        ANY_VALUE(${googleAdsAdGroups.campaignId}) as campaignId,
         ANY_VALUE(${googleAdsAdGroups.name}) as name, 
         ANY_VALUE(${googleAdsAdGroups.status}) as status,
+        ANY_VALUE(${googleAdsCampaignMetrics.name}) as campaignName,
         SUM(${googleAdsAdGroups.clicks}) as clicks, 
         SUM(${googleAdsAdGroups.impressions}) as impressions,
-        SUM(${googleAdsAdGroups.spend}) as spend,
+        SUM(${googleAdsAdGroups.spend}) as spend
       from ${googleAdsAdGroups}
+      INNER JOIN ${googleAdsCampaignMetrics} ON ${googleAdsCampaignMetrics.campaignId} = ${googleAdsAdGroups.campaignId}
       where ${googleAdsAdGroups.sourceId} = ${accountId} and ${googleAdsAdGroups.integrationId} = ${integrationId} and ${googleAdsAdGroups.createdAt} >= ${since}
       group by ${googleAdsAdGroups.adGroupId}
       `

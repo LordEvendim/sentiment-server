@@ -46,6 +46,13 @@ export class GoogleAds {
       lastDay,
       lastDay
     );
+
+    await this.pullAdGroups(
+      userId,
+      integration.selectedAdAccount,
+      lastDay,
+      lastDay
+    );
   };
 
   pullLastFourWeeks = async (userId: number) => {
@@ -68,6 +75,13 @@ export class GoogleAds {
     );
 
     await this.pullCampaigns(
+      userId,
+      integration.selectedAdAccount,
+      since,
+      lastDay
+    );
+
+    await this.pullAdGroups(
       userId,
       integration.selectedAdAccount,
       since,
@@ -383,6 +397,25 @@ export class GoogleAds {
       throw new Error("Google Ads: Ad account is not connected");
 
     const data = await googleAdsCampaignMetricDao.getTopCampaigns(
+      integration.selectedAdAccount,
+      integration.id,
+      since
+    );
+
+    return data;
+  };
+
+  getAdGroups = async (userId: number, since: Date) => {
+    logger.debug(`Google Ads: pulling ad groups for ${userId}`);
+
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("User is not connected with Meta");
+    if (!integration.selectedAdAccount)
+      throw new Error("Google Ads: Ad account is not connected");
+
+    const data = await googleAdsAdGroupDao.getAdGroupsSummarySince(
       integration.selectedAdAccount,
       integration.id,
       since
