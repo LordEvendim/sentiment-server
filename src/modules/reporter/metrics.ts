@@ -160,8 +160,7 @@ export const metricReportConfigs: Record<
   },
   cpc: {
     type: "average",
-    prompt: `Prompt: Regarding CPC performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
-      Output Instructions: format the output in this example manner: This week, CPC on Google Ads campaigns increased by 15%, and Meta campaigns Click were down 9%; in particular, campaign name {X} had the most decline from the other ads 24%).`,
+    prompt: `Prompt: Regarding CPC performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period and provide values. Write answer using a maximum of 5 or 6 sentences.`,
     dividentMetrics: [
       {
         display: "metric",
@@ -220,8 +219,7 @@ export const metricReportConfigs: Record<
   },
   ctr: {
     type: "average",
-    prompt: `Prompt: Regarding CTR performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
-      Output Instructions: format the output in this example manner: This week, CTR on Google Ads campaigns increased by 15%, and Meta campaigns Click were down 9%; in particular, campaign name {X} had the most decline from the other ads 24%).`,
+    prompt: `Prompt: Regarding CTR performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period and provide values. Write answer using a maximum of 5 or 6 sentences.`,
     dividentMetrics: [
       {
         display: "metric",
@@ -283,8 +281,7 @@ export const metricReportConfigs: Record<
   },
   conversionRate: {
     type: "average",
-    prompt: `Prompt: Regarding conversion rate performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period. Write answer using a maximum of 5 or 6 sentences.
-      Output Instructions: format the output in this example manner: This week, CTR on Google Ads campaigns increased by 15%, and Meta campaigns Click were down 9%; in particular, campaign name {X} had the most decline from the other ads 24%).`,
+    prompt: `Prompt: Regarding conversion rate performance, provide a breakdown of which channels and campaigns drove the most success and which were the most significant losers based on the selected time period and provide values. Write answer using a maximum of 5 or 6 sentences.`,
     dividentMetrics: [
       {
         display: "metric",

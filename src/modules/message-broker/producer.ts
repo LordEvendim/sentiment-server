@@ -26,11 +26,15 @@ class QueueProducer {
       );
       logger.info("Message Broker: producer connected with RabbitMQ");
 
+      this.connection.on("error", (...e) => logger.error(e));
+
       this.channel = await this.connection.createChannel();
-      this.channel.prefetch(1);
-    } finally {
-      this.isStarting = false;
+      await this.channel.prefetch(1);
+    } catch (e) {
+      logger.error(e);
     }
+
+    this.isStarting = false;
   }
 
   async sendMessage<T extends QueueNames>(queueName: T, message: Queues[T]) {
@@ -47,8 +51,8 @@ class QueueProducer {
         Buffer.from(JSON.stringify(message)),
         queuesConfig[queueName].queueSend
       );
-    } catch (err) {
-      console.warn(err);
+    } catch (e) {
+      logger.error(e);
     }
   }
 }

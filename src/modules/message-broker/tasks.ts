@@ -34,18 +34,22 @@ export const tasks: Record<
   (message: ConsumeMessage) => Promise<void>
 > = {
   report: async (message) => {
-    const data = JSON.parse(message.content.toString()) as ReportTask;
-    const until = subDays(new Date(Date.now()), 1);
+    try {
+      const data = JSON.parse(message.content.toString()) as ReportTask;
+      const until = subDays(new Date(Date.now()), 1);
 
-    await generativeReporter.generateReport(
-      data.userId,
-      "last-7-days",
-      format(
-        calculateTimeframeStart(new Date(Date.now()), "last-7-days"),
-        "yyyyMMdd"
-      ),
-      format(until, "yyyyMMdd")
-    );
+      await generativeReporter.generateReport(
+        data.userId,
+        "last-7-days",
+        format(
+          calculateTimeframeStart(new Date(Date.now()), "last-7-days"),
+          "yyyyMMdd"
+        ),
+        format(until, "yyyyMMdd")
+      );
+    } catch (e) {
+      logger.error(e);
+    }
   },
   pull: async (message) => {
     const data = JSON.parse(message.content.toString()) as FetchTask;

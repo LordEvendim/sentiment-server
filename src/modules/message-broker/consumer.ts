@@ -15,6 +15,8 @@ class QueueConsumer {
       );
       logger.info("Message Broker: consumer connected with RabbitMQ");
 
+      connection.on("error", (...e) => logger.error(e));
+
       const channel = await connection.createChannel();
 
       process.once("SIGINT", async () => {
@@ -51,8 +53,8 @@ class QueueConsumer {
           queuesConfig[queueName as QueueNames].consume
         );
       }
-    } catch (err) {
-      console.warn(err);
+    } catch (e) {
+      logger.error(e);
     }
   }
 }
