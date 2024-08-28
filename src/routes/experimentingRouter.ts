@@ -1,8 +1,10 @@
+import { subDays, subWeeks } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import express, { Request, Response, Router } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
-import { generativeReporter } from "#modules/reporter";
+import { googleAds } from "#modules/google/googleAds";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -18,19 +20,17 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     if (!integration?.selectedAdAccount)
       throw new Error("Ads account is not selected");
 
-    const data = {};
+    const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
+    const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    // const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
-    // const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
-
-    const response = await generativeReporter.generateMetricReport(
+    const data = await googleAds.pullSearchTerms(
       userId,
-      "cpc",
-      "last-14-days",
-      "20240820"
+      integration.selectedAdAccount,
+      since,
+      lastDay
     );
 
-    res.send(response);
+    res.send(data);
   } catch (error: unknown) {
     handleControllerError(res, error);
   }

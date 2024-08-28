@@ -7,12 +7,14 @@ import { googleAdAccountMetricDao } from "#dao/googleAdAccountMetricDao";
 import { googleAdsAdGroupDao } from "#dao/googleAdsAdGroupDao";
 import { googleAdsCampaignMetricDao } from "#dao/googleAdsCampaignMetricDao";
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
+import { googleSearchTermDao } from "#dao/googleSearchTermDao";
 import {
   NewGoogleAdAccount,
   NewGoogleAdAccountMetric,
   NewGoogleAdsCampaignMetric,
 } from "#db/schema";
 import { NewGoogleAdsAdGroup } from "#db/schema/googleAdsAdGroups";
+import { NewGoogleSearchTerm } from "#db/schema/googleSearchTerms";
 import { logger } from "#modules/logger";
 
 import GoogleAuthLab from "./googleAuthLab";
@@ -53,6 +55,13 @@ export class GoogleAds {
       lastDay,
       lastDay
     );
+
+    await this.pullAdGroups(
+      userId,
+      integration.selectedAdAccount,
+      lastDay,
+      lastDay
+    );
   };
 
   pullLastFourWeeks = async (userId: number) => {
@@ -75,6 +84,13 @@ export class GoogleAds {
     );
 
     await this.pullCampaigns(
+      userId,
+      integration.selectedAdAccount,
+      since,
+      lastDay
+    );
+
+    await this.pullAdGroups(
       userId,
       integration.selectedAdAccount,
       since,
@@ -324,6 +340,71 @@ export class GoogleAds {
     if (metrics.length > 0) await googleAdAccountMetricDao.createMany(metrics);
 
     return metrics;
+  };
+
+  pullSearchTerms = async (
+    userId: number,
+    propertyId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const integration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!integration) throw new Error("Google Ads: Google is not integrated");
+    if (!integration.refreshToken)
+      throw new Error("Google Ads: Refresh token not present");
+    if (!integration.selectedAdAccount)
+      throw new Error("Google Ads: Ad Account not selected");
+
+    const client = new GoogleAdsApi({
+      client_id: process.env.GOOGLE_ANALYTICS_CLIENT_ID!,
+      client_secret: process.env.GOOGLE_ANALYTICS_CLIENT_SECRET!,
+      developer_token: `${process.env.GOOGLE_ADS_DEVELOPER_TOKEN}`,
+    });
+
+    const customer = client.Customer({
+      customer_id: propertyId.toString(),
+      refresh_token: integration.refreshToken,
+    });
+
+    const searchTerms = await customer.report({
+      entity: "search_term_view",
+      attributes: ["search_term_view.search_term", "ad_group.id"],
+      metrics: [
+        "metrics.clicks",
+        "metrics.impressions",
+        "metrics.cost_micros",
+        "metrics.ctr",
+      ],
+      constraints: {
+        "search_term_view.status": enums.SearchTermTargetingStatus.ADDED,
+      },
+      segments: ["segments.date"],
+      from_date: format(since, "yyyy-MM-dd"),
+      to_date: format(until, "yyyy-MM-dd"),
+    });
+
+    const transformedSearchTerms: NewGoogleSearchTerm[] = searchTerms.map(
+      (datapoint) => {
+        return {
+          searchTerm: datapoint.search_term_view!.search_term!,
+          adGroupId: datapoint.ad_group!.id!.toString(),
+          sourceId: integration.selectedAdAccount!,
+          integrationId: integration.id,
+          createdAt: parse(datapoint.segments!.date!, "yyyy-MM-dd", Date.now()),
+          spend: (datapoint.metrics?.cost_micros ?? 0) / 1_000_000,
+          ctr: datapoint.metrics?.ctr,
+          clicks: datapoint.metrics?.clicks,
+          impressions: datapoint.metrics?.impressions,
+        };
+      }
+    );
+
+    if (transformedSearchTerms.length > 0)
+      await googleSearchTermDao.createMany(transformedSearchTerms);
+
+    return transformedSearchTerms;
   };
 
   getUserAccounts = async (userId: number) => {
