@@ -2,6 +2,7 @@ import { parse, subYears } from "date-fns";
 import { Response } from "express";
 
 import { NewReport, Report } from "#db/schema";
+import { NewCampaignReport } from "#db/schema/campaignReports";
 import { NewMetricReport } from "#db/schema/MetricReports";
 import { generativeReporter, reporter } from "#modules/reporter";
 import { DashboardTimeframe } from "#modules/reporter/timeframes";
@@ -71,6 +72,36 @@ const createReporterController = () => {
         const result = await generativeReporter.getMetricReport(
           user.id,
           name,
+          timeframe,
+          until
+        );
+
+        return res.status(200).send(result);
+      } catch (error) {
+        return handleControllerError(res, error);
+      }
+    },
+    getCampaignReport: async (
+      req: TypedRequest<
+        object,
+        object,
+        {
+          timeframe: DashboardTimeframe;
+          until: string;
+        }
+      >,
+      res: Response<NewCampaignReport>
+    ) => {
+      try {
+        const { user } = req.session;
+        const { timeframe, until } = req.query;
+
+        if (!user) throw new Error("User not authenticated");
+        if (!timeframe) throw new Error("Timeframe not specified");
+        if (!until) throw new Error("Since not specified");
+
+        const result = await generativeReporter.getCampaignReport(
+          user.id,
           timeframe,
           until
         );

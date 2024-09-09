@@ -13,6 +13,7 @@ router.post(
 
 router.get("/overview", isAuthenticated, reporterController.getGeneralReport);
 router.get("/metric", isAuthenticated, reporterController.getMetricReport);
+router.get("/campaign", isAuthenticated, reporterController.getCampaignReport);
 
 router.get("/chart", isAuthenticated, reporterController.getChartData);
 router.get(

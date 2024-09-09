@@ -1,10 +1,11 @@
-import { subDays, subWeeks } from "date-fns";
+import { formatDate, subDays } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import express, { Request, Response, Router } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
-import { googleAds } from "#modules/google/googleAds";
+import { generativeReporter } from "#modules/reporter";
+import { DashboardTimeframes } from "#modules/reporter/timeframes";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -21,13 +22,12 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
       throw new Error("Ads account is not selected");
 
     const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
-    const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
+    // const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const data = await googleAds.pullSearchTerms(
+    const data = await generativeReporter.getCampaignReport(
       userId,
-      integration.selectedAdAccount,
-      since,
-      lastDay
+      DashboardTimeframes.LAST_14_DAYS,
+      formatDate(lastDay, "yyyyMMdd")
     );
 
     res.send(data);

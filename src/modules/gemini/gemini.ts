@@ -2,6 +2,7 @@ import { VertexAI } from "@google-cloud/vertexai";
 
 import { redisConnection } from "#db/redis";
 import { logger } from "#modules/logger";
+import { trimLines } from "#utils/trimLines";
 
 export const USED_TOKENS_KEY = "gemini:used-tokens";
 
@@ -33,10 +34,16 @@ class Gemini {
     return result;
   };
 
-  getFlashTextResponse = async (input: string) => {
+  getFlashTextResponse = async (
+    input: string,
+    shouldTrimLines: boolean = true
+  ) => {
     logger.debug(`Gemini: getting flash text response`);
 
-    const result = await this.callModel(input, this.flashModel);
+    const result = await this.callModel(
+      shouldTrimLines ? trimLines(input) : input,
+      this.flashModel
+    );
 
     return result;
   };

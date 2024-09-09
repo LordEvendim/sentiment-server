@@ -13,7 +13,7 @@ export const DashboardTimeframes: Record<string, DashboardTimeframe> = {
   LAST_7_DAYS: "last-7-days",
   LAST_14_DAYS: "last-14-days",
   LAST_30_DAYS: "last-30-days",
-  LAST_30_DAYS: "last-60-days",
+  LAST_60_DAYS: "last-60-days",
   LAST_90_DAYS: "last-90-days",
   LAST_6_MONTHS: "last-6-months",
   LAST_YEAR: "last-year",

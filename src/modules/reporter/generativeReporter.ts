@@ -1,9 +1,11 @@
 import { addWeeks, isWithinInterval, parse, subWeeks } from "date-fns";
 
+import { campaignReportDao } from "#dao/campaignReportDao";
 import { metricReportDao } from "#dao/metricReportDao";
 import { reportDao } from "#dao/reportDao";
 import { userDao } from "#dao/userDao";
 import { NewReport, Report } from "#db/schema";
+import { NewCampaignReport } from "#db/schema/campaignReports";
 import { NewMetricReport } from "#db/schema/MetricReports";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
@@ -17,6 +19,7 @@ import { prompts } from "./prompts";
 import { reporter } from "./reporter";
 import { calculateTimeframeStart, DashboardTimeframe } from "./timeframes";
 import { ReportMetricSource } from "./types";
+import { NEW_LINE } from "./utils/characters";
 
 class GenerativeReporter {
   metaDataProvider: MetaInsights;
@@ -44,6 +47,24 @@ class GenerativeReporter {
 
     if (!lastReport || lastReport.until < untilDate)
       return await this.generateMetricReport(userId, name, timeframe, until);
+
+    return lastReport;
+  };
+
+  getCampaignReport = async (
+    userId: number,
+    timeframe: DashboardTimeframe,
+    until: string
+  ) => {
+    const untilDate = parse(until, "yyyyMMdd", Date.now());
+
+    const lastReport = await campaignReportDao.getLatestByUserIdTimeframe(
+      userId,
+      timeframe
+    );
+
+    if (!lastReport || lastReport.until < untilDate)
+      return await this.generateCampaignReport(userId, timeframe, until);
 
     return lastReport;
   };
@@ -439,6 +460,88 @@ class GenerativeReporter {
       reportId: insertData[0].insertId,
       ...newReport,
     };
+  };
+
+  generateCampaignReport = async (
+    userId: number,
+    timeframe: DashboardTimeframe,
+    until: string
+  ) => {
+    const prompt = prompts.CAMPAIGN_REPORT;
+    const untilDate = parse(until, "yyyyMMdd", Date.now());
+    const sinceDate = calculateTimeframeStart(untilDate, timeframe);
+    const compareSinceDate = calculateTimeframeStart(sinceDate, timeframe);
+
+    const googleCampaigns = await googleAds.getTopCampaigns(userId, sinceDate);
+    const metaCampaigns = await metaAds.getTopCampaigns(userId, sinceDate);
+
+    // get data
+    const googleCampaignsCompare = await googleAds.getCampaigns(
+      userId,
+      compareSinceDate,
+      sinceDate
+    );
+    const metaCampaignsCompare = await metaAds.getCampaigns(
+      userId,
+      compareSinceDate,
+      sinceDate
+    );
+
+    // transform
+    const googleCampaignsPromptData =
+      googleCampaigns.length > 0 &&
+      `Google:` +
+        NEW_LINE +
+        googleCampaigns
+          .map((campaign) => `${campaign.name}: $${campaign.spend?.toFixed(2)}`)
+          .join(NEW_LINE);
+    const metaCampaignsPromptData =
+      metaCampaigns.length > 0 &&
+      `Meta:` +
+        NEW_LINE +
+        metaCampaigns
+          .map((campaign) => `${campaign.name}: $${campaign.spend?.toFixed(2)}`)
+          .join(NEW_LINE);
+    const googleCampaignsComparePromptData =
+      googleCampaignsCompare.length > 0 &&
+      `Google:` +
+        NEW_LINE +
+        googleCampaignsCompare
+          .map((campaign) => `${campaign.name}: $${campaign.spend?.toFixed(2)}`)
+          .join(NEW_LINE);
+    const metaCampaignsComparePromptData =
+      metaCampaignsCompare.length > 0 &&
+      `Meta:` +
+        NEW_LINE +
+        metaCampaignsCompare
+          .map((campaign) => `${campaign.name}: $${campaign.spend?.toFixed(2)}`)
+          .join(NEW_LINE);
+
+    // build prompt
+    const response = await gemini.getFlashTextResponse(
+      prompt +
+        NEW_LINE +
+        `
+        Current period:
+        ${googleCampaignsPromptData}
+        ${metaCampaignsPromptData}
+
+        Last period:
+        ${googleCampaignsComparePromptData}
+        ${metaCampaignsComparePromptData}
+        `
+    );
+
+    const newReport = {
+      createdAt: new Date(Date.now()),
+      data: response,
+      ownerId: userId,
+      timeframe,
+      until: untilDate,
+    } satisfies NewCampaignReport;
+    await campaignReportDao.create(newReport);
+
+    return newReport;
   };
 }
 
