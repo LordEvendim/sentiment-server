@@ -295,9 +295,9 @@ export class MetaAds {
 
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!integration) throw new Error("User is not connected with Meta");
+    if (!integration) throw new Error("Meta: user not connected");
     if (!integration.selectedAdAccount)
-      throw new Error("Meta is not connected");
+      throw new Error("Meta: account not selected");
 
     const data = await metaCampaignMetricDao.getTopCampaigns(
       integration.selectedAdAccount,
@@ -335,7 +335,9 @@ export class MetaAds {
       selectedAdAccount: accountId,
     });
 
-    metaAds.pullLastFourWeeks(userId).catch((e) => logger.error(e));
+    metaAds
+      .pullLastFourWeeks(userId)
+      .catch((e) => logger.error("Meta: initial pull error", e));
 
     return accountId;
   };
@@ -356,7 +358,7 @@ export class MetaAds {
     const metaIntegration =
       await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!metaIntegration) throw new Error("Meta is not integrated");
+    if (!metaIntegration) throw new Error("Meta: user not connected");
 
     const adAccounts = [];
 
@@ -401,7 +403,7 @@ export class MetaAds {
     const userAccessToken =
       await metaIntegrationDao.getAccessTokenByUserId(userId);
 
-    if (!userAccessToken) throw new Error("User is not connected with Meta");
+    if (!userAccessToken) throw new Error("Meta: user not connected");
 
     const result = await axios.get<{
       data: {
@@ -424,7 +426,7 @@ export class MetaAds {
     const userAccessToken =
       await metaIntegrationDao.getAccessTokenByUserId(userId);
 
-    if (!userAccessToken) throw new Error("User is not connected with Meta");
+    if (!userAccessToken) throw new Error("Meta: user not connected");
 
     const result = await axios.get<{
       data: {

@@ -28,6 +28,7 @@ class Gemini {
   }
 
   getSampleFlashResponse = async () => {
+    logger.debug(`Gemini: getting sample flash text response`);
     const input = "How can I learn more about generative AI?";
     const result = await this.callModel(input, this.flashModel);
 
@@ -49,6 +50,8 @@ class Gemini {
   };
 
   getSampleResponse = async () => {
+    logger.debug(`Gemini: getting sample text response`);
+
     const input = "How can I learn more about generative AI?";
     const result = await this.callModel(input, this.generativeModel);
 

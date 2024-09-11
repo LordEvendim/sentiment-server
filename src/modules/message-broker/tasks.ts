@@ -52,42 +52,45 @@ export const tasks: Record<
     }
   },
   pull: async (message) => {
-    const data = JSON.parse(message.content.toString()) as FetchTask;
-    logger.debug("Queue Consumer: pulling data for user " + data.userId);
-
     try {
-      await metaAds.pullLastDayData(data.userId);
-    } catch (error) {
-      logger.error("Cron pull: Meta Ads of:" + data.userId);
-      logger.error(error);
-    }
+      const data = JSON.parse(message.content.toString()) as FetchTask;
+      logger.debug("Queue Consumer: pulling data for user " + data.userId);
 
-    try {
-      await metaInsights.pullLastDayData(data.userId);
-    } catch (error) {
-      logger.error("Cron pull: Meta Insights of:" + data.userId);
-      logger.error(error);
-    }
+      try {
+        await metaAds.pullLastDayData(data.userId);
+      } catch (error) {
+        logger.error("Cron pull: Meta Ads of:" + data.userId, error);
+      }
 
-    try {
-      await googleAnalytics.pullLastDayData(data.userId);
-    } catch (error) {
-      logger.error("Cron pull: Google Analytics of: " + data.userId);
-      logger.error(error);
-    }
+      try {
+        await metaInsights.pullLastDayData(data.userId);
+      } catch (error) {
+        logger.error("Cron pull: Meta Insights of:" + data.userId, error);
+      }
 
-    try {
-      await googleAds.pullLastDayData(data.userId);
-    } catch (error) {
-      logger.error("Cron pull: Google Ads of: " + data.userId);
-      logger.error(error);
-    }
+      try {
+        await googleAnalytics.pullLastDayData(data.userId);
+      } catch (error) {
+        logger.error("Cron pull: Google Analytics of: " + data.userId, error);
+      }
 
-    await wait(1);
+      try {
+        await googleAds.pullLastDayData(data.userId);
+      } catch (error) {
+        logger.error("Cron pull: Google Ads of: " + data.userId, error);
+      }
+
+      await wait(1);
+    } catch (e) {
+      logger.error(
+        `Queue Consumer: pull task failed. Message: ${message.content.toString()}`,
+        e
+      );
+    }
   },
   test: async () => {
-    console.log("test message");
+    logger.info("Queue Consumer: test message");
     await wait(0.1);
-    throw new Error("test error");
+    throw new Error("Queue Consumer: test error");
   },
 };

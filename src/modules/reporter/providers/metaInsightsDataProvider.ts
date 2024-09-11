@@ -20,9 +20,9 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
       const integration =
         await metaIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!integration) throw new Error("Meta is not integrated");
+      if (!integration) throw new Error("Meta Insights: not integrated");
       if (!integration.selectedPage)
-        throw new Error("Meta page account not selected");
+        throw new Error("Meta Insights: page not selected");
 
       const metrics =
         await metaInsightsMetricDao.getByPageAndMetricIdOrderByCreatedAt(
@@ -54,8 +54,9 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
       const integration =
         await metaIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!integration) throw new Error("Meta is not integrated");
-      if (!integration.selectedPage) throw new Error("Meta page not selected");
+      if (!integration) throw new Error("Meta Insights: not integrated");
+      if (!integration.selectedPage)
+        throw new Error("Meta Insights: page not selected");
 
       const metrics = await metaInsightsMetricDao.getByPageSince(
         integration.selectedPage,
@@ -80,8 +81,9 @@ class MetaInsightsDataProvider implements ReporterDataProvider {
 
       const metricsNames = metricsConfig.map((config) => config.id);
 
-      if (!integration) throw new Error("Meta is not integrated");
-      if (!integration.selectedPage) throw new Error("Meta page not selected");
+      if (!integration) throw new Error("Meta Insights: not integrated");
+      if (!integration.selectedPage)
+        throw new Error("Meta Insights: page not selected");
 
       const metrics = await metaInsightsMetricDao.getByPageSince(
         integration.selectedPage,

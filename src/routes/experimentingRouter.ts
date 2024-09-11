@@ -27,7 +27,9 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     //   formatDate(lastDay, "yyyyMMdd")
     // );
 
-    await queueProducer.channel?.close();
+    // await queueProducer.channel?.close();
+
+    await queueProducer.sendMessage("pull", { userId: 1 });
 
     res.send({});
   } catch (error: unknown) {

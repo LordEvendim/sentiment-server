@@ -55,7 +55,7 @@ class MetaAuth {
     const metaIntegration =
       await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!metaIntegration) throw new Error("User is not connected wiht Meta");
+    if (!metaIntegration) throw new Error("Meta: user not connected");
 
     const result = await axios.get<{
       data: {

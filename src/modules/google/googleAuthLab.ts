@@ -144,22 +144,17 @@ export default class GoogleAuthLab {
       const { credentials } = await this.oAuth2Client.refreshAccessToken();
 
       return credentials;
-    } catch (err) {
-      const error = err as Error;
-      /**
-       * https://googleapis.dev/nodejs/google-auth-library/5.5.0/classes/OAuth2Client.html#source
-       *
-       * according to the documentation the error message is "Could not refresh access token." so i think we could use it to identify the error
-       *
-       * if the errir is this one we should remove the tokens from the db and the user would need to reauthenticate
-       */
-      if (error.message === "Could not refresh access token.") {
-        logger.error("Google Auth: could not refresh access token");
+    } catch (err: unknown) {
+      if (
+        err instanceof Error &&
+        err.message === "Could not refresh access token."
+      ) {
+        logger.error("Google Auth: could not refresh access token", err);
         await googleIntegrationDao.deleteByUserId(this.userId);
         return null;
       }
 
-      logger.error("Google Auth Lab: error refreshing token", error);
+      logger.error("Google Auth Lab: error refreshing token", err);
       return null;
     }
   }

@@ -20,9 +20,9 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
       const integration =
         await googleIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!integration) throw new Error("Google is not integrated");
+      if (!integration) throw new Error("Google Provider: not integrated");
       if (!integration.selectedAdAccount)
-        throw new Error("Google ad account not selected");
+        throw new Error("Google Provider: Google ad account not selected");
 
       const metrics =
         await googleAdAccountMetricDao.getByPageAndMetricIdOrderByCreatedAt(
@@ -54,9 +54,9 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
       const integration =
         await googleIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!integration) throw new Error("Google is not integrated");
+      if (!integration) throw new Error("Google Provider: not integrated");
       if (!integration.selectedAdAccount)
-        throw new Error("Google ad account not selected");
+        throw new Error("Google Provider: Google ad account not selected");
 
       const metrics = await googleAdAccountMetricDao.getByPageSince(
         integration.selectedAdAccount,
@@ -81,9 +81,9 @@ class GoogleAdsDataProvider implements ReporterDataProvider {
 
       const metricsNames = metricsConfig.map((config) => config.id);
 
-      if (!integration) throw new Error("Google is not integrated");
+      if (!integration) throw new Error("Google Provider: not integrated");
       if (!integration.selectedAdAccount)
-        throw new Error("Google ad account not selected");
+        throw new Error("Google Provider: Google ad account not selected");
 
       const metrics = await googleAdAccountMetricDao.getByPageSince(
         integration.selectedAdAccount,

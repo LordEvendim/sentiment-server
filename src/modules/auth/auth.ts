@@ -14,14 +14,12 @@ export class Auth implements AuthProvider {
     password: string
   ): Promise<UserSession | undefined> => {
     const user = await userDao.getByUsername(username);
-
-    if (!user) throw new Error("User doesn't exist");
+    if (!user) throw new Error("Auth: user doesn't exist");
 
     const isMatchingPassword = await compare(password, user.password);
+    if (!isMatchingPassword) throw new Error("Auth: invalid password");
 
-    if (!isMatchingPassword) throw new Error("Invalid password");
-
-    logger.debug(`User logged in ${username}`);
+    logger.debug(`Auth: user logged in ${username}`);
 
     return {
       id: user.id,
@@ -31,7 +29,6 @@ export class Auth implements AuthProvider {
       role: user.role,
     };
   };
-
   register = async (
     username: string,
     fullName: string,
@@ -39,12 +36,12 @@ export class Auth implements AuthProvider {
     email: string
   ) => {
     const user = await userDao.getByUsername(username);
-    if (user) throw new Error("Username is taken");
+    if (user) throw new Error("Auth: username is taken");
 
     const hashedPassword = await hash(password, SALTING_ROUNDS);
     const newUserId = nanoid();
 
-    logger.debug(`User registered ${username}`);
+    logger.debug(`Auth: user registered ${username}`);
 
     await userDao.create({
       username,

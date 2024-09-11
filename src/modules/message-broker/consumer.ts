@@ -15,7 +15,9 @@ class QueueConsumer {
       );
       logger.info("Message Broker: consumer connected with RabbitMQ");
 
-      connection.on("error", (...e) => logger.error(e));
+      connection.on("error", (...e) =>
+        logger.error("Queue Consumer: connection error", e)
+      );
 
       const channel = await connection.createChannel();
 
@@ -54,7 +56,7 @@ class QueueConsumer {
         );
       }
     } catch (e) {
-      logger.error(e);
+      logger.error("Queue Consumer: error", e);
     }
   }
 }

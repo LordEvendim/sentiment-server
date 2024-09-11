@@ -28,12 +28,16 @@ class QueueProducer {
       );
       logger.info("Message Broker: producer connected with RabbitMQ");
 
-      this.connection.on("error", (...e) => logger.error(e));
+      this.connection.on("error", (...e) =>
+        logger.error("Queue Producer: connection error", e)
+      );
 
       this.channel = await this.connection.createChannel();
-      this.channel.addListener("error", (...e) => logger.error(e));
+      this.channel.addListener("error", (...e) =>
+        logger.error("Queue Producer: channel error", e)
+      );
       this.channel.addListener("close", (...e) => {
-        logger.error(JSON.stringify(e));
+        logger.error("Queue Producer: channel closed", e);
         this.channel = undefined;
       });
 
@@ -49,7 +53,9 @@ class QueueProducer {
     try {
       if (!this.channel || !this.connection) {
         this.start();
-        throw new Error("Connection with message broker is not established");
+        throw new Error(
+          "Queue Producer: connection with message broker is not established"
+        );
       }
 
       logger.debug(`Message Broker: sending message to ${queueName}`);
@@ -60,7 +66,7 @@ class QueueProducer {
         queuesConfig[queueName].queueSend
       );
     } catch (e) {
-      logger.error(e);
+      logger.error("Queue Producer: error", e);
     }
   }
 }

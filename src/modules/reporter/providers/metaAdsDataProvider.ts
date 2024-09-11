@@ -20,9 +20,9 @@ class MetaAdsDataProvider implements ReporterDataProvider {
       const integration =
         await metaIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!integration) throw new Error("Google is not integrated");
+      if (!integration) throw new Error("Meta Ads: not integrated");
       if (!integration.selectedAdAccount)
-        throw new Error("Google ads account not selected");
+        throw new Error("Meta Ads: account not selected");
 
       const metrics =
         await metaAdAccountMetricDao.getByPageAndMetricIdOrderByCreatedAt(
@@ -54,9 +54,9 @@ class MetaAdsDataProvider implements ReporterDataProvider {
       const metaIntegration =
         await metaIntegrationDao.getIntegrationByUserId(userId);
 
-      if (!metaIntegration) throw new Error("Meta is not integrated");
+      if (!metaIntegration) throw new Error("Meta Ads: not integrated");
       if (!metaIntegration.selectedAdAccount)
-        throw new Error("Meta ad account not selected");
+        throw new Error("Meta Ads: account not selected");
 
       const metrics = (
         await metaAdAccountMetricDao.getByPageSince(
@@ -83,9 +83,9 @@ class MetaAdsDataProvider implements ReporterDataProvider {
 
       const metricsNames = metricsConfig.map((config) => config.id);
 
-      if (!metaIntegration) throw new Error("Meta is not integrated");
+      if (!metaIntegration) throw new Error("Meta Ads: not integrated");
       if (!metaIntegration.selectedAdAccount)
-        throw new Error("Meta ad account not selected");
+        throw new Error("Meta Ads: account not selected");
 
       const metrics = (
         await metaAdAccountMetricDao.getByPageSince(

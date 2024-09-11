@@ -15,12 +15,7 @@ import {
 import { logger } from "#modules/logger";
 
 import { metaGateway } from "./metaGateway";
-import {
-  BreakdownOptions,
-  GetUserPages,
-  PageInsights,
-  SupportedBreakdownFields,
-} from "./types";
+import { GetUserPages, PageInsights } from "./types";
 import { metaMetricPeriodToDays } from "./utils";
 
 export class MetaInsights {
@@ -28,12 +23,14 @@ export class MetaInsights {
   baseUrl = "https://graph.facebook.com";
 
   pullLastDayData = async (userId: number) => {
-    logger.debug(`Meta: pulling last day page data of ${userId}`);
+    logger.debug(`Meta Insights: last day pull for user: ${userId}`);
 
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!integration) throw new Error("Meta: integration not connected");
-    if (!integration.selectedPage) throw new Error("Meta: page not selected");
+    if (!integration)
+      throw new Error("Meta Insights: integration not connected");
+    if (!integration.selectedPage)
+      throw new Error("Meta Insights: page not selected");
 
     const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
 
@@ -48,11 +45,13 @@ export class MetaInsights {
   };
 
   pullLastFourWeeks = async (userId: number) => {
-    logger.debug("Meta: pulling last four weeks");
+    logger.debug(`Meta Insights: initial pull for ${userId}`);
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!integration) throw new Error("Meta: integration not connected");
-    if (!integration.selectedPage) throw new Error("Meta: page not selected");
+    if (!integration)
+      throw new Error("Meta Insights: integration not connected");
+    if (!integration.selectedPage)
+      throw new Error("Meta Insights: page not selected");
 
     const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
@@ -67,39 +66,19 @@ export class MetaInsights {
     return data;
   };
 
-  getCampaignStatistics = async (
-    userId: number,
-    adCampaignId: string,
-    breakdowns: BreakdownOptions[],
-    fields: SupportedBreakdownFields[]
-  ) => {
-    const accessToken = await metaIntegrationDao.getAccessTokenByUserId(userId);
-
-    const result = await axios.get(
-      `${this.baseUrl}/${this.apiVersion}/${adCampaignId}/insights`,
-      {
-        data: {
-          breakdowns: breakdowns.join(","),
-          fields: fields.join(","),
-          access_token: accessToken,
-        },
-      }
-    );
-
-    return result;
-  };
-
   getPageInsights = async (
     userId: number,
     pageId: number,
     since: Date,
     until: Date
   ) => {
-    logger.debug(`Meta: getting page insights for ${userId} of ${pageId}`);
+    logger.debug(
+      `Meta Insights: getting page insights for ${userId} of ${pageId}`
+    );
 
     const integration = await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!integration) throw new Error("User is not connected with Meta");
+    if (!integration) throw new Error("Meta Insights: user not connected");
 
     const pageAccessToken = await metaPageDao.getPageAccessToken(
       pageId,
@@ -130,8 +109,8 @@ export class MetaInsights {
       // "profile_likes",
     ];
 
-    if (!isPageOwner) throw new Error("User is not a page owner");
-    if (!pageAccessToken) throw new Error("This page is not integrated");
+    if (!isPageOwner) throw new Error("Meta Insights: user not a page owner");
+    if (!pageAccessToken) throw new Error("Meta Insights: page not integrated");
 
     const result = await metaGateway.callBUC<PageInsights>({
       url: `${this.baseUrl}/${this.apiVersion}/${pageId}/insights`,
@@ -178,8 +157,10 @@ export class MetaInsights {
       }
     }
 
-    logger.debug(`Meta: inserting facebook page insights metrics to DB`);
-    await metaInsightsMetricDao.createMany(metrics);
+    logger.debug(
+      `Meta Insights: inserting facebook page insights metrics to DB`
+    );
+    if (metrics.length > 0) await metaInsightsMetricDao.createMany(metrics);
 
     return metrics;
   };
@@ -194,12 +175,14 @@ export class MetaInsights {
   };
 
   connectPages = async (userId: number) => {
-    logger.debug("Meta: creating long lived page tokens for " + userId);
+    logger.debug(
+      "Meta Insights: creating long lived page tokens for " + userId
+    );
 
     const metaIntegration =
       await metaIntegrationDao.getIntegrationByUserId(userId);
 
-    if (!metaIntegration) throw new Error("User has not integrated Meta");
+    if (!metaIntegration) throw new Error("Meta Insights: user not connected");
 
     const userAccessToken = metaIntegration.accessToken;
     const metaId = metaIntegration.metaId;
@@ -226,7 +209,9 @@ export class MetaInsights {
   };
 
   selectPage = async (userId: number, pageId: number) => {
-    logger.debug(`Meta: selecting Facebook Page for ${userId} to ${pageId}`);
+    logger.debug(
+      `Meta Insights: selecting Facebook Page for ${userId} to ${pageId}`
+    );
     await metaIntegrationDao.updateByUserId(userId, {
       selectedPage: pageId,
     });
