@@ -1,11 +1,8 @@
-import { formatDate, subDays } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 import express, { Request, Response, Router } from "express";
 
 import { googleIntegrationDao } from "#dao/googleIntegrationDao";
 import { isAdmin } from "#middleware/isAdmin";
-import { generativeReporter } from "#modules/reporter";
-import { DashboardTimeframes } from "#modules/reporter/timeframes";
+import { queueProducer } from "#modules/message-broker";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -21,16 +18,18 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
     if (!integration?.selectedAdAccount)
       throw new Error("Ads account is not selected");
 
-    const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
+    // const lastDay = toZonedTime(subDays(Date.now(), 1), "America/New_York");
     // const since = toZonedTime(subWeeks(lastDay, 4), "America/New_York");
 
-    const data = await generativeReporter.getCampaignReport(
-      userId,
-      DashboardTimeframes.LAST_14_DAYS,
-      formatDate(lastDay, "yyyyMMdd")
-    );
+    // const data = await generativeReporter.getCampaignReport(
+    //   userId,
+    //   DashboardTimeframes.LAST_14_DAYS,
+    //   formatDate(lastDay, "yyyyMMdd")
+    // );
 
-    res.send(data);
+    await queueProducer.channel?.close();
+
+    res.send({});
   } catch (error: unknown) {
     handleControllerError(res, error);
   }

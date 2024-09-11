@@ -4,9 +4,11 @@ import { isAdmin } from "#middleware/isAdmin";
 import { googleAnalytics } from "#modules/google";
 import { googleAds } from "#modules/google/googleAds";
 import { logger } from "#modules/logger";
+import { queueProducer } from "#modules/message-broker";
 import { metaInsights } from "#modules/meta";
 import { metaAds } from "#modules/meta/metaAds";
 import { userModule } from "#modules/user/user";
+import { TypedRequest } from "#types/express";
 import { handleControllerError } from "#utils/errorHandling";
 
 const router: Router = express.Router();
@@ -26,6 +28,27 @@ router.post("/update-session", isAdmin, async (req: Request, res: Response) => {
     handleControllerError(res, error);
   }
 });
+
+router.post(
+  "/push-message",
+  isAdmin,
+  async (req: TypedRequest<{ userId: number }>, res: Response) => {
+    try {
+      const userId = req.body.userId;
+
+      logger.debug(`Admin: push message`);
+      logger.debug("Scheduler: sending pull job for user " + userId);
+
+      await queueProducer.sendMessage("pull", { userId: userId });
+
+      res.send({
+        message: "OK",
+      });
+    } catch (error: unknown) {
+      handleControllerError(res, error);
+    }
+  }
+);
 
 router.post("/pull-initial", isAdmin, async (req: Request, res: Response) => {
   try {

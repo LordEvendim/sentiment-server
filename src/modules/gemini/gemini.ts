@@ -106,8 +106,7 @@ class Gemini {
     const value = parseInt(used);
 
     if (isNaN(value) || value > this.dailyTokenLimit) {
-      logger.error("Gemini: daily rate limit reached");
-      throw new Error("Gemini rate limit");
+      throw new Error("Gemini: daily rate limit reached");
     }
   };
 }

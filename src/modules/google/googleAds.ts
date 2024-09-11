@@ -447,8 +447,8 @@ export class GoogleAds {
 
       return transformedAccounts;
     } catch (error: unknown) {
-      logger.error("Google Ads: failed to connect google ads accounts");
-      logger.error(error);
+      logger.warn("Google Ads: failed to connect google ads accounts");
+      logger.warn(error);
 
       return [];
     }

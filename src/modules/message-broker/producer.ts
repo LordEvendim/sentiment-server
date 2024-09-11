@@ -13,6 +13,8 @@ class QueueProducer {
     if (this.isStarting) return;
 
     process.once("SIGINT", async () => {
+      logger.warn("Message Producer: SIGINT");
+
       await this.channel?.close();
       await this.connection?.close();
     });
@@ -29,6 +31,12 @@ class QueueProducer {
       this.connection.on("error", (...e) => logger.error(e));
 
       this.channel = await this.connection.createChannel();
+      this.channel.addListener("error", (...e) => logger.error(e));
+      this.channel.addListener("close", (...e) => {
+        logger.error(JSON.stringify(e));
+        this.channel = undefined;
+      });
+
       await this.channel.prefetch(1);
     } catch (e) {
       logger.error(e);

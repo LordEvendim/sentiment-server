@@ -4,25 +4,35 @@ import { DiscordTransport } from "./discordTransport";
 
 const { combine, timestamp, printf } = format;
 
-const myFormat = printf(({ level, message, timestamp }) => {
-  return `[${new Date(timestamp).toLocaleString()}] ${level}: ${message}`;
+const myFormat = printf(({ level, message, timestamp, stack }) => {
+  return `[${new Date(timestamp).toLocaleString()}] ${level}: ${message} ${
+    stack && `\n${JSON.stringify(stack, null, 3)}`
+  }`;
 });
 
 export const logger = createLogger({
-  format: combine(timestamp(), format.json()),
+  // format: combine(timestamp(), format.json()),
   transports: [
     new transports.Console({
-      format: combine(
-        timestamp(),
-        format.colorize(),
+      format: format.combine(
+        format.errors({ stack: true }),
+        format.timestamp(),
         format.printf((info) => {
-          if (typeof info.message === "object") {
-            info.message = JSON.stringify(info.message, null, 3);
+          let message = `[${new Date(info.timestamp).toLocaleString()}] ${
+            info.level
+          }: ${
+            typeof info.message === "object"
+              ? JSON.stringify(info.message, null, 3)
+              : info.message
+          }`;
+
+          if (info.stack) {
+            message += "\n" + info.stack;
           }
 
-          return info.message;
+          return message;
         }),
-        myFormat
+        format.colorize({ all: true })
       ),
       level: "debug",
     }),
@@ -38,7 +48,11 @@ export const logger = createLogger({
       level: "debug",
     }),
     new transports.File({
-      format: combine(timestamp(), format.simple()),
+      format: combine(
+        format.errors({ stack: true }),
+        timestamp(),
+        format.simple()
+      ),
       dirname: `logs`,
       filename: "error.log",
       level: "error",
