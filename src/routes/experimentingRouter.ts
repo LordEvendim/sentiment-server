@@ -29,7 +29,9 @@ router.get("/", isAdmin, async (req: Request, res: Response) => {
 
     // await queueProducer.channel?.close();
 
-    await queueProducer.sendMessage("pull", { userId: 1 });
+    // await queueProducer.sendMessage("pull", { userId: 1 });
+
+    await queueProducer.connection?.close();
 
     res.send({});
   } catch (error: unknown) {

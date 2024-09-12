@@ -29,21 +29,30 @@ class QueueProducer {
       logger.info("Message Broker: producer connected with RabbitMQ");
 
       this.connection.on("error", (...e) =>
-        logger.error("Queue Producer: connection error", e)
+        logger.error(
+          "Queue Producer: connection error",
+          new Error(JSON.stringify(e))
+        )
       );
 
       this.channel = await this.connection.createChannel();
       this.channel.addListener("error", (...e) =>
-        logger.error("Queue Producer: channel error", e)
+        logger.error(
+          "Queue Producer: channel error",
+          new Error(JSON.stringify(e))
+        )
       );
       this.channel.addListener("close", (...e) => {
-        logger.error("Queue Producer: channel closed", e);
+        logger.error(
+          "Queue Producer: channel closed",
+          new Error(JSON.stringify(e))
+        );
         this.channel = undefined;
       });
 
       await this.channel.prefetch(1);
     } catch (e) {
-      logger.error(e);
+      logger.error("Queue Producer: error", e);
     }
 
     this.isStarting = false;
