@@ -1,3 +1,5 @@
+import { GoogleSearchTerm } from "#db/schema/googleSearchTerms";
+
 import { prompts } from "./prompts";
 import { MetricConfig } from "./types";
 
@@ -91,31 +93,36 @@ export const generativeGeneralLast4WeeksReportMetricsConfig: MetricConfig[] = [
 
 export const metricReportConfigs: Record<
   string,
-  | {
-      type: "cumulative";
-      prompt: string;
-      metrics: MetricConfig[];
-      campaignMetrics?: {
-        google?: string;
-        meta?: string;
-      };
-    }
-  | {
-      type: "average";
-      prompt: string;
-      dividentMetrics: MetricConfig[];
-      divisorMetrics: MetricConfig[];
-      campaignMetrics: {
-        divident: {
-          google: string;
-          meta: string;
+  {
+    prompt: string;
+    googleSearchSources?: keyof GoogleSearchTerm;
+  } & (
+    | {
+        type: "cumulative";
+
+        metrics: MetricConfig[];
+        campaignMetrics?: {
+          google?: string;
+          meta?: string;
         };
-        divisor: {
-          google: string;
-          meta: string;
+      }
+    | {
+        type: "average";
+        prompt: string;
+        dividentMetrics: MetricConfig[];
+        divisorMetrics: MetricConfig[];
+        campaignMetrics: {
+          divident: {
+            google: string;
+            meta: string;
+          };
+          divisor: {
+            google: string;
+            meta: string;
+          };
         };
-      };
-    }
+      }
+  )
 > = {
   impressions: {
     type: "cumulative",
@@ -198,8 +205,10 @@ export const metricReportConfigs: Record<
   },
   spend: {
     type: "cumulative",
-    prompt: `Prompt: Analyze which channels and campaigns saw the highest swings in terms of advertising costs. Write answer using a maximum of 5 or 6 sentences.
-      Output Instructions: Format the output similarly to this example: Google Ads had the highest spending costs (and outlined the top three campaigns greatest to least).`,
+    prompt: `
+Analyze which channels and campaigns saw the highest swings in advertising costs based on the data for the current and previous period. Write answers with an explanation using a maximum of 7 or 8 sentences. Provide accurate calculations for % increases or decreases.
+
+Output Instructions: Use the data within the document for this example. Format the output similar to the following example: Google Ads had the highest spending costs (and outline the top three campaigns from greatest to least). Mention meta and campaigns. Don't mention unnecessary phrases like "Based on the data proved in the output" in the output.`,
     metrics: [
       {
         display: "metric",
@@ -216,6 +225,7 @@ export const metricReportConfigs: Record<
       google: "spend",
       meta: "spend",
     },
+    googleSearchSources: "spend",
   },
   ctr: {
     type: "average",
@@ -318,15 +328,3 @@ export const metricReportConfigs: Record<
     },
   },
 };
-
-// [x] Spend
-// [x] Impressions
-// [x] Clicks
-// [x] CPC
-// [x] Conversions
-// [x] Website Sessions
-// [x] CTR
-// [x] Conversion Rate
-
-// [-] CPA
-// [-] Bounce Rate

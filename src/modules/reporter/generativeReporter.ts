@@ -1,11 +1,14 @@
 import { addWeeks, isWithinInterval, parse, subWeeks } from "date-fns";
 
 import { campaignReportDao } from "#dao/campaignReportDao";
+import { googleIntegrationDao } from "#dao/googleIntegrationDao";
+import { googleSearchTermDao } from "#dao/googleSearchTermDao";
 import { metricReportDao } from "#dao/metricReportDao";
 import { reportDao } from "#dao/reportDao";
 import { userDao } from "#dao/userDao";
 import { NewReport, Report } from "#db/schema";
 import { NewCampaignReport } from "#db/schema/campaignReports";
+import { GoogleSearchTerm } from "#db/schema/googleSearchTerms";
 import { NewMetricReport } from "#db/schema/MetricReports";
 import { gemini } from "#modules/gemini";
 import { GenerativeAi } from "#modules/gemini/types";
@@ -345,6 +348,15 @@ class GenerativeReporter {
         `;
     }
 
+    if (reportConfig.googleSearchSources) {
+      prompt += await this.getGoogleSearchTermsInjectData(
+        reportConfig.googleSearchSources,
+        userId,
+        sinceDate,
+        untilDate
+      );
+    }
+
     // generate
     const insights = await gemini.getFlashTextResponse(prompt);
 
@@ -542,6 +554,45 @@ class GenerativeReporter {
     await campaignReportDao.create(newReport);
 
     return newReport;
+  };
+
+  getGoogleSearchTermsInjectData = async (
+    metric: keyof GoogleSearchTerm,
+    userId: number,
+    since: Date,
+    until: Date
+  ) => {
+    const prompt = `Traffic Sources by ${metric}:` + NEW_LINE;
+
+    const googleIntegration =
+      await googleIntegrationDao.getIntegrationByUserId(userId);
+
+    if (!googleIntegration || !googleIntegration.selectedAdAccount) {
+      return "";
+    }
+
+    const data = await googleSearchTermDao.getSummarySinceUntil(
+      googleIntegration.selectedAdAccount,
+      googleIntegration.id,
+      since,
+      until
+    );
+
+    return (
+      prompt +
+      data
+        .filter((searchTerm) => {
+          return Boolean(searchTerm[metric]);
+        })
+        .map((searchTerm) => {
+          return `${searchTerm.searchTerm}: ${metric === "spend" && "$"}${
+            typeof searchTerm[metric] === "number"
+              ? Number(searchTerm[metric]).toFixed(2)
+              : searchTerm[metric]
+          }`;
+        })
+        .join("\n")
+    );
   };
 }
 
