@@ -9,6 +9,9 @@ class QueueProducer {
   channel: amqp.Channel | undefined;
   connection: amqp.Connection | undefined;
 
+  currentRestarts = 0;
+  RESTART_LIMIT = 100;
+
   async start() {
     if (this.isStarting) return;
 
@@ -28,12 +31,13 @@ class QueueProducer {
       );
       logger.info("Message Broker: producer connected with RabbitMQ");
 
-      this.connection.on("error", (...e) =>
+      this.connection.on("error", (...e) => {
+        this.restartConnection();
         logger.error(
           "Queue Producer: connection error",
           new Error(JSON.stringify(e))
-        )
-      );
+        );
+      });
 
       this.channel = await this.connection.createChannel();
       this.channel.addListener("error", (...e) =>
@@ -78,6 +82,19 @@ class QueueProducer {
       logger.error("Queue Producer: error", e);
     }
   }
+
+  close = async () => {
+    await this.channel?.close();
+    await this.connection?.close();
+  };
+
+  restartConnection = async () => {
+    await this.close();
+
+    if (this.currentRestarts > this.RESTART_LIMIT) return;
+
+    await this.start();
+  };
 }
 
 export const queueProducer = new QueueProducer();

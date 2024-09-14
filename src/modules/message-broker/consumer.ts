@@ -6,6 +6,11 @@ import { QueueNames, queuesConfig } from "./queues";
 import { tasks } from "./tasks";
 
 class QueueConsumer {
+  connection: amqp.Connection | undefined;
+
+  currentRestarts = 0;
+  RESTART_LIMIT = 100;
+
   async start() {
     try {
       const connection = await amqp.connect(
@@ -15,9 +20,10 @@ class QueueConsumer {
       );
       logger.info("Message Broker: consumer connected with RabbitMQ");
 
-      connection.on("error", (...e) =>
-        logger.error("Queue Consumer: connection error", e)
-      );
+      connection.on("error", (...e) => {
+        this.restartConnection();
+        logger.error("Queue Consumer: connection error", e);
+      });
 
       const channel = await connection.createChannel();
 
@@ -59,6 +65,18 @@ class QueueConsumer {
       logger.error("Queue Consumer: error", e);
     }
   }
+
+  close = async () => {
+    await this.connection?.close();
+  };
+
+  restartConnection = async () => {
+    await this.close();
+
+    if (this.currentRestarts > this.RESTART_LIMIT) return;
+
+    await this.start();
+  };
 }
 
 export const queueConsumer = new QueueConsumer();
