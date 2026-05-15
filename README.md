@@ -1,7 +1,5 @@
 **IP Disclaimer**: As the original founder, I retained full intellectual property rights to this project. It is shared here purely as a portfolio demonstration.
 
-# Click clarity AI
-
 # tech stack
 
 - `express`
